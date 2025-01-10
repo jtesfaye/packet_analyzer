@@ -1,0 +1,9 @@
+# Build files
+*.0
+*.so
+*.dll
+*.exe
+/build
+/.vscode
+/CMakeLists.txt
+/.DS_Store
