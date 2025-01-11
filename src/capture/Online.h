@@ -13,9 +13,20 @@ namespace Capture {
     OnlinePacketCapture(OnlinePacketCapture&) = delete;
     OnlinePacketCapture operator= (OnlinePacketCapture&) = delete;
 
-    ~OnlinePacketCapture();
+    ~OnlinePacketCapture() override;
 
-    void start_capture();
+  private:
+
+    void start_capture() override;
+
+    void stop_capture() override;
+
+    static void process_packet
+    (
+      u_char* data,
+      const struct pcap_pkthdr* header, 
+      const u_char* packet
+    );
 
   };
 

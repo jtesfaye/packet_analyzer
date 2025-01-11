@@ -39,26 +39,71 @@ namespace Capture {
       pcap_set_promisc(_handle, 1);
     }
 
+    //rf mode
+    if (_options.monitor_mode) {
+
+      int rf = pcap_can_set_rfmon(_handle);
+      if (rf) {
+        pcap_set_rfmon(_handle, 1);
+      } else {
+        //send message to user than rf mode cant be used on this device
+      }
+    }
+
+    //decided if packet gets immediatly delivered instead of going to buffer
+    if (_options.immediate_mode) {
+
+      pcap_set_immediate_mode(_handle, 1);
+
+    }
+
+    //precision of timestamps
+    if (_options.precision_mode) {
+
+      pcap_set_tstamp_type(_handle, PCAP_TSTAMP_HOST_HIPREC);
+
+    } else {
+
+      pcap_set_tstamp_type(_handle, PCAP_TSTAMP_HOST);
+
+    }
+
     //time between checking packet buffer
     if (_options.high_traffic) {
+
       pcap_set_timeout(_handle, 10);
+
     } else {
+
       pcap_set_timeout(_handle, 500);
+
     }
 
     if(pcap_findalldevs(&_device_list, errbuf) != 0) {
+
       std::cerr << "Error finding devices: " << errbuf << std::endl;
-      return;
+
     }
 
   }
 
+
+  void OnlinePacketCapture::process_packet
+  (
+    u_char* user_data,
+    const struct pcap_pkthdr* header,
+    const u_char* packet
+  ) {
+
+
+  }
+  
   void OnlinePacketCapture::start_capture() {
 
     pcap_loop(
     _handle,
     _packets_to_capture, 
-    NULL, 
+    process_packet, 
     NULL
     );
 
