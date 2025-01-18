@@ -2,8 +2,8 @@
 #ifndef PACKET_H
 #define PACKET_H
 
+#include "pcap/pcap.h"
 #include <cstdint>
-
 #include <optional>
 
 namespace Packet {
@@ -84,11 +84,8 @@ namespace Packet {
     u_int16_t window;
     u_int16_t chksum;
     u_int16_t urgent;
-    u_int32_t options[]; //size derived from data offset, will find proper initalization method later; 
 
   };
-
-  class Packet {
 
     union link_layer {
 
@@ -107,6 +104,25 @@ namespace Packet {
     union transport_layer {
       tcp_header tcp;
     };
+
+  class Packet {
+  public:
+
+    Packet() = delete;
+
+    Packet
+    (
+      const struct pcap_pkthdr& header,
+      link_layer&&,
+      ip_layer&&,
+      transport_layer&&
+    );
+
+  private:
+
+    std::optional<link_layer> l2;
+    ip_layer l3;
+    transport_layer l4;
 
   };
 
