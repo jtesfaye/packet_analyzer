@@ -2,9 +2,13 @@
 #ifndef LINKLAYER_H
 #define LINKLAYER_H
 
-#include "PacketParsing.h"
 #include "Packet.h"
+#include <arpa/inet.h>
 #include <functional>
+
+using packet::link_layer;
+using namespace packet::frame;
+
 
 namespace Parse {
 
@@ -16,7 +20,6 @@ namespace Parse {
     LinkParse
     (
       u_int8_t& raw_data, 
-      std::function<link_layer(u_int8_t&)> func,
       int dlt
     );
 
@@ -29,8 +32,6 @@ namespace Parse {
     link_layer operator()() {
       layer_func(raw_data);
     }
-
-
 
     class link_dispatch {
     public:
@@ -49,14 +50,12 @@ namespace Parse {
 
     };
 
-
-
     class link_parse_functions {
     public:
 
       link_parse_functions() = delete;
 
-      static link_layer _EN10MB_parse(u_int8_t&);
+      static link_layer _EN10MB_parse(const u_int8_t&);
 
     };
 

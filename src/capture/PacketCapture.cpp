@@ -1,19 +1,21 @@
 
 #include "PacketCapture.h"
 
-namespace Capture {
+namespace capture {
 
   PacketCapture::PacketCapture
   (
     const char* device_name, 
     int cnt, 
-    const Options&& opt
+    u_int8_t settings
   )
   : _device(device_name),
     _packets_to_capture(cnt),
-    _options(opt),
+    _settings(settings),
     _handle(nullptr),
     _device_list(nullptr)
     {}
+
+  PacketCapture::~PacketCapture() {};
 
 }

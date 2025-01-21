@@ -3,17 +3,17 @@
 #define ONLINE_H
 
 #include "PacketCapture.h"
-namespace Capture {
+namespace capture {
 
-  class OnlinePacketCapture : public PacketCapture {
+  class Online : public PacketCapture {
   public:
-    OnlinePacketCapture() = delete;
-    OnlinePacketCapture(const char* device_name, int cnt, const Options& opt);
+    Online() = delete;
+    Online(const char* device_name, int cnt, const u_int8_t set);
 
-    OnlinePacketCapture(OnlinePacketCapture&) = delete;
-    OnlinePacketCapture operator= (OnlinePacketCapture&) = delete;
+    Online(Online&) = delete;
+    Online operator= (Online&) = delete;
 
-    ~OnlinePacketCapture() override;
+    ~Online() override;
 
   private:
 

@@ -4,9 +4,8 @@
 
 #include "pcap/pcap.h"
 #include <cstdint>
-#include <optional>
 
-namespace Packet {
+namespace packet {
 
   constexpr uint16_t IP_RF = 0x8000;
   constexpr uint16_t IP_DF = 0x4000;
@@ -27,83 +26,100 @@ namespace Packet {
   constexpr u_int8_t TCP_SYN = 0x02;
   constexpr u_int8_t TCP_FIN = 0x01;
 
-  struct _802_3 {
+  namespace frame {
+
+    struct EN10MB {
+
     u_int8_t dest_addr[6];
     u_int8_t src_addr[6];
-    std::optional<_802_1_Q> vlan_tag;
     u_int16_t ether_type;
-  };
+    
+    };
 
-  struct _802_1_Q {
+    struct EN10MB_802_1_Q {
 
+    u_int8_t dest_addr[6];
+    u_int8_t src_addr[6];
     u_int16_t tpid;
     u_int16_t tci;
-
-  };
-
-  struct _802_11 {
-
-  };
-
-  struct ipv4_header {
-
-  #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-    u_int8_t version : 4;
-    u_int8_t ih_length : 4;
-
-  #endif
-  #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-    u_int8_t ih_length : 4;
-    u_int8_t version : 4;
-
-  #endif
-    u_int8_t dscp : 6;
-    u_int8_t ecn : 2;
-    u_int16_t length;
-    u_int16_t id;
-    u_int8_t ttl;
-    u_int8_t protocol;
-    u_int16_t chksum;
-    u_int32_t src_addr;
-    u_int32_t dest_adr;
-
-  };
-
-  struct ipv6_header {
-
-  };
-
-  struct tcp_header {
-
-    u_int16_t src;
-    u_int16_t dest;
-    u_int32_t sequence;
-    u_int32_t ack;
-    u_int8_t offset;
-    u_int8_t flags;
-    u_int16_t window;
-    u_int16_t chksum;
-    u_int16_t urgent;
-
-  };
-
-    union link_layer {
-
-      _802_11 ether_wireless;
-      _802_3 ether_frame;
+    u_int16_t ether_type;
 
     };
 
-    union ip_layer {
-
-      ipv4_header v4;
-      ipv6_header v6;
+    struct _802_11 {
 
     };
 
-    union transport_layer {
-      tcp_header tcp;
+  }
+
+  namespace ip {
+
+    struct ipv4_header {
+
+    #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+      u_int8_t version : 4;
+      u_int8_t ih_length : 4;
+
+    #endif
+    #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+      u_int8_t ih_length : 4;
+      u_int8_t version : 4;
+
+    #endif
+      u_int8_t dscp : 6;
+      u_int8_t ecn : 2;
+      u_int16_t length;
+      u_int16_t id;
+      u_int8_t ttl;
+      u_int8_t protocol;
+      u_int16_t chksum;
+      u_int32_t src_addr;
+      u_int32_t dest_adr;
+
     };
+
+    struct ipv6_header {
+
+    };
+
+  }
+  
+  namespace transport {
+
+    struct tcp_header {
+
+      u_int16_t src;
+      u_int16_t dest;
+      u_int32_t sequence;
+      u_int32_t ack;
+      u_int8_t offset;
+      u_int8_t flags;
+      u_int16_t window;
+      u_int16_t chksum;
+      u_int16_t urgent;
+
+    };
+  }
+
+
+  union link_layer {
+
+    _802_11* ether_wireless;
+    EN10MB* ether_frame;
+    EN10MB_802_1_Q* vlan_ether_frame;
+
+  };
+
+  union ip_layer {
+
+    packet::ip::ipv4_header* v4;
+    packet::ip::ipv6_header v6;
+
+  };
+
+  union transport_layer {
+    packet::transport::tcp_header tcp;
+  };
 
   class Packet {
   public:

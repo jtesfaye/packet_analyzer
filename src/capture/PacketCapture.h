@@ -5,25 +5,19 @@
 #include <pcap/pcap.h>
 #include <iostream>
 
-namespace Capture {
+namespace capture {
 
-  const int FULL = 65535;
-  const int DEFAULT = 256;
-  const int BASIC = 128;
+  constexpr int FULL = 65535;
+  constexpr int DEFAULT = 256;
+  constexpr int BASIC = 128;
 
-  struct Options {
-
-    //between full or basic, only one of them can be true
-    bool full_capture;                                                              //if true will capture 65535 bytes of the packet.
-    bool basic_capture;                                                             // if true will capture 128 bytes
-    
-    bool promisc_mode = false;                                                    
-    bool monitor_mode;
-    bool immediate_mode = true;
-    bool precision_mode;
-    bool high_traffic;
-
-  };
+  constexpr u_int8_t FULL_CAP = 0x80;
+  constexpr u_int8_t BASIC_CAP = 0x40;
+  constexpr u_int8_t PROMISC = 0x20;
+  constexpr u_int8_t IMMEDIATE = 0x10;
+  constexpr u_int8_t MONITOR = 0x08;
+  constexpr u_int8_t PRECISION = 0x04;
+  constexpr u_int8_t HIGH_TRAFF = 0x02;
 
   class PacketCapture {
   protected:
@@ -35,7 +29,8 @@ namespace Capture {
     pcap_if_t* _device_list;
 
     int _packets_to_capture;
-    Options _options;
+
+    u_int8_t _settings;
 
     virtual void start_capture() = 0;
     virtual void stop_capture() = 0;
@@ -43,12 +38,12 @@ namespace Capture {
   public:
 
     PacketCapture() = delete;
-    PacketCapture(const char* device_name, int cnt, const Options&& opt);
+    PacketCapture(const char* device_name, int cnt, const u_int8_t settings);
 
     PacketCapture(PacketCapture&) = delete;
     PacketCapture operator=(PacketCapture&) = delete;
 
-    virtual ~PacketCapture() = default; 
+    virtual ~PacketCapture();
 
     pcap_t* handle() { return _handle; }
     pcap_if_t* devices() { return _device_list; }

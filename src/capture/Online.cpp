@@ -2,15 +2,15 @@
 #include "Online.h"
 
 
-namespace Capture {
+namespace capture {
 
-  OnlinePacketCapture::OnlinePacketCapture
+  Online::Online
   (
     const char* device_name,
     int count, 
-    const Options& options
+    u_int8_t set
   ) 
-  : PacketCapture(device_name, count, std::move(options)) {
+  : PacketCapture(device_name, count, set) {
 
     _handle = pcap_create(_device, errbuf);
 
@@ -20,11 +20,11 @@ namespace Capture {
     }
 
     //decide how much of the packet will be captures
-    if (_options.full_capture) {
+    if (_settings & FULL_CAP == FULL_CAP) {
 
       pcap_set_snaplen(_handle, FULL);
       
-    } else if (_options.basic_capture == true) {
+    } else if (_settings & BASIC_CAP == BASIC_CAP) {
 
       pcap_set_snaplen(_handle, BASIC);
 
@@ -35,12 +35,12 @@ namespace Capture {
     }
 
     //promisous mode
-    if (_options.promisc_mode) {
+    if (_settings & PROMISC == PROMISC) {
       pcap_set_promisc(_handle, 1);
     }
 
     //rf mode
-    if (_options.monitor_mode) {
+    if (_settings & MONITOR == MONITOR) {
 
       int rf = pcap_can_set_rfmon(_handle);
       if (rf) {
@@ -51,14 +51,14 @@ namespace Capture {
     }
 
     //decided if packet gets immediatly delivered instead of going to buffer
-    if (_options.immediate_mode) {
+    if (_settings & IMMEDIATE == IMMEDIATE) {
 
       pcap_set_immediate_mode(_handle, 1);
 
     }
 
     //precision of timestamps
-    if (_options.precision_mode) {
+    if (_settings & PRECISION == PRECISION) {
 
       pcap_set_tstamp_type(_handle, PCAP_TSTAMP_HOST_HIPREC);
 
@@ -69,7 +69,7 @@ namespace Capture {
     }
 
     //time between checking packet buffer
-    if (_options.high_traffic) {
+    if (_settings & HIGH_TRAFF == HIGH_TRAFF) {
 
       pcap_set_timeout(_handle, 10);
 
@@ -85,10 +85,15 @@ namespace Capture {
 
     }
 
+    std::cout << "Capturing began successfully\n";
+
   }
 
+  Online::~Online() {};
 
-  void OnlinePacketCapture::process_packet
+
+  void 
+  Online::process_packet
   (
     u_char* user_data,
     const struct pcap_pkthdr* header,
@@ -98,16 +103,16 @@ namespace Capture {
 
   }
   
-  void OnlinePacketCapture::start_capture() {
+  void 
+  Online::start_capture() {
 
-    pcap_loop(
-    _handle,
-    _packets_to_capture, 
-    process_packet, 
-    NULL
-    );
+    pcap_loop(_handle, _packets_to_capture, process_packet, NULL);
 
     return;
+
+  }
+
+  void Online::stop_capture() {
 
   }
 }
