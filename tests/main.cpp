@@ -9,7 +9,9 @@ using namespace capture;
 
 int main(int argc, char** argv) {
 
-  Online("any", 10, 0x11);
+  Online session("bridge0", 10, 0x1);
+  session.get_devices();
+  
 
   return 0;
 }

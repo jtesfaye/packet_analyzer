@@ -3,6 +3,8 @@
 #define PACKET_H
 
 #include "pcap/pcap.h"
+#include <iostream>
+#include<optional>
 #include <cstdint>
 
 namespace packet {
@@ -30,19 +32,19 @@ namespace packet {
 
     struct EN10MB {
 
-    u_int8_t dest_addr[6];
-    u_int8_t src_addr[6];
-    u_int16_t ether_type;
+      u_int8_t dest_addr[6];
+      u_int8_t src_addr[6];
+      u_int16_t ether_type;
     
     };
 
     struct EN10MB_802_1_Q {
 
-    u_int8_t dest_addr[6];
-    u_int8_t src_addr[6];
-    u_int16_t tpid;
-    u_int16_t tci;
-    u_int16_t ether_type;
+      u_int8_t dest_addr[6];
+      u_int8_t src_addr[6];
+      u_int16_t tpid;
+      u_int16_t tci;
+      u_int16_t ether_type;
 
     };
 
@@ -101,25 +103,29 @@ namespace packet {
     };
   }
 
+  namespace layers {
 
-  union link_layer {
+    union link_layer {
 
-    _802_11* ether_wireless;
-    EN10MB* ether_frame;
-    EN10MB_802_1_Q* vlan_ether_frame;
+      const packet::frame::_802_11* ether_wireless;
+      const packet::frame::EN10MB* ether_frame;
+      const packet::frame::EN10MB_802_1_Q* vlan_ether_frame;
 
-  };
+    };
 
-  union ip_layer {
+    union ip_layer {
 
-    packet::ip::ipv4_header* v4;
-    packet::ip::ipv6_header v6;
+      packet::ip::ipv4_header* v4;
+      packet::ip::ipv6_header v6;
 
-  };
+    };
 
-  union transport_layer {
-    packet::transport::tcp_header tcp;
-  };
+    union transport_layer {
+      packet::transport::tcp_header tcp;
+    };
+
+  }
+
 
   class Packet {
   public:
@@ -128,17 +134,14 @@ namespace packet {
 
     Packet
     (
-      const struct pcap_pkthdr& header,
-      link_layer&&,
-      ip_layer&&,
-      transport_layer&&
+      layers::link_layer&&
     );
 
   private:
 
-    std::optional<link_layer> l2;
-    ip_layer l3;
-    transport_layer l4;
+    layers::link_layer l2;
+    layers::ip_layer l3;
+    layers::transport_layer l4;
 
   };
 

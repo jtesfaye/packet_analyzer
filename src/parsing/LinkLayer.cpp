@@ -1,18 +1,23 @@
 
 
 #include "LinkLayer.h"
+#include <cstring>
 
 namespace Parse {
 
   LinkParse::LinkParse
   (
-    u_int8_t& raw_data, 
     int link_type
-  ) : raw_data(raw_data)
+  )
   {
 
     link_dispatch link_function;
     layer_func = link_function[link_type];
+
+    if (!layer_func) {
+      std::cerr << "Unsupported datalink type" << std::endl;
+      throw std::runtime_error("Unsuported data link type");
+    }
 
   }
 
@@ -23,7 +28,7 @@ namespace Parse {
 
   }
 
-  std::function<link_layer(u_int8_t&)> 
+  std::function<link_layer(const u_int8_t*)> 
   LinkParse::link_dispatch::operator[] 
   (int key) {
 
@@ -37,20 +42,21 @@ namespace Parse {
 
   link_layer
   LinkParse::link_parse_functions::_EN10MB_parse
-  (const u_int8_t& raw_data) {
+  (const u_int8_t* raw_data) {
 
-    link_layer frame;
-
-    EN10MB* ether = reinterpret_cast<EN10MB*> (raw_data);
+    const EN10MB* ether = reinterpret_cast<const EN10MB*> (raw_data);
 
     if (ntohs(ether->ether_type) == 0x8100) {
 
-      EN10MB_802_1_Q* vlan = reinterpret_cast<EN10MB_802_1_Q*> (raw_data);
+      const EN10MB_802_1_Q* vlan = reinterpret_cast< const EN10MB_802_1_Q*> (raw_data);
+
+      link_layer frame;
       frame.vlan_ether_frame = vlan;
-      
-      return frame;
+
+      return  frame;
     }
 
+    link_layer frame;
     frame.ether_frame = ether;
 
     return frame;

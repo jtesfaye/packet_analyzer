@@ -2,11 +2,11 @@
 #ifndef LINKLAYER_H
 #define LINKLAYER_H
 
-#include "Packet.h"
+#include "../Packet/Packet.h"
 #include <arpa/inet.h>
 #include <functional>
 
-using packet::link_layer;
+using packet::layers::link_layer;
 using namespace packet::frame;
 
 
@@ -17,26 +17,23 @@ namespace Parse {
   class LinkParse {
   public:
 
-    LinkParse
-    (
-      u_int8_t& raw_data, 
-      int dlt
-    );
+    explicit LinkParse(int dlt);
+
+    ~LinkParse() {};
+
+    link_layer operator()(const u_int8_t* raw_data) {
+      return layer_func(raw_data);
+    }
 
   private:
 
-    std::function<link_layer(u_int8_t&)> layer_func;
+    std::function<link_layer(const u_int8_t*)> layer_func;
 
-    u_int8_t& raw_data;
-
-    link_layer operator()() {
-      layer_func(raw_data);
-    }
 
     class link_dispatch {
     public:
 
-      std::function<link_layer(u_int8_t&)> table[DLT_TYPES];
+      std::function<link_layer(const u_int8_t*)> table[DLT_TYPES];
 
       link_dispatch();
 
@@ -44,9 +41,9 @@ namespace Parse {
       link_dispatch operator= (link_dispatch&) = delete;
       link_dispatch(link_dispatch&&) = delete;
 
-      ~link_dispatch();
+      ~link_dispatch() {};
 
-      std::function<link_layer(u_int8_t&)> operator[] (int key);
+      std::function<link_layer(const u_int8_t*)> operator[] (int key);
 
     };
 
@@ -55,7 +52,7 @@ namespace Parse {
 
       link_parse_functions() = delete;
 
-      static link_layer _EN10MB_parse(const u_int8_t&);
+      static link_layer _EN10MB_parse(const u_int8_t*);
 
     };
 
