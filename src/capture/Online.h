@@ -7,7 +7,6 @@
 #include <cstring>
 
 using packet::Packet;
-using namespace packet::layers;
 using namespace packet::frame;
 
 namespace capture {

@@ -31,7 +31,7 @@ namespace capture {
     char errbuf[PCAP_ERRBUF_SIZE];
 
     struct user_data {
-      Parse::LinkParse& link;
+      parse::LinkParse& link;
     };
 
     std::unique_ptr<pcap_t, decltype(&pcap_close)> _handle;

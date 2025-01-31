@@ -100,10 +100,6 @@ namespace capture {
     const u_int8_t* pck = packet;
     user_data* parsing = reinterpret_cast<user_data*> (args);
 
-    link_layer l2 =
-    parsing->link(packet);
-
-    Packet(std::move(l2));
 
   }
   
@@ -117,7 +113,7 @@ namespace capture {
 
     try {
 
-      Parse::LinkParse link_parse(m_data_link);
+      parse::LinkParse link_parse(m_data_link);
 
       user_data functions {link_parse};
 
