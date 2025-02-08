@@ -43,6 +43,13 @@ namespace packet {
 
     void init(int dlt, u_int8_t flags);
 
+    packet_model start_extract();
+
+    void set_meta_data(const pcap_pkthdr* &meta);
+
+    void set_raw_data(const u_int8_t* &raw_data);
+
+
   private:
   
     class display_data {
@@ -52,8 +59,10 @@ namespace packet {
       using function = std::function<display_type>;
       using key_pair = std::pair<int, function>;
 
-      static constexpr int size {1};
+      static constexpr int size {2};
+
       static void show_802_11(const link_layer& l2);
+      static void show_EN10MB(const link_layer& l2);
       
     }; 
 
@@ -67,18 +76,11 @@ namespace packet {
     const u_int8_t* m_raw_data;
     const pcap_pkthdr* m_meta_data;
 
-    const std::array<display_data::key_pair, display_data::size> all_l2_display
+    const std::array<display_data::key_pair, display_data::size> m_all_l2_display
     {
-      display_data::key_pair {DLT_IEEE802_11, display_data::function(display_data::show_802_11)}
+      display_data::key_pair {DLT_IEEE802_11, display_data::function(display_data::show_802_11)},
+      display_data::key_pair {DLT_EN10MB, display_data::function(display_data::show_EN10MB)}
     };
-
-  public: 
-
-    packet_model start_extract();
-
-    void set_meta_data(const pcap_pkthdr* &meta);
-
-    void set_raw_data(const u_int8_t* &raw_data);
 
   };
 

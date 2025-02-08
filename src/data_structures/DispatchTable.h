@@ -5,7 +5,7 @@
 
 #include <functional>
 #include <unordered_map>
-#include <iostream>
+
 
 template<typename Signature, std::size_t Size>
 class DispatchTable {
@@ -15,8 +15,6 @@ public:
   using key_pair  = std::pair <int, function>;
 
   explicit DispatchTable(const std::array<key_pair, Size>& init) {
-
-    
 
     for (const auto& [key, func] : init) {
 

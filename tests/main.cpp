@@ -9,9 +9,7 @@ int main(int argc, char** argv) {
 
   try {
 
-    Online session("en0", 10, 0x1, 0x80);
-    session.get_link_types();
-    session.get_devices();
+    Online session("en0", 100, 0x1, 0x80);
     session.start_capture();
 
   } catch (std::runtime_error &e) {

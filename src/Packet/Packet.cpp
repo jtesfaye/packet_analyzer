@@ -3,6 +3,8 @@
 #include <iostream>
 #include "../data_structures/DispatchTable.h"
 #include "ProtocolTypes.h"
+#include <iomanip>
+
 
 namespace packet {
 
@@ -71,7 +73,7 @@ namespace packet {
   Packet::set_layer2_display(packet_model& pkt) {
 
 
-    DispatchTable<display_data::display_type, display_data::size> l2_functions(all_l2_display);
+    DispatchTable<display_data::display_type, display_data::size> l2_functions(m_all_l2_display);
     pkt.l2_display = l2_functions[m_dlt];
 
   }
@@ -109,5 +111,35 @@ namespace packet {
     std::cout << "]\n";
 
   }
+
+  void
+  Packet::display_data::show_EN10MB
+  (const link_layer& l2) {
+
+    if (const frame::EN10MB* data = *(std::get_if<const frame::EN10MB*>(&l2))) {
+      
+      std::cout << "Destination: ";
+      for (size_t i = 0; i < 6; i++) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') 
+          << static_cast<int>(data->dest_addr[i]);
+        if (i < 5) {
+          std::cout << ":";
+        } 
+      }
+      std::cout << " Source: ";
+
+      for (size_t i = 0; i < 6; i++) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') <<
+          static_cast<int>(data->src_addr[i]);
+        if (i < 5) {
+          std::cout << ":";
+        } 
+      }
+      std::cout << "\n";
+    } else {
+      std::cout << "not EN10mb\n"; 
+    }
+
+  } 
 
 }
