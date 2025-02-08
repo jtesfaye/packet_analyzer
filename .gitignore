@@ -7,3 +7,4 @@
 /.vscode
 /CMakeLists.txt
 /.DS_Store
+/.cache

@@ -1,6 +1,7 @@
 
 #include "Online.h"
-
+#include <iostream>
+#include <stdexcept>
 
 namespace capture {
 
@@ -8,11 +9,12 @@ namespace capture {
   (
     std::string device_name,
     int count, 
-    u_int8_t set
+    u_int8_t set,
+    u_int8_t flags
   ) 
-  : PacketCapture(device_name, count, set), m_data_link(-1) {
+  : PacketCapture(device_name, count, set, flags), m_data_link(-1) {
 
-    if (_handle == nullptr) {
+    if (handle() == nullptr) {
       std::cerr << "Error in creating handle: " << errbuf << std::endl;
       return; //probably not the best way to handle an error but ill change it later
     }
@@ -80,58 +82,15 @@ namespace capture {
     }
 
     if (pcap_activate(handle()) != 0) {
-      std::cerr << pcap_geterr(handle()) << std::endl;
+      throw std::runtime_error(pcap_geterr(handle()));
       return;
     }
+
+    _packet_data.init(pcap_datalink(handle()), flags);
 
   }
 
   Online::~Online() {};
-
-
-  void 
-  Online::process_packet
-  (
-    u_char* args,
-    const struct pcap_pkthdr* header,
-    const u_char* packet
-  ) {
-
-    const u_int8_t* pck = packet;
-    user_data* parsing = reinterpret_cast<user_data*> (args);
-
-
-  }
-  
-  void 
-  Online::start_capture() {
-
-    if (m_data_link == -1) {
-      m_data_link = pcap_datalink(handle());
-      std::cout << "Set datalink to: " << pcap_datalink_val_to_name(m_data_link) << "\n";
-    }
-
-    try {
-
-      parse::LinkParse link_parse(m_data_link);
-
-      user_data functions {link_parse};
-
-      u_char* user_data = reinterpret_cast<u_char*> (&functions);
-
-      pcap_loop(handle(), _packets_to_capture, process_packet, user_data);
-
-    } catch (std::runtime_error &e) {
-
-      std::cout << e.what() << std::endl;
-      return;
-    }
-
-  }
-
-  void Online::stop_capture() {
-
-  }
 
   void Online::get_devices() {
 
@@ -166,6 +125,8 @@ namespace capture {
   }
 
   void Online::get_link_types() {
+
+    
 
     int* dlt_buf;
     int list_size = pcap_list_datalinks(handle(), &dlt_buf);

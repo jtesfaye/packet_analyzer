@@ -2,17 +2,24 @@
 
 #include "LinkLayer.h"
 #include <cstring>
+#include "../data_structures/DispatchTable.h"
+#include <iostream>
+
 
 namespace parse {
 
   LinkParse::LinkParse
   (
     int link_type
-  )
+  ) : m_capture_data(nullptr)
   {
+    
 
-    link_dispatch link_function(*this);
-    layer_func = link_function[link_type];
+    DispatchTable
+    <link_layer(const u_int8_t*, LinkParse&), link_parse_functions::total> 
+    link_table(all_parse_functions);
+
+    layer_func = link_table[link_type];
 
     if (!layer_func) {
       std::cerr << "Unsupported datalink type" << std::endl;
@@ -33,6 +40,14 @@ namespace parse {
   u_int8_t
   LinkParse::header_length() {
     return m_header_length;
+  }
+
+
+
+  void
+  LinkParse::set_capture_data
+  (const pcap_pkthdr* &header) {
+    m_capture_data = header;
   }
 
 
@@ -60,32 +75,8 @@ namespace parse {
 
   void
   LinkParse::set_length(u_int8_t len) {
+
     m_header_length = len;
-  }
-
-
-
-  LinkParse::link_dispatch::link_dispatch(LinkParse&) {
-
-    table[(std::hash<int>()(DLT_EN10MB) % DLT_TYPES)] 
-    = &link_parse_functions::_EN10MB_parse;
-
-    table[(std::hash<int>()(DLT_IEEE802_11) % DLT_TYPES)]
-    = &link_parse_functions::_802_11_parse;
-
-  }
-
-
-
-  std::function<link_layer(const u_int8_t*, LinkParse&)> 
-  LinkParse::link_dispatch::operator[] 
-  (int key) {
-
-    int hash = std::hash<int>()(key) % DLT_TYPES;
-
-    if (table[key]) {
-      return table[key];
-    }
 
   }
 
@@ -120,18 +111,28 @@ namespace parse {
   LinkParse::link_parse_functions::_802_11_parse
   (const u_int8_t* raw_data, LinkParse& link) {
 
-    const _802_11* frame = reinterpret_cast<const _802_11*> (raw_data);
+    namespace mask = packet::frame::_802_11_mask;
 
-    using mask = _802_11_Masks;
+    bpf_u_int32 packet_len = link.m_capture_data->caplen;
+
+    if (sizeof(_802_11) > packet_len) {
+
+      link.set_layer3_type(ip::NT_UNSUPPORTED);
+      link.set_length(0);
+      return link_layer {};
+
+    }
+
+    const _802_11* frame = reinterpret_cast<const _802_11*> (raw_data);
 
     u_int16_t frame_control = ntohs(frame->frame_control);
 
     if ((frame_control & mask::TYPE) == mask::DATAFRAME) {
 
       //determine where the payload starts, integer represents how many bytes from the start of the header is the payload
-      u_int8_t payload_start = 18;
+      u_int8_t payload_start = 24;
 
-      //if ToDS and FromDs is present, addr 4 is present in frame
+      //if ToDS and FromDs is present,then addr 4 is present in frame
       if (frame_control & mask::ToDS && (frame->frame_control & mask::FromDS))
         payload_start += 6; 
 
@@ -139,6 +140,7 @@ namespace parse {
       u_int8_t subtype = frame_control & mask::SUBTYPE;
 
       if (subtype > 7 &&  subtype < 16) {
+
         payload_start += 2;
 
         if (frame_control & mask::ORDER)
@@ -146,44 +148,58 @@ namespace parse {
 
       }
 
+      if (payload_start + sizeof(_802_2) > packet_len)  { //check if data is within bounds of packet
+
+        link.set_layer3_type(ip::NT_UNSUPPORTED);
+        return link_layer {};
+
+      }
+
       const _802_2* llc_header = reinterpret_cast<const _802_2*>(raw_data + payload_start);
 
       u_int8_t control_offset = llc_header->control & 0x01 ? 1 : 0;
 
+
       if (llc_header->DSAP_addr == 0xAA) {
+
+
+        if (payload_start + sizeof(_802_2) + sizeof(snap_extension) > packet_len) {
+
+          //malformed snap header
+          link.set_layer3_type(ip::NT_UNSUPPORTED);
+          link.set_length(0);
+          return link_layer {};
+
+        }
         
         const snap_extension* snap 
           = reinterpret_cast<const snap_extension*> (llc_header + control_offset);
 
-        u_int8_t id[3];
-        bool is_ether_type {true};
 
-        std::memcpy(id, snap->oui, 3);
-
-        for (int i = 0; i < 3; i++) {
-
-          if (id[i] != 0x00) {
-            is_ether_type = false;
-            break;
-          }
-        }
-
-        if (is_ether_type) {
+        if (snap->oui[0] == 0x00 && snap->oui[1] == 0x00 && snap->oui[2] == 0x00) {
           
+          link.set_layer3_type(snap->protocol_id);
+          link.set_length(payload_start + sizeof(_802_2) + control_offset + sizeof(snap_extension));
+
         }
 
-        
+
+      } else {
+
+        link.set_layer3_type(ip::NT_UNSUPPORTED);
+        link.set_length(0);
+        return link_layer {};
 
       }
 
-      
-        
+    } else if ((frame_control & mask::TYPE) == mask::MANAGMENT ||
+               (frame_control & mask::TYPE) == mask::CONTROL) {
 
-    } else {
+      link.set_layer3_type(ip::NT_UNSUPPORTED);
+      link.set_length(0);
+      return link_layer {frame};
 
-      link.data_frame = false;
-
-    }
+    } 
 
     return link_layer {frame};
 
