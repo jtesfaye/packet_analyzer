@@ -7,10 +7,11 @@
 
 #include <string>
 #include <sys/_types/_u_int8_t.h>
-#include "../../include/capture/PacketCapture.h"
-#include "../../include/util/PacketBuffer.h"
-#include "../model/DisplayModel.h"
-#include "../view/MainWindow.h"
+#include <capture/PacketCapture.h>
+#include <util/PacketBuffer.h>
+#include <model/DisplayModel.h>
+#include <view/MainWindow.h>
+#include <util/PacketRefBuffer.h>
 
 #include <QThread>
 #include <thread>
@@ -22,12 +23,13 @@ class CaptureController : public QObject {
   Q_OBJECT
 
 public:
+
   CaptureController();
   ~CaptureController() override = default;
 
   void start_online_capture(std::string, int, int, u_int8_t, u_int8_t);
 
-  DisplayModel* get_model();
+  DisplayModel* get_model() const;
 
   signals:
 

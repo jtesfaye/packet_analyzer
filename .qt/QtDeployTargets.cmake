@@ -1,0 +1,6 @@
+set(__QT_DEPLOY_TARGET_capture_FILE /Users/jt/projects/workspace/personal_projects/sniffer/src/capture/libcapture.a)
+set(__QT_DEPLOY_TARGET_capture_TYPE STATIC_LIBRARY)
+set(__QT_DEPLOY_TARGET_sniffer_main_FILE /Users/jt/projects/workspace/personal_projects/sniffer/src/libsniffer_main.a)
+set(__QT_DEPLOY_TARGET_sniffer_main_TYPE STATIC_LIBRARY)
+set(__QT_DEPLOY_TARGET_main_src_FILE /Users/jt/projects/workspace/personal_projects/sniffer/main_src)
+set(__QT_DEPLOY_TARGET_main_src_TYPE EXECUTABLE)

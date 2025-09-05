@@ -2,7 +2,7 @@
 // Created by jeremiah tesfaye on 6/19/25.
 //
 
-#include "../../include/view/Sidebar.h"
+#include <view/Sidebar.h>
 
 
 Sidebar::Sidebar(QWidget *parent) {

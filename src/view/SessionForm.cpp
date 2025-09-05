@@ -2,8 +2,8 @@
 // Created by jeremiah tesfaye on 6/19/25.
 //
 
-#include "../../include/view/SessionForm.h"
-#include "../../include/capture/PacketCapture.h"
+#include <view/SessionForm.h>
+#include <capture/PacketCapture.h>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 

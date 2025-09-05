@@ -2,7 +2,7 @@
 // Created by jeremiah tesfaye on 5/18/25.
 //
 
-#include "../../include/model/DisplayModel.h"
+#include <model/DisplayModel.h>
 
 #include <iostream>
 

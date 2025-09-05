@@ -7,7 +7,7 @@
 #include <QMainWindow>
 #include <QToolBar>
 #include <QTableView>
-#include "../view/Sidebar.h"
+#include <view/Sidebar.h>
 
 
 class MainWindow : public QMainWindow {

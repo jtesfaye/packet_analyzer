@@ -2,8 +2,7 @@
 // Created by jeremiah tesfaye on 6/29/25.
 //
 
-#include "../../include/util/PacketGetter.h"
-
+#include <util/PacketGetter.h>
 #include <iostream>
 
 PacketGetter::PacketGetter(PacketBuffer* buffer, QObject *parent)

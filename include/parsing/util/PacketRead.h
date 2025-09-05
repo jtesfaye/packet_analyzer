@@ -5,8 +5,7 @@
 #ifndef PACKETREAD_H
 #define PACKETREAD_H
 
-#include <packet/ProtocolTypes.h>
-#include "PacketParse.h"
+#include <packet/LayerWrappers.h>
 
 using namespace packet;
 using namespace packet::frame;
@@ -23,6 +22,8 @@ public:
     static std::vector<std::string> create_row_entry(packet_ref&);
 
     static std::string format_mac(const u_int8_t* addr);
+
+    static std::string format_ipv4_src_dst(const std::byte*);
 
     template<typename T>
     static T read_as(const link_layer_ref& l2) {

@@ -6,7 +6,7 @@
 #define PACKETGETTER_H
 
 #include <QObject>
-#include "PacketBuffer.h"
+#include <util/PacketBuffer.h>
 
 class PacketGetter : public QObject {
     Q_OBJECT

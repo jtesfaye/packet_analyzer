@@ -8,8 +8,8 @@
 #include <vector>
 #include <mutex>
 #include <QObject>
-#include "../parsing/PacketParse.h"
-#include "../parsing/PacketRead.h"
+#include <parsing/PacketParse.h>
+#include <parsing/PacketRead.h>
 
 struct layer_details {
 
@@ -41,7 +41,7 @@ public:
 
     explicit PacketBuffer(QObject* parent = nullptr);
 
-    void add(packet_ref&);
+    void add(size_t, packet_ref&);
 
     [[nodiscard]] proccessed_packet read();
 
@@ -53,7 +53,7 @@ public:
 
 private:
 
-    std::vector<proccessed_packet> packet_buffer;
+    std::vector<packet_ref&> packet_buffer;
 
     std::atomic<size_t> m_size;
 

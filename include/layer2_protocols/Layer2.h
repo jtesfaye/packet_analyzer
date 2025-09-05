@@ -2,8 +2,8 @@
 // Created by jeremiah tesfaye on 8/31/25.
 //
 
-#ifndef LAYER2_FUNCS_H
-#define LAYER2_FUNCS_H
+#ifndef LAYER2_H
+#define LAYER2_H
 
 #include <vector>
 #include <functional>
@@ -22,11 +22,11 @@ public:
     Layer2(const Layer2&) = delete;
     Layer2& operator= (const Layer2&) = delete;
 
-    static std::vector<key_pair> get_all_functions() {return all_layer2_functions;}
+    static auto get_all_functions() {return all_layer2_functions;}
 
 private:
 
-    inline static std::vector<key_pair> all_layer2_functions {
+    inline static const std::initializer_list<key_pair> all_layer2_functions {
         key_pair {DLT_EN10MB, function(EN10MB_functions::EN10MB_parse)},
         key_pair {DLT_IEEE802_11, function(_802_11_functions::_802_11_parse)}
     };
@@ -34,4 +34,4 @@ private:
 };
 
 
-#endif //LAYER2_FUNCS_H
+#endif //LAYER2_H

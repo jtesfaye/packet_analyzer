@@ -2,26 +2,24 @@
 // Created by jeremiah tesfaye on 7/27/25.
 //
 
-#include "tests/include/layer2_protocols/_802_11.h"
+#include <layer2_protocols/_802_11.h>
+#include <packet/ProtocolTypes.h>
 
-
-#include "tests/include/packet/ProtocolTypes.h"
-
-link_layer_ref _802_11_functions::_802_11_parse(const u_int8_t* raw_data, parse_context& context) {
+link_layer_ref _802_11_functions::_802_11_parse(const std::vector<std::byte> &raw_data, parse_context& context) {
 
   namespace mask = _802_11_mask;
 
-  bpf_u_int32 packet_len = context.header->caplen;
+  bpf_u_int32 packet_len = context.header.caplen;
 
   if (sizeof(_802_11) > packet_len) {
 
-    context.layer3_type = ip::NT_UNSUPPORTED;
+    context.next_type = ip::NT_UNSUPPORTED;
     context.length = 0;
     return link_layer_ref {};
 
   }
 
-  const _802_11* frame = reinterpret_cast<const _802_11*> (raw_data);
+  const _802_11* frame = reinterpret_cast<const _802_11*> (raw_data.data());
 
   u_int16_t frame_control = ntohs(frame->frame_control);
 
@@ -48,12 +46,12 @@ link_layer_ref _802_11_functions::_802_11_parse(const u_int8_t* raw_data, parse_
 
     if (payload_start + sizeof(_802_2) > packet_len)  { //check if data is within bounds of packet
 
-      context.layer3_type = ip::NT_UNSUPPORTED;
+      context.next_type = ip::NT_UNSUPPORTED;
       return link_layer_ref {};
 
     }
 
-    const _802_2* llc_header = reinterpret_cast<const _802_2*>(raw_data + payload_start);
+    const _802_2* llc_header = reinterpret_cast<const _802_2*>(raw_data.data() + payload_start);
 
     u_int8_t control_offset = llc_header->control & 0x01 ? 1 : 0;
 
@@ -64,7 +62,7 @@ link_layer_ref _802_11_functions::_802_11_parse(const u_int8_t* raw_data, parse_
       if (payload_start + sizeof(_802_2) + sizeof(snap_extension) > packet_len) {
 
         //malformed snap header
-        context.layer3_type = ip::NT_UNSUPPORTED;
+        context.next_type = ip::NT_UNSUPPORTED;
         context.length = 0;
         return link_layer_ref {};
 
@@ -76,7 +74,7 @@ link_layer_ref _802_11_functions::_802_11_parse(const u_int8_t* raw_data, parse_
 
       if (snap->oui[0] == 0x00 && snap->oui[1] == 0x00 && snap->oui[2] == 0x00) {
 
-        context.layer3_type = snap->protocol_id;
+        context.next_type = snap->protocol_id;
         context.length = payload_start + sizeof(_802_2) + control_offset + sizeof(snap_extension);
 
       }
@@ -84,7 +82,7 @@ link_layer_ref _802_11_functions::_802_11_parse(const u_int8_t* raw_data, parse_
 
     } else {
 
-      context.layer3_type = ip::NT_UNSUPPORTED;
+      context.next_type = ip::NT_UNSUPPORTED;
       context.length = 0;
       return link_layer_ref {};
 
@@ -93,7 +91,7 @@ link_layer_ref _802_11_functions::_802_11_parse(const u_int8_t* raw_data, parse_
   } else if ((frame_control & mask::TYPE) == mask::MANAGMENT ||
              (frame_control & mask::TYPE) == mask::CONTROL) {
 
-    context.layer3_type = ip::NT_UNSUPPORTED;
+    context.next_type = ip::NT_UNSUPPORTED;
     context.length = 0;
     return link_layer_ref {const_cast<_802_11*>(frame)};
 

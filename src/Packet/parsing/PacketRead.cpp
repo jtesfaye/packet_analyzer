@@ -4,12 +4,14 @@
 
 
 
-#include "../../../include/parsing/PacketRead.h"
-#include "../../../include/util/Overload.h"
+#include <parsing/util/PacketRead.h>
+#include <util/Overload.h>
+#include <packet/LayerWrappers.h>
 
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <optional>
 
 //We are working on making linkread generic, and now trying to implement into this func
 
@@ -101,13 +103,44 @@ PacketRead::format_mac(const u_int8_t *addr) {
 
     std::ostringstream oss;
     for (int i = 0; i < 6; ++i) {
-        if (i > 0) oss << ":";
+        if (i > 0)
+            oss << ":";
         oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(addr[i]);
     }
     return oss.str();
 
 
 }
+
+
+std::string PacketRead::format_ipv4_src_dst(const std::byte *addr) {
+
+    std::ostringstream oss;
+    for (int i = 0; i < 4; ++i) {
+        if (i > 0)
+            oss << ":";
+        oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(addr[i]);
+    }
+
+    return oss.str();
+
+}
+
+
+
+std::vector<std::byte> PacketRead::copy_packet(const u_int8_t *data, size_t len){
+
+    std::vector<std::byte> packet;
+    packet.reserve(len);
+
+    for (int i = 0; i < len; i++) {
+
+        packet.push_back(static_cast<std::byte>(data[i]));
+
+    }
+
+}
+
 
 
 

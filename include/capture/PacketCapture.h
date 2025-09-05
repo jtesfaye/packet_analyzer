@@ -3,10 +3,12 @@
 #define PACKETCAPTURE_H
 
 #include <pcap/pcap.h>
-#include "../parsing/PacketParse.h"
+#include <parsing/PacketParse.h>
 #include <string>
-#include "../util/PacketBuffer.h"
-#include "../parsing/PacketParse.h"
+#include <packet/PcapFile.h>
+#include <util/PacketRefBuffer.h>
+#include <util/ThreadPool.h>
+#include <util/PacketObserver.h>
 
 namespace capture {
 
@@ -35,7 +37,7 @@ namespace capture {
 
     static void close_handle(pcap_t* handle);
 
-    std::shared_ptr<PacketBuffer> _buffer;
+    std::shared_ptr<PacketRefBuffer> _buffer;
 
     std::unique_ptr<pcap_t, decltype(&close_handle)> _handle;
 
@@ -47,30 +49,19 @@ namespace capture {
 
     void set_data_link(int dlt);
 
-    void set_buffer(const std::shared_ptr<PacketBuffer> &);
+    void set_buffer(const std::shared_ptr<PacketRefBuffer> &);
 
     explicit PacketCapture();
 
   public:
 
-    std::shared_ptr<PacketBuffer> get_buffer();
+    std::shared_ptr<PacketRefBuffer> get_buffer();
 
-    static std::unique_ptr<PacketCapture>
-    createOnlineCapture
-    (
-    std::string& device_name,
-    int count,
-    int capture_size,
-    u_int8_t settings,
-    u_int8_t flags
-    );
+    static std::unique_ptr<PacketCapture> createOnlineCapture
+    (std::string& device_name, int count, int capture_size, u_int8_t settings, u_int8_t flags);
 
-    static std::unique_ptr<PacketCapture>
-    createOfflineCapture
-    (
-    std::string& path_name,
-    int count
-    );
+    static std::unique_ptr<PacketCapture> createOfflineCapture
+    (std::string& path_name,int count);
 
     int get_datalink() const;
 
@@ -87,12 +78,35 @@ namespace capture {
 
   private:
 
+    static void pcap_loop_callback(u_char* data, const pcap_pkthdr* header, const u_char* packet);
+
     struct capture_objects {
 
-      parse::PacketParse& parser;
-      PacketBuffer* buffer;
-      pcap_dumper_t* pcap_file;
+      static capture_objects setup_capture(
+        const char* file_path,
+        parse::PacketParse& parser,
+        const std::shared_ptr<PacketRefBuffer>&,
+        int thread_count,
+        pcap_t* handle
+        );
 
+      static capture_objects make(parse::PacketParse& p,
+        PacketRefBuffer* b,
+        ThreadPool& tp,
+        PacketObserver& o,
+        PcapFile& f);
+
+      parse::PacketParse& parser;
+      PacketRefBuffer* pktref_buffer;
+      ThreadPool& tpool;
+      PacketObserver& pkt_observer;
+      PcapFile& file;
+
+      capture_objects(parse::PacketParse& p,
+        PacketRefBuffer* b,
+        ThreadPool& tp,
+        PacketObserver& o,
+        PcapFile& f);
     };
 
   };

@@ -1,0 +1,170 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						3,
+						4,
+						5
+					]
+				},
+				{
+					"build" : "src",
+					"childIndexes" : 
+					[
+						2
+					],
+					"jsonFile" : "directory-src-Debug-b6cf2213fc5053b67c22.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src",
+					"targetIndexes" : 
+					[
+						6,
+						7,
+						8
+					]
+				},
+				{
+					"build" : "src/capture",
+					"jsonFile" : "directory-src.capture-Debug-9bc92c7ce55e0ce87011.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/capture",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2
+					],
+					"name" : "Sniffer",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 2,
+					"id" : "capture::@b86024d9c0f24bb1697a",
+					"jsonFile" : "target-capture-Debug-c2d77538cabbd42ed613.json",
+					"name" : "capture",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "capture_autogen::@b86024d9c0f24bb1697a",
+					"jsonFile" : "target-capture_autogen-Debug-9c0f17390730f1de0d86.json",
+					"name" : "capture_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "capture_autogen_timestamp_deps::@b86024d9c0f24bb1697a",
+					"jsonFile" : "target-capture_autogen_timestamp_deps-Debug-ef9d7acd76ffa8c947d4.json",
+					"name" : "capture_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "main_src::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-main_src-Debug-dffa35897f9b38170b1d.json",
+					"name" : "main_src",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "main_src_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-main_src_autogen-Debug-3786cd1d573b9ba3fa48.json",
+					"name" : "main_src_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "main_src_autogen_timestamp_deps::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-main_src_autogen_timestamp_deps-Debug-454f8c4d5832797495ec.json",
+					"name" : "main_src_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "sniffer_main::@145eef247bfb46b6828c",
+					"jsonFile" : "target-sniffer_main-Debug-2503fe50256c95012126.json",
+					"name" : "sniffer_main",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "sniffer_main_autogen::@145eef247bfb46b6828c",
+					"jsonFile" : "target-sniffer_main_autogen-Debug-fdef815dba85aa46a56b.json",
+					"name" : "sniffer_main_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "sniffer_main_autogen_timestamp_deps::@145eef247bfb46b6828c",
+					"jsonFile" : "target-sniffer_main_autogen_timestamp_deps-Debug-30231422fea886cd24f0.json",
+					"name" : "sniffer_main_autogen_timestamp_deps",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/jt/projects/workspace/personal_projects/sniffer",
+		"source" : "/Users/jt/projects/workspace/personal_projects/sniffer"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}

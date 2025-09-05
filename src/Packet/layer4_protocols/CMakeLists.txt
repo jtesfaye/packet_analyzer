@@ -1,6 +1,5 @@
-add_library(layer3_protocols
-        IPv4.cpp
-
+add_library(layer4_protocols
+        TCP.cpp
 )
 
-target_include_directories(layer3_protocols PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(layer4_protocols PUBLIC ${CMAKE_SOURCE_DIR}/include)

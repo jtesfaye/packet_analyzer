@@ -8,7 +8,7 @@
 #include <QWidget>
 #include <QPlainTextEdit>
 #include <QVBoxLayout>
-#include "../model/DisplayModel.h"
+#include <model/DisplayModel.h>
 
 class Sidebar : public QWidget {
 

@@ -5,18 +5,40 @@
 #ifndef LAYERWRAPPERS_H
 #define LAYERWRAPPERS_H
 
-#include "ProtocolTypes.h"
+#include <packet/ProtocolTypes.h>
 #include <pcap/pcap.h>
+#include <vector>
+#include <sstream>
+#include <iomanip>
 
 namespace packet {
 
+  struct row_entry {
+
+    double time;
+    std::string src;
+    std::string dest;
+    std::string protocol;
+    std::string length;
+    std::string info;
+
+    [[nodiscard]] std::array<std::string, 6> to_array() const {
+
+      std::ostringstream oss;
+      oss << std::fixed << std::setprecision(10) << time;
+
+      return {oss.str(), src, dest, protocol, length, info};
+    }
+
+  };
+
   struct parse_context {
 
-    const pcap_pkthdr* header;
-    u_int16_t layer3_type;
+    pcap_pkthdr header;
+    u_int16_t next_type;
     size_t offset;
-    const uint8_t* data;
     u_int16_t length;
+    row_entry entry;
 
   };
 
@@ -24,13 +46,15 @@ namespace packet {
     std::monostate,
     frame::EN10MB*,
     frame::EN10MB_802_1_Q*,
-    frame::_802_11*
+    frame::_802_11*,
+    frame::EN10MB_802_1_ad*
   >;
 
   using link_layer = std::variant<
     std::monostate,
     frame::EN10MB,
     frame::EN10MB_802_1_Q,
+    frame::EN10MB_802_1_ad,
     frame::_802_11
   >;
 
@@ -52,15 +76,41 @@ namespace packet {
     transport::upd_header*
   >;
 
-  struct packet_ref {
 
-    link_layer_ref l2;
 
-    net_layer_ref l3;
+  struct LayerRegion {
+    size_t offset;
+    size_t length;
+  };
 
-    transport_layer_ref l4;
+  struct layer_offsets {
+
+    LayerRegion l2;
+    LayerRegion l3;
+    LayerRegion l4;
 
   };
+
+  struct packet_ref {
+
+    layer_offsets data;
+
+    link_layer_ref layer2;
+
+    net_layer_ref layer3;
+
+    transport_layer_ref layer4;
+
+  };
+
+  struct pcaprec_hdr_t {
+
+    uint32_t ts_sec;   // timestamp seconds
+    uint32_t ts_usec;  // timestamp microseconds
+    uint32_t incl_len; // number of bytes of packet saved in file
+    uint32_t orig_len; // actual length of packet
+
+  } __attribute__((packed));
 }
 
 

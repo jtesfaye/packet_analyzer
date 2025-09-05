@@ -2,34 +2,91 @@
 // Created by jeremiah tesfaye on 7/30/25.
 //
 
-#include "../../include/packet/PcapArray.h"
+#include <print>
+#include <packet/PcapArray.h>
+#include <packet/LayerWrappers.h>
+
+PcapArray::PcapArray( size_t file_size, size_t glbhdr_size)
+: m_file_size(file_size)
+, m_total_packets(0)
+, m_bytes_before_insert(glbhdr_size)
+,m_reader(nullptr)
+{
+}
+
+PcapArray::PcapArray(std::unique_ptr<PcapReader> reader, size_t file_size, size_t glb_hdr)
+: m_reader(std::move(reader))
+, m_file_size(file_size)
+, m_bytes_before_insert(glb_hdr)
+{
+
+    build_index();
+    m_total_packets = m_packets.size();
+
+}
 
 
 int
-PcapArray::add_packet_index(size_t hdr_size, size_t pkt_size) {
+PcapArray::add_packet_index(const size_t pkt_size) {
 
-    lock.lock();
+    const size_t offset = m_bytes_before_insert; //start of new packet with header
 
-    size_t offset = m_bytes_before_insert + 1; //start of new packet with header
+    m_packets.emplace_back(pkt_metadata{offset, pkt_size});
 
-    packets.emplace_back(PacketIndex{offset, pkt_size, hdr_size});
+    std::println("Current size {}", m_packets.size());
 
-    m_bytes_before_insert += hdr_size + pkt_size;
-
-    lock.unlock();
+    m_bytes_before_insert += sizeof(packet::pcaprec_hdr_t) + pkt_size;
 
     return 0;
 
 }
 
-const u_int8_t
-*PcapArray::operator[](size_t index) {
 
-    if (index >= packets.size()) {
-        return nullptr;
+/**
+ * Used to find the starting position of each packet for the "packets" vector if user is reading
+ * from a pre-existing .pcap file
+ */
+void
+PcapArray::build_index() {
+
+    size_t glb_header = m_bytes_before_insert;
+    u_int64_t offset = glb_header;
+    u_int64_t file_size = m_file_size;
+    size_t pkt_header_size = 16;
+
+    PcapReader& reader = *m_reader;
+
+    while (offset + pkt_header_size <= file_size) {
+
+        std::vector<std::byte> byte_arr = reader.read(offset, pkt_header_size);
+
+        const auto* header = reinterpret_cast<const packet::pcaprec_hdr_t*>(byte_arr.data());
+
+        if (!header) {
+            break;
+        }
+
+        if (header->incl_len == 0) {
+            break;
+        }
+
+        u_int32_t pkt_size = header->incl_len;
+
+        m_packets.emplace_back(pkt_metadata{offset,pkt_header_size + pkt_size});
+        offset += pkt_header_size + pkt_size;
     }
 
-    size_t offset = packets[index].offset;
-    size_t pkt_size = packets[index].pkt_size;
+    m_bytes_before_insert = offset;
+
+}
+
+PcapArray::pkt_metadata
+PcapArray::get(const size_t index) const {
+
+    if (index >= m_packets.size()) {
+        throw std::out_of_range("PacketArray: Index is out of bounds");
+    }
+
+    return m_packets[index];
 
 }

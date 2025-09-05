@@ -2,8 +2,8 @@
 // Created by jeremiah tesfaye on 6/15/25.
 //
 
-#include "../../include/view/MainWindow.h"
-#include "../../include/controller/CaptureController.h"
+#include <view/MainWindow.h>
+#include <controller/CaptureController.h>
 #include <QSplitter>
 #include <QMenuBar>
 

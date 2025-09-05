@@ -3,7 +3,7 @@
 //
 
 
-#include "../../include/util/PacketBuffer.h"
+#include <util/PacketBuffer.h>
 #include <iostream>
 #include <fstream>
 
@@ -14,7 +14,7 @@ m_size(0)
 
 
 void
-PacketBuffer::add(packet_ref& parsed_pkt) {
+PacketBuffer::add(size_t index, packet_ref* parsed_pkt) {
 
     mutex.lock();
 

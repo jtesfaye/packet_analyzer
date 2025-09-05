@@ -2,8 +2,8 @@
 // Created by jeremiah tesfaye on 7/5/25.
 //
 
-#include "../../include/util/DetailsReader.h"
-#include "../../include/parsing/PacketRead.h"
+#include <util/DetailsReader.h>
+#include <parsing/PacketRead.h>
 #include <sstream>
 
 std::string DetailsReader::operator()(EN10MB& pkt) const {

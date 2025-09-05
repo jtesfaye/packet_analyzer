@@ -5,7 +5,7 @@
 #ifndef DETAILSREADER_H
 #define DETAILSREADER_H
 #include <string>
-#include "../packet/ProtocolTypes.h"
+#include <packet/ProtocolTypes.h>
 
 class DetailsReader {
 public:

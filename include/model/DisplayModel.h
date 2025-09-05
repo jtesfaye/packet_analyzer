@@ -7,9 +7,9 @@
 
 #include <QAbstractTableModel>
 #include <vector>
-#include "../parsing/PacketParse.h"
-#include "../Packet/ProtocolTypes.h"
-#include "../util/PacketBuffer.h"
+#include <parsing/PacketParse.h>
+#include <packet/ProtocolTypes.h>
+#include <util/PacketBuffer.h>
 
 class DisplayModel : public QAbstractTableModel {
 

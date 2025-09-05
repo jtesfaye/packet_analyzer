@@ -4,100 +4,55 @@
 
 #ifndef PCAPFILE_H
 #define PCAPFILE_H
+
 #include <fstream>
 #include <pcap/pcap.h>
+#include <packet/PcapReader.h>
+#include <packet/PcapArray.h>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
-#include <sys/_types/_u_int16_t.h>
-#include <sys/_types/_u_int32_t.h>
 
 using namespace boost::interprocess;
+
+/**
+ * Serves as an interface with the .pcap that gets written to or being read from
+ */
 
 class PcapFile {
 public:
 
+    enum class ReaderType {Mmap, IO, None};
+
     static constexpr size_t m_global_header_size = 24;
 
+    //Use this constructor when capturing live packets and want to write to file
     explicit PcapFile(const char* file_name, pcap_t* handle, size_t buffer_size);
 
-    [[nodiscard]] pcap_dumper_t* get_dumper() const {return m_dumper;}
+    //use this for preexisting .pcap files,
+    explicit PcapFile(const char* file_path);
 
-    void map_file();
+    std::vector<std::byte> read(size_t index) const;
+
+    size_t write(const pcap_pkthdr* header, const u_char* data) const;
+
+    size_t get_buffer_size() const {return m_buffer_size;}
+
+    size_t get_file_size() const {return m_file_size;}
+
 
 private:
 
-    const char* m_file_name;
+    std::unique_ptr<PcapReader> create_reader(ReaderType type);
 
-    pcap_dumper_t* m_dumper;
-
+    std::string m_file_name;
     std::ifstream m_file;
-
+    size_t m_file_size;
+    pcap_dumper_t* m_dumper;
     size_t m_buffer_size;
-
-    bool mapped = false; //after first flush from dumper, map the region
-
-    struct glb_header {
-
-        u_int32_t magic_num;
-        u_int16_t version_major;
-        u_int16_t version_minor;
-        u_int32_t this_zone;
-        u_int32_t sigfigs;
-        u_int32_t snaplen;
-        u_int32_t link_type;
-
-    };
-
-    glb_header header;
-
-    class MappedPcapFile {
-    public:
-
-        explicit MappedPcapFile(const char* file_name)
-            : m_filemap(file_name, read_only)
-            , m_region(m_filemap, read_only)
-            , m_base(static_cast<const char*> (m_region.get_address()))
-            , m_region_size(m_region.get_size()) {}
-
-        MappedPcapFile() = default;
-
-        void remap_file(PcapFile& file) {
-
-            m_region = mapped_region(m_filemap, read_only);
-
-        }
-
-        [[nodiscard]] const u_int8_t* read(size_t offset, size_t len) const;
-
-    private:
-
-        file_mapping m_filemap;
-        mapped_region m_region;
-        const char* m_base{};
-        size_t m_region_size{};
-
-    };
-
-    MappedPcapFile mapped_file;
-
-
-
-public:
-
-    MappedPcapFile& get_mapped_file() {return mapped_file;}
-    u_int32_t get_magic_num() const {return header.magic_num;}
-    u_int16_t get_version_major() const {return header.version_major;}
-    u_int16_t get_version_minor() const {return header.version_minor;}
-    u_int32_t get_this_zone() const {return header.this_zone;}
-    u_int32_t get_sigfigs() const {return header.sigfigs;}
-    u_int32_t get_snaplen() const {return header.snaplen;}
-    u_int32_t get_link_type() const {return header.link_type;}
-    bool isMapped() const {return mapped;}
-    size_t get_buffer_size() const {return m_buffer_size;}
-
-    void setMapped() {mapped = !mapped;}
-
-
+    pcap_file_header m_header;
+    int m_pcap_fd;
+    std::unique_ptr<PcapReader> m_reader;
+    std::shared_ptr<PcapArray> m_array;
 };
 
 
