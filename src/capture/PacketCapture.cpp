@@ -1,114 +1,168 @@
 
-#include "PacketCapture.h"
+#include "../../include/capture/PacketCapture.h"
+#include "../../include/capture/Online.h"
+#include "../../include/capture/Offline.h"
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 
 namespace capture {
 
-  PacketCapture::PacketCapture
-  (
-    std::string device_name, 
-    int cnt, 
-    u_int8_t settings,
-    u_int8_t flags
-  )
-  : _device(device_name),
-    _file_path(""),
-    _packets_to_capture(cnt),
-    _settings(settings),
-    _handle(nullptr, close_handle),
-    _device_list(nullptr, free_devices)
-  {
-
-    if (pcap_t* pcap_handle = pcap_create(_device.c_str(), errbuf)) {
-
-      _handle = std::unique_ptr<pcap_t, decltype(&pcap_close)> (
-        pcap_handle,
-        pcap_close
-      );
-
-    } else {
-      
-      throw std::runtime_error(errbuf);
-
-    }
-
+  PacketCapture::PacketCapture()
+  : _packets_to_capture(0)
+  , m_data_link(-1)
+  , _handle(nullptr, close_handle)
+  , _device_list(nullptr, free_devices) {
   }
 
-  
 
-  PacketCapture::PacketCapture
-  (
-    std::string path_name,
-    int cnt,
-    u_int8_t flags
-  )
-  : _device{""},
-    _file_path{path_name},
-    _packets_to_capture{cnt},
-    _settings{0},
-    _handle{nullptr, close_handle},
-    _device_list{nullptr, free_devices} 
-  {
+  pcap_t* PacketCapture::handle() const {
 
-    if (pcap_t* pcap_handle = pcap_open_offline(_file_path.c_str(), errbuf)) {
-
-      _handle = std::unique_ptr<pcap_t, decltype(&close_handle)> (
-        pcap_handle,
-        pcap_close
-      );
-
-    } else {
-
-      throw std::runtime_error(errbuf);
-      
-    }
+    return _handle.get();
 
   }
 
 
 
-  void 
-  PacketCapture::process_packet
-  (const struct pcap_pkthdr *head, const u_char *bytes) {
-  
-    try {
-      _packet_data.set_meta_data(head);
-      _packet_data.set_raw_data(bytes);
-      
-      packet_model model {_packet_data.start_extract()};
+  pcap_if_t* PacketCapture::devices() const {
 
-      model.l2_display(model.l2);
-    } catch (std::out_of_range &e) {
-      if (_settings) {
-        std::cerr << "Error in online capture: " << e.what();
-      } else {
-        std::cerr << "Error in offline capture: " << e.what();
-      }
+    return _device_list.get();
 
-    }
+  }
 
+
+
+  void PacketCapture::set_data_link(int dlt) {
+
+    m_data_link = dlt;
+
+  }
+
+
+
+  int
+  PacketCapture::get_datalink() const {
+    return m_data_link;
+  }
+
+
+
+  void
+  PacketCapture::set_buffer(const std::shared_ptr<PacketBuffer> &buf)
+  {
+    _buffer = buf;
+  }
+
+
+
+  std::shared_ptr<PacketBuffer> PacketCapture::get_buffer() {
+
+    return _buffer;
+
+  }
+
+
+
+  std::unique_ptr<PacketCapture>
+  PacketCapture::createOnlineCapture
+  (
+  std::string& device_name,
+  int count,
+  int capture_size,
+  u_int8_t settings,
+  u_int8_t flags
+  ) {
+
+    auto cap = std::make_unique<Online>(
+      std::move(device_name)
+      , count
+      , capture_size
+      , settings
+      , flags);
+
+    cap->set_buffer(std::make_shared<PacketBuffer>(nullptr));
+
+    return cap;
+
+  }
+
+
+
+  std::unique_ptr<PacketCapture>
+  PacketCapture::createOfflineCapture
+  (
+  std::string &path_name,
+  int count
+  ) {
+
+    auto cap = std::make_unique<Offline>(
+      std::move(path_name)
+      , count);
+
+    cap->set_buffer(std::make_shared<PacketBuffer>(nullptr));
+
+    return cap;
 
   }
 
 
 
   void
-  PacketCapture::start_capture() {
+  PacketCapture::start_capture() const {
 
-    auto 
-    callback = []
+    using namespace parse;
+
+    auto parser = PacketParse(m_data_link, 0);
+
+    auto file_path = "/Users/jt/projects/workspace/personal_projects/sniffer/tests/pcap_files";
+
+    capture_objects ref {
+      parser,
+      _buffer.get(),
+      pcap_dump_open(handle(), file_path)
+    };
+
+    auto callback =[]
     (u_char* data, const struct pcap_pkthdr* header, const u_char* packet) {
 
-      PacketCapture* self = reinterpret_cast<PacketCapture*>(data);
-      self->process_packet(header, packet);
+      const auto obj = reinterpret_cast<capture_objects*>(data);
+
+      packet_ref ref{obj->parser.start_extract(header, packet)};
+
+      obj->buffer->add(ref);
 
     };
 
-    std::cout << "capturing link types of: " << pcap_datalink_val_to_name(pcap_datalink(handle())) << "\n";
+    pcap_loop(handle(), _packets_to_capture, callback, reinterpret_cast<u_char*>(&ref));
 
-    pcap_loop(handle(), _packets_to_capture, callback, reinterpret_cast<u_char*>(this));
+  }
 
+
+
+  std::vector<std::string>
+  PacketCapture::get_devices() {
+
+    pcap_if_t* list = nullptr;
+
+    std::vector<std::string> names;
+
+    char errbuf[256];
+
+    if (pcap_findalldevs(&list, errbuf) == 0) {
+
+      //fix
+    } else {
+      std::cerr << "Error: " << errbuf << std::endl;
+      return {};
+    }
+
+    for (pcap_if_t* it = list; it != nullptr; it = it->next) {
+
+      names.emplace_back(it->name);
+
+    }
+
+    return names;
   }
 
 
@@ -136,6 +190,8 @@ namespace capture {
 
   }
 
-  PacketCapture::~PacketCapture() {};
+
+
+  PacketCapture::~PacketCapture() = default;
 
 }

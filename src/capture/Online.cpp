@@ -1,18 +1,48 @@
 
-#include "Online.h"
+#include "../../include/capture/Online.h"
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 
 namespace capture {
 
   Online::Online
   (
-    std::string device_name,
-    int count, 
-    u_int8_t set,
-    u_int8_t flags
+    std::string&& device_name,
+    const int count,
+    const int capture_size,
+    const u_int8_t settings,
+    const u_int8_t flags
   ) 
-  : PacketCapture(device_name, count, set, flags), m_data_link(-1) {
+  : _device(std::move(device_name))
+  , _settings(settings)
+  , m_flags(flags) {
+
+    _packets_to_capture = count;
+
+    initialize_handle(capture_size);
+
+    set_data_link(pcap_datalink(handle()));
+
+  }
+
+  Online::~Online() = default;
+
+  void
+  Online::initialize_handle(int capture_size) {
+
+    if (pcap_t* pcap_handle = pcap_create(_device.c_str(), errbuf)) {
+
+      _handle = std::unique_ptr<pcap_t, decltype(&pcap_close)> (
+        pcap_handle,
+        pcap_close
+      );
+
+    } else {
+
+      throw std::runtime_error(errbuf);
+
+    }
 
     if (handle() == nullptr) {
       std::cerr << "Error in creating handle: " << errbuf << std::endl;
@@ -20,19 +50,11 @@ namespace capture {
     }
 
     //decide how much of the packet will be captures
-    if (_settings & FULL_CAP) {
-
-      pcap_set_snaplen(handle(), FULL);
-      
-    } else if (_settings & BASIC_CAP) {
-
-      pcap_set_snaplen(handle(), BASIC);
-
-    } else {
+    if (capture_size == 0)
 
       pcap_set_snaplen(handle(), DEFAULT);
-
-    }
+    else
+      pcap_set_snaplen(handle(), capture_size);
 
     //promisous mode
     if (_settings & PROMISC) {
@@ -44,12 +66,12 @@ namespace capture {
     //rf mode
     if (_settings & MONITOR) {
 
-      int rf = pcap_can_set_rfmon(handle());
-      if (rf) {
+      if (int rf = pcap_can_set_rfmon(handle())) {
         pcap_set_rfmon(handle(), 1);
       } else {
         //send message to user than rf mode cant be used on this device
       }
+
     }
 
     //decided if packet gets immediatly delivered instead of going to buffer
@@ -83,53 +105,15 @@ namespace capture {
 
     if (pcap_activate(handle()) != 0) {
       throw std::runtime_error(pcap_geterr(handle()));
-      return;
-    }
-
-    _packet_data.init(pcap_datalink(handle()), flags);
-
-  }
-
-  Online::~Online() {};
-
-  void Online::get_devices() {
-
-    pcap_if_t* list = nullptr;
-
-    if (pcap_findalldevs(&list, errbuf) == 0) {
-      _device_list.reset(list);
-    } else {
-      std::cerr << "Error: " << errbuf << std::endl;
-      return;
-    }
-
-    for (pcap_if_t* it = list; list != nullptr; list = list->next) {
-
-      std::cout << "Name: " << list->name << " ";
-      
-      if(list->flags & PCAP_IF_LOOPBACK) {
-        std::cout << " Loopback";
-      }
-
-      if (list->flags & PCAP_IF_WIRELESS) {
-        std::cout << " Wireless ";
-      }
-
-      if (list->flags & PCAP_IF_UP) {
-        std::cout << " up ";
-      }
-
-      std::cout << "\n";
     }
 
   }
 
-  void Online::get_link_types() {
 
-    
+  void Online::get_link_types() const {
 
     int* dlt_buf;
-    int list_size = pcap_list_datalinks(handle(), &dlt_buf);
+    const int list_size = pcap_list_datalinks(handle(), &dlt_buf);
 
     for (int i = 0; i < list_size; i++) {
 
