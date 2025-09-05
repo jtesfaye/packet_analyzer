@@ -1,3 +1,0 @@
-/Users/jt/projects/workspace/personal_projects/sniffer/CMakeFiles/tests.dir
-/Users/jt/projects/workspace/personal_projects/sniffer/CMakeFiles/edit_cache.dir
-/Users/jt/projects/workspace/personal_projects/sniffer/CMakeFiles/rebuild_cache.dir
