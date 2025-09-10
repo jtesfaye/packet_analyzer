@@ -12,42 +12,23 @@ namespace parse {
   , link_parser(m_dlt, Layer2::get_all_functions())
   , net_parser(Layer3::get_all_functions())
   , transport_parser(Layer4::get_all_functions())
-  , m_inital_time(-1, -1)
+  , m_inital_time()
   {}
 
-
-  //TODO: Refactor variants to hold object with human readable data
   std::pair<row_entry,packet_ref>
-  PacketParse::start_extract(const std::vector<std::byte> &raw_data) {
-
-    /**
-     * 1.Determine what layers exist
-     * 2. find highest existing layer
-     * 3. store highest layer for description/ protocol/
-     */
+  PacketParse::start_extract(const std::vector<std::byte> &raw_data, const size_t index) {
 
     packet_ref pkt_ref;
     layer_offsets offsets{};
+    row_entry entry {};
     parse_context context{};
-    row_entry& entry = context.entry;
-
-    std::memcpy(&context.header, raw_data.data(), sizeof(pcap_pkthdr));
-
-    entry.length = std::to_string(context.header.caplen);
 
     timeval& packet_ts = context.header.ts;
 
     //find time relative to first capture
-    if (init_time_has_value()) {
+    entry.index = index;
 
-      entry.time = set_relative_time(packet_ts);
-
-    } else {
-
-      set_inital_time(packet_ts);
-      entry.time = 0;
-
-    }
+    entry.time = set_relative_time(packet_ts);
 
     const std::vector<LayerJob> jobs = create_jobs(m_flags);
 
@@ -120,23 +101,17 @@ namespace parse {
 
   }
 
-  void PacketParse::set_inital_time(timeval &time) {
+  void PacketParse::set_inital_time(const timeval &time) {
 
-    m_inital_time = time;
-
-  }
-
-  bool PacketParse::init_time_has_value() const {
-
-    if (m_inital_time.tv_sec == -1)
-      return false;
-
-
-    return true;
+    std::call_once(time_init_flag, [&]() {
+      m_inital_time = time;
+    });
 
   }
 
-  double PacketParse::set_relative_time(const timeval &time) const {
+  double PacketParse::set_relative_time(const timeval &time) {
+
+    set_inital_time(time);
 
     return static_cast<double>(time.tv_sec - m_inital_time.tv_sec) +
       (time.tv_usec - m_inital_time.tv_usec) / 1e6;

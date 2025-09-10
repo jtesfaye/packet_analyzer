@@ -5,7 +5,9 @@
 #include "pcap/pcap.h"
 #include <packet/LayerWrappers.h>
 #include <parsing/ParseDispatcher.h>
+#include <packet/ProtocolTypes.h>
 #include <functional>
+#include <mutex>
 
 namespace parse {
 
@@ -25,7 +27,7 @@ namespace parse {
 
     ~PacketParse() = default;
 
-    std::pair<row_entry,packet_ref> start_extract(const std::vector<std::byte> &raw_data);
+    std::pair<row_entry,packet_ref> start_extract(const std::vector<std::byte> &raw_data, size_t index);
 
   private:
 
@@ -43,17 +45,17 @@ namespace parse {
 
     timeval m_inital_time; //time at which first packet was captured
 
-    ParseDispatcher<link_layer_ref, true> link_parser;
+    std::once_flag time_init_flag;
+
+    ParseDispatcher<std::unique_ptr<LinkPDU>, true> link_parser;
 
     ParseDispatcher<net_layer_ref, false> net_parser;
 
     ParseDispatcher<transport_layer_ref, false> transport_parser;
 
-    void set_inital_time(timeval& time);
+    void set_inital_time(const timeval& time);
 
-    double set_relative_time(const timeval& time) const;
-
-    bool init_time_has_value() const;
+    double set_relative_time(const timeval& time);
 
 
   };

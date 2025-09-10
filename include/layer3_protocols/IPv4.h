@@ -9,15 +9,25 @@
 #include <vector>
 
 using namespace packet;
+using namespace packet::ip;
+
+struct IPv4 : NetworkPDU {
+
+    IPv4(size_t len, std::string src, std::string dest, u_int16_t frag_field, u_int8_t protocol);
+
+    u_int8_t protocol;
+    u_int16_t flags;
+
+    std::string make_info() const override;
+    std::string name() const override;
+
+
+};
 
 class IPv4_functions {
 public:
 
-    static net_layer_ref IPv4_parse(const std::vector<std::byte>&, parse_context&);
-
-private:
-
-    static std::string ipv4_src_dest_format(const std::byte*);
+    static std::unique_ptr<IPv4> IPv4_parse(const std::vector<std::byte>&, parse_context&);
 
 };
 #endif //IPV4_H

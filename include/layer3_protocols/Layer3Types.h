@@ -6,6 +6,18 @@
 #define LAYER3TYPES_H
 #include <cstdint>
 
+struct NetworkPDU : ProtocolDataUnit {
+
+    NetworkPDU(size_t len, std::string src, std::string dest)
+    : ProtocolDataUnit(len, std::move(src), std::move(dest))
+    {}
+
+    virtual std::string make_info() const = 0;
+    virtual std::string name() const = 0;
+    virtual ~NetworkPDU();
+
+};
+
 namespace packet::ip {
 
     //NT means network type

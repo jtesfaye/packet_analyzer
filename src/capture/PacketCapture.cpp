@@ -65,7 +65,7 @@ namespace capture {
 
       const std::vector<std::byte> raw_pkt = obj->file.read(index);
 
-      std::pair<row_entry, packet_ref> pkt_ref = obj->parser.start_extract(raw_pkt);
+      std::pair<row_entry, packet_ref> pkt_ref = obj->parser.start_extract(raw_pkt); //make it so start_extract takes index
 
       obj->pktref_buffer->add(index, std::move(pkt_ref));
 

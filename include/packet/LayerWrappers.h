@@ -10,11 +10,13 @@
 #include <vector>
 #include <sstream>
 #include <iomanip>
+#include <variant>
 
 namespace packet {
 
   struct row_entry {
 
+    size_t index;
     double time;
     std::string src;
     std::string dest;
@@ -32,31 +34,21 @@ namespace packet {
 
   };
 
+  struct HeaderBase {
+
+
+
+  };
+
   struct parse_context {
 
     pcap_pkthdr header;
     u_int16_t next_type;
     size_t offset;
     u_int16_t length;
-    row_entry entry;
 
   };
 
-  using link_layer_ref = std::variant<
-    std::monostate,
-    frame::EN10MB*,
-    frame::EN10MB_802_1_Q*,
-    frame::_802_11*,
-    frame::EN10MB_802_1_ad*
-  >;
-
-  using link_layer = std::variant<
-    std::monostate,
-    frame::EN10MB,
-    frame::EN10MB_802_1_Q,
-    frame::EN10MB_802_1_ad,
-    frame::_802_11
-  >;
 
   using net_layer_ref = std::variant<
     std::monostate,

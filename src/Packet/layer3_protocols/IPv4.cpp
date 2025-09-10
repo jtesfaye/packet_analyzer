@@ -3,25 +3,53 @@
 //
 
 #include <layer3_protocols/IPv4.h>
-#include <sstream>
+#include <util/PacketRead.h>
+#include <format>
 
+#include <utility>
 
-std::string
-IPv4_functions::ipv4_src_dest_format(const std::byte *addr) {
+IPv4::IPv4(size_t len, std::string src, std::string dest, u_int16_t frag_fields, u_int8_t protocol)
+: NetworkPDU(len, std::move(src), std::move(dest))
+, protocol(protocol)
+, flags(frag_fields)
+{
+}
 
-    std::ostringstream oss;
-    for (int i = 0; i < 4; ++i) {
-        if (i > 0)
-            oss << ".";
-        oss << std::hex << static_cast<int>(addr[i]);
+std::string IPv4::make_info() const {
+
+    std::string info = std::format("{} -> {}", src, dest);
+
+    switch (protocol) {
+
+        case 1:
+            info += " ICMP";
+            break;
+
+        case 6:
+            info += " TCP";
+            break;
+
+        case 17:
+            info += " UDP";
+            break;
+
+        default:
     }
 
-    return oss.str();
+    if (flags & IP_MF) {
+        info += " MF Fragmented";
+    }
 
+    return info;
+}
+
+std::string IPv4::name() const {
+    return "IPv4";
 }
 
 
-net_layer_ref
+
+std::unique_ptr<IPv4>
 IPv4_functions::IPv4_parse(const std::vector<std::byte> &raw_data, parse_context &context) {
 
     using namespace packet::ip;

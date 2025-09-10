@@ -14,7 +14,7 @@
 using namespace packet::ip;
 class Layer3 {
 
-    using function = std::function<net_layer_ref(const std::vector<std::byte>&, parse_context&)>;
+    using function = std::function<std::unique_ptr<NetworkPDU>(const std::vector<std::byte>&, parse_context&)>;
     using key_pair = std::pair<int, function>;
 
 public:
