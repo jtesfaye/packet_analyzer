@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <functional>
-#include <packet/LayerWrappers.h>
+#include <packet/LayerUtil.h>
 #include <layer3_protocols/IPv4.h>
 #include <layer3_protocols/Layer3Types.h>
 

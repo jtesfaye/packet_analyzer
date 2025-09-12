@@ -4,7 +4,7 @@
 
 #ifndef IPV4_H
 #define IPV4_H
-#include <packet/LayerWrappers.h>
+#include <packet/LayerUtil.h>
 #include <packet/ProtocolTypes.h>
 #include <vector>
 
@@ -14,12 +14,11 @@ struct IPv4 : NetworkPDU {
 
     IPv4(size_t len, std::string src, std::string dest, u_int16_t frag_field, u_int8_t protocol);
 
-    u_int8_t protocol;
-    u_int16_t flags;
-
     std::string make_info() const override;
     std::string name() const override;
 
+    u_int8_t protocol;
+    u_int16_t flags;
 
 };
 

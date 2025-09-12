@@ -7,16 +7,16 @@
 
 #include <vector>
 #include <functional>
-#include <packet/LayerWrappers.h>
+#include <packet/LayerUtil.h>
 #include <layer4_protocols/Layer4Types.h>
 #include <layer4_protocols/TCP.h>
 
-using namespace packet::transport;
+using namespace layer::transport;
 using namespace packet;
 
 class Layer4 {
 
-    using function = std::function<transport_layer_ref(const std::vector<std::byte>&, parse_context&)>;
+    using function = std::function<std::unique_ptr<TransportPDU>(const std::vector<std::byte>&, parse_context&)>;
     using key_pair = std::pair<int, function>;
 
 public:

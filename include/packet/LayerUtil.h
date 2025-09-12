@@ -34,12 +34,6 @@ namespace packet {
 
   };
 
-  struct HeaderBase {
-
-
-
-  };
-
   struct parse_context {
 
     pcap_pkthdr header;
@@ -48,27 +42,6 @@ namespace packet {
     u_int16_t length;
 
   };
-
-
-  using net_layer_ref = std::variant<
-    std::monostate,
-    ip::ipv4_header*,
-    ip::ipv6_header*
-  >;
-
-  using net_layer = std::variant<
-    std::monostate,
-    ip::ipv4_header,
-    ip::ipv6_header
-  >;
-
-  using transport_layer_ref = std::variant<
-    std::monostate,
-    transport::tcp_header*,
-    transport::upd_header*
-  >;
-
-
 
   struct LayerRegion {
     size_t offset;
@@ -87,9 +60,9 @@ namespace packet {
 
     layer_offsets data;
 
-    link_layer_ref layer2;
+    std::unique_ptr<LinkPDU> layer2;
 
-    net_layer_ref layer3;
+    std::unique_ptr<NetworkPDU> layer3;
 
     transport_layer_ref layer4;
 

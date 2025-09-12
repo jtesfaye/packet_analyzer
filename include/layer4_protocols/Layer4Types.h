@@ -5,19 +5,36 @@
 #ifndef LAYER4TYPES_H
 #define LAYER4TYPES_H
 
-namespace packet::transport {
+#include <array>
 
-    constexpr u_int8_t TCP_IANA = 6; //number assigned to TCP by IANA
-    constexpr u_int8_t TCP_OFFSET = 0xf0;
-    constexpr u_int8_t TCP_CWR = 0x80;
-    constexpr u_int8_t TCP_ECE = 0x40;
-    constexpr u_int8_t TCP_URG = 0x20;
-    constexpr u_int8_t TCP_ACK = 0x10;
-    constexpr u_int8_t TCP_PSH = 0x08;
-    constexpr u_int8_t TCP_RST = 0x04;
-    constexpr u_int8_t TCP_SYN = 0x02;
-    constexpr u_int8_t TCP_FIN = 0x01;
+struct TransportPDU : ProtocolDataUnit {
 
+    TransportPDU(size_t len, std::string src, std::string dest)
+    : ProtocolDataUnit(len, std::move(src), std::move(dest))
+    {}
+
+    virtual std::string make_info() const = 0;
+    virtual std::string name() const = 0;
+    virtual ~TransportPDU();
+
+};
+
+namespace layer::transport {
+
+    namespace tcp_flags {
+
+        constexpr u_int8_t CWR = 0x80;
+        constexpr u_int8_t ECE = 0x40;
+        constexpr u_int8_t URG = 0x20;
+        constexpr u_int8_t ACK = 0x10;
+        constexpr u_int8_t PSH = 0x08;
+        constexpr u_int8_t RST = 0x04;
+        constexpr u_int8_t SYN = 0x02;
+        constexpr u_int8_t FIN = 0x01;
+
+
+
+    }
 
     struct tcp_header {
 
