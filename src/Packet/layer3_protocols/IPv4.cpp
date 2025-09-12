@@ -21,15 +21,15 @@ std::string IPv4::make_info() const {
 
     switch (protocol) {
 
-        case 1:
+        case iana::ICMP:
             info += " ICMP";
             break;
 
-        case 6:
+        case iana::TCP:
             info += " TCP";
             break;
 
-        case 17:
+        case iana::UDP:
             info += " UDP";
             break;
 
@@ -48,11 +48,11 @@ std::string IPv4::name() const {
 }
 
 
+std::unique_ptr<IPv4> IPv4_functions::IPv4_parse(
+    const std::vector<std::byte> &raw_data,
+    packet::parse_context &context) {
 
-std::unique_ptr<IPv4>
-IPv4_functions::IPv4_parse(const std::vector<std::byte> &raw_data, parse_context &context) {
-
-    using namespace packet::ip;
+    using namespace layer::ip;
 
     if (raw_data.size() < sizeof(ipv4_header)) {
         throw std::runtime_error("Packet is too small to contain ipv4 header");
@@ -62,7 +62,7 @@ IPv4_functions::IPv4_parse(const std::vector<std::byte> &raw_data, parse_context
 
     const auto ipv4_hdr = reinterpret_cast<const ipv4_header*> (start);
 
-    row_entry& entry = context.entry;
+    packet::row_entry& entry = context.entry;
 
     context.length = (ipv4_hdr->version_ihl & 0x0F) * 4;
     context.next_type = ipv4_hdr->protocol;

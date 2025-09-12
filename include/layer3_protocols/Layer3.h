@@ -11,7 +11,7 @@
 #include <layer3_protocols/IPv4.h>
 #include <layer3_protocols/Layer3Types.h>
 
-using namespace packet::ip;
+
 class Layer3 {
 
     using function = std::function<std::unique_ptr<NetworkPDU>(const std::vector<std::byte>&, parse_context&)>;
@@ -28,7 +28,7 @@ public:
 private:
 
     inline static const std::initializer_list<key_pair> all_functions {
-        key_pair {NT_IPV4, function(IPv4_functions::IPv4_parse)}
+        key_pair {iana::IPV4, function(IPv4_functions::IPv4_parse)}
     };
 
 };
