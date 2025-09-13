@@ -16,35 +16,35 @@ namespace parse {
   std::pair<row_entry,packet_ref>
   PacketParse::start_extract(const std::vector<std::byte> &raw_data, const size_t index) {
 
-    packet_ref pkt_ref;
+    packet_ref pkt_ref{};
     layer_offsets offsets{};
     row_entry entry {};
     parse_context context{};
 
+    std::memcpy(&context.header, raw_data.data(), 16);
+
     timeval& packet_ts = context.header.ts;
 
     //find time relative to first capture
-    entry.index = index;
+    double time = set_relative_time(packet_ts);
 
-    entry.time = set_relative_time(packet_ts);
+    const std::vector<LayerJob> jobs = create_jobs();
 
-    const std::vector<LayerJob> jobs = create_jobs(m_flags);
+    for (const auto&[func] : jobs) {
 
-    for (auto& job : jobs) {
-
-      job.func(pkt_ref, raw_data, context, offsets);
+      func(pkt_ref, raw_data, context, offsets);
 
     }
 
     pkt_ref.data = offsets;
 
-    return {entry, pkt_ref};
-
+    return {set_row_entry(index, time, pkt_ref), std::move(pkt_ref)};
+    
   }
 
 
   std::vector<PacketParse::LayerJob>
-  PacketParse::create_jobs(u_int8_t flags) {
+  PacketParse::create_jobs() {
 
     std::vector<LayerJob> jobs;
 
@@ -95,7 +95,54 @@ namespace parse {
 
     }
 
-    return std::move(jobs);
+    return jobs;
+
+  }
+
+  row_entry &&PacketParse::set_row_entry(size_t index, double time, packet_ref& pkt_ref) const {
+
+    if (m_flags & DO_LAYER4) {
+
+      const auto layer4& = pkt_ref.layer4;
+
+      return row_entry::make_row_entry(
+        index,
+        time,
+        layer4->src,
+        layer4->dest,
+        layer4->name(),
+        layer4->length,
+        layer4->make_info()
+        );
+
+    }
+
+    if (m_flags & DO_LAYER3) {
+      const auto layer3& = pkt_ref.layer3;
+
+      return row_entry::make_row_entry(
+        index,
+        time,
+        layer3->src,
+        layer3->dest,
+        layer3->name(),
+        layer3->length,
+        layer3->make_info()
+        );
+
+    }
+
+    const auto layer2& = pkt_ref.layer2;
+
+    return row_entry::make_row_entry(
+      index,
+      time,
+      layer2->src,
+      layer2->dest,
+      layer2->name(),
+      layer2->length,
+      layer2->make_info()
+      );
 
   }
 

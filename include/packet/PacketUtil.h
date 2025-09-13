@@ -9,6 +9,7 @@
 #include <pcap/pcap.h>
 #include <sstream>
 #include <iomanip>
+#include <utility>
 
 
 namespace packet {
@@ -20,8 +21,28 @@ namespace packet {
     std::string src;
     std::string dest;
     std::string protocol;
-    std::string length;
+    size_t length;
     std::string info;
+
+    static row_entry make_row_entry(size_t index,
+      double time,
+      std::string src,
+      std::string dest,
+      std::string protocol,
+      size_t length,
+      std::string info) {
+
+      return {
+        index,
+        time,
+        std::move(src),
+        std::move(dest),
+        std::move(protocol),
+        length,
+        std::move(info)
+      };
+
+    }
 
     [[nodiscard]] std::array<std::string, 6> to_array() const {
 

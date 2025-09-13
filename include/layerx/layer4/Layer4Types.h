@@ -13,8 +13,6 @@ struct TransportPDU : ProtocolDataUnit {
     : ProtocolDataUnit(len, std::move(src), std::move(dest))
     {}
 
-    virtual std::string make_info() const = 0;
-    virtual std::string name() const = 0;
     virtual ~TransportPDU();
 
 };
