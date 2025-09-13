@@ -6,7 +6,7 @@
 #define PACKETREFBUFFER_H
 
 #include <QObject>
-#include <packet/LayerWrappers.h>
+#include <packet/PacketUtil.h>
 
 using namespace packet;
 

@@ -2,7 +2,7 @@
 // Created by jeremiah tesfaye on 9/3/25.
 //
 
-#include <layer4_protocols/TCP.h>
+#include <layerx/layer4/TCP.h>
 #include <format>
 #include <utility>
 
@@ -26,7 +26,7 @@ std::string TCP::name() const {
 }
 
 
-std::unique_ptr<TCP> tcp_functions::tcp_parse(
+std::unique_ptr<TransportPDU> tcp_functions::tcp_parse(
     const std::vector<std::byte> &raw_data,
     parse_context &context) {
 

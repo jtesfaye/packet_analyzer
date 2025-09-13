@@ -4,8 +4,8 @@
 
 #ifndef IPV4_H
 #define IPV4_H
-#include <packet/LayerUtil.h>
-#include <packet/ProtocolTypes.h>
+#include <packet/PacketUtil.h>
+#include <layerx/layer3/Layer3Types.h>
 #include <vector>
 
 using namespace layer::ip;
@@ -25,7 +25,7 @@ struct IPv4 : NetworkPDU {
 class IPv4_functions {
 public:
 
-    static std::unique_ptr<IPv4> IPv4_parse(const std::vector<std::byte>&, packet::parse_context&);
+    static std::unique_ptr<NetworkPDU> IPv4_parse(const std::vector<std::byte>&, parse_context&);
 
 };
 #endif //IPV4_H

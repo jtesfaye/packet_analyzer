@@ -2,10 +2,9 @@
 #ifndef PACKETPARSE_H
 #define PACKETPARSE_H
 
-#include "pcap/pcap.h"
-#include <packet/LayerWrappers.h>
+#include <packet/PacketUtil.h>
 #include <parsing/ParseDispatcher.h>
-#include <packet/ProtocolTypes.h>
+#include <layerx/ProtocolTypes.h>
 #include <functional>
 #include <mutex>
 
@@ -49,9 +48,9 @@ namespace parse {
 
     ParseDispatcher<std::unique_ptr<LinkPDU>, true> link_parser;
 
-    ParseDispatcher<net_layer_ref, false> net_parser;
+    ParseDispatcher<std::unique_ptr<NetworkPDU>, false> net_parser;
 
-    ParseDispatcher<transport_layer_ref, false> transport_parser;
+    ParseDispatcher<std::unique_ptr<TransportPDU>, false> transport_parser;
 
     void set_inital_time(const timeval& time);
 

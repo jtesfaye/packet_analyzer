@@ -1,8 +1,6 @@
 
 #include <parsing/PacketParse.h>
-#include <layer2_protocols/Layer2.h>
-#include <layer3_protocols/Layer3.h>
-#include <layer4_protocols/Layer4.h>
+#include <layerx/ProtocolTypes.h>
 
 namespace parse {
 

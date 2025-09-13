@@ -4,10 +4,9 @@
 
 #ifndef LAYER2TYPES_H
 #define LAYER2TYPES_H
+
 #include <utility>
-#include <variant>
-#include <sstream>
-#include <util/ProtocolDataUnit.h>
+#include <layerx/ProtocolDataUnit.h>
 
 struct LinkPDU : ProtocolDataUnit {
 
@@ -67,7 +66,6 @@ namespace packet::frame {
         u_int16_t protocol_id;
 
     };
-
 }
 
 #endif //LAYER2TYPES_H

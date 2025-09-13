@@ -7,8 +7,8 @@
 
 #include <vector>
 #include <format>
-#include <packet/LayerWrappers.h>
-#include <layer2_protocols/Layer2Types.h>
+#include <packet/PacketUtil.h>
+#include <layerx/layer2/Layer2Types.h>
 
 using namespace packet::frame;
 using namespace packet;
@@ -24,14 +24,11 @@ struct Ethernet final : LinkPDU {
 
 };
 
-class Ethernet_functions {
+class ethernet_functions {
 public:
 
-    static std::unique_ptr<Ethernet> ethernet_parse(const std::vector<std::byte>&, parse_context&);
+    static std::unique_ptr<LinkPDU> ethernet_parse(const std::vector<std::byte>&, parse_context&);
 
 };
-
-
-
 
 #endif //ETHERNET_H

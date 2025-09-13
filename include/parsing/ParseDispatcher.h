@@ -6,7 +6,7 @@
 #define PARSEDISPATCHER_H
 
 #include <functional>
-#include <packet/LayerWrappers.h>
+#include <packet/PacketUtil.h>
 
 using namespace packet;
 

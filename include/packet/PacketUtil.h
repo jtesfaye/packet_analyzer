@@ -2,15 +2,14 @@
 // Created by jeremiah tesfaye on 7/27/25.
 //
 
-#ifndef LAYERWRAPPERS_H
-#define LAYERWRAPPERS_H
+#ifndef LAYERUTIL_H
+#define LAYERUTIL_H
 
-#include <packet/ProtocolTypes.h>
+#include <layerx/ProtocolTypes.h>
 #include <pcap/pcap.h>
-#include <vector>
 #include <sstream>
 #include <iomanip>
-#include <variant>
+
 
 namespace packet {
 
@@ -64,7 +63,7 @@ namespace packet {
 
     std::unique_ptr<NetworkPDU> layer3;
 
-    transport_layer_ref layer4;
+    std::unique_ptr<TransportPDU> layer4;
 
   };
 
@@ -80,4 +79,4 @@ namespace packet {
 
 
 
-#endif //LAYERWRAPPERS_H
+#endif //LAYERUTIL_H

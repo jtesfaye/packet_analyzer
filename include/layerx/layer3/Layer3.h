@@ -7,14 +7,18 @@
 
 #include <vector>
 #include <functional>
-#include <packet/LayerUtil.h>
-#include <layer3_protocols/IPv4.h>
-#include <layer3_protocols/Layer3Types.h>
+#include <layerx/layer3/Layer3Types.h>
+#include <layerx/iana_numbers.h>
+#include <layerx/layer3/IPv4.h>
+#include <packet/PacketUtil.h>
 
-
+using namespace layer;
 class Layer3 {
 
-    using function = std::function<std::unique_ptr<NetworkPDU>(const std::vector<std::byte>&, parse_context&)>;
+    using function = std::function<std::unique_ptr<NetworkPDU>>(
+        const std::vector<std::byte>&,
+        packet::parse_context&);
+
     using key_pair = std::pair<int, function>;
 
 public:
@@ -23,7 +27,7 @@ public:
     Layer3(const Layer3&) = delete;
     Layer3& operator= (const Layer3&) = delete;
 
-    static auto get_all_functions() {return all_functions;}
+    static std::initializer_list<key_pair> get_all_functions() {return all_functions;}
 
 private:
 

@@ -7,16 +7,17 @@
 
 #include <vector>
 #include <functional>
-#include <packet/LayerUtil.h>
-#include <layer4_protocols/Layer4Types.h>
-#include <layer4_protocols/TCP.h>
+#include <layerx/layer4/TCP.h>
+#include <layerx/layer4/Layer4Types.h>
+#include <layerx/iana_numbers.h>
 
-using namespace layer::transport;
-using namespace packet;
 
 class Layer4 {
 
-    using function = std::function<std::unique_ptr<TransportPDU>(const std::vector<std::byte>&, parse_context&)>;
+    using function = std::function<std::unique_ptr<TransportPDU>>(
+        const std::vector<std::byte>&,
+        parse_context&);
+
     using key_pair = std::pair<int, function>;
 
 public:
@@ -25,12 +26,12 @@ public:
     Layer4(const Layer4&) = delete;
     Layer4& operator= (const Layer4&) = delete;
 
-    static auto get_all_functions() {return all_functions;}
+    static std::initializer_list<key_pair> get_all_functions() {return all_functions;}
 
 private:
 
     inline static const std::initializer_list<key_pair> all_functions {
-        key_pair {TCP_IANA, function(tcp_functions::tcp_parse)}
+        key_pair {iana::TCP, function(tcp_functions::tcp_parse)}
     };
 
 

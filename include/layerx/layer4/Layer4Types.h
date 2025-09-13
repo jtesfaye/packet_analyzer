@@ -5,7 +5,7 @@
 #ifndef LAYER4TYPES_H
 #define LAYER4TYPES_H
 
-#include <array>
+#include <layerx/ProtocolDataUnit.h>
 
 struct TransportPDU : ProtocolDataUnit {
 
@@ -31,8 +31,6 @@ namespace layer::transport {
         constexpr u_int8_t RST = 0x04;
         constexpr u_int8_t SYN = 0x02;
         constexpr u_int8_t FIN = 0x01;
-
-
 
     }
 

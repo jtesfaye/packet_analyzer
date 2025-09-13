@@ -1,6 +1,6 @@
 add_library(parsing
         PacketParse.cpp
-        ../../util/PacketRead.cpp
+        ../util/PacketRead.cpp
         ${CMAKE_SOURCE_DIR}/include/parsing/ParseDispatcher.h
 )
 

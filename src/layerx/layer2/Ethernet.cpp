@@ -2,10 +2,8 @@
 // Created by jeremiah tesfaye on 7/27/25.
 //
 
-#include <layer2_protocols/Ethernet.h>
-
+#include <layerx/layer2/Ethernet.h>
 #include <util/PacketRead.h>
-#include <utility>
 
 Ethernet::Ethernet(size_t len, std::string src, std::string dest, u_int16_t ether_type)
 : LinkPDU(len, std::move(src), std::move(dest))
@@ -34,9 +32,8 @@ std::string Ethernet::name() const {
 
 }
 
-
-std::unique_ptr<Ethernet>
-Ethernet_functions::ethernet_parse
+std::unique_ptr<LinkPDU>
+ethernet_functions::ethernet_parse
 (const std::vector<std::byte> &raw_data, parse_context& context) {
 
     using namespace packet::frame;

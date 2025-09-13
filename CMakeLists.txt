@@ -35,14 +35,12 @@ target_link_libraries(main_src
         Qt6::Widgets
         capture
         controller
+        layerx
+        model
         Packet
+        parsing
         util
         view
-        parsing
-        layer2_protocols
-        model
-
-
 )
 target_include_directories(main_src PRIVATE ${Boost_INCLUDE_DIRS})
 

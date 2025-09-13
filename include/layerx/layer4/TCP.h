@@ -5,8 +5,8 @@
 #ifndef TCP_H
 #define TCP_H
 
-#include <packet/LayerUtil.h>
-#include <packet/ProtocolTypes.h>
+#include <packet/PacketUtil.h>
+#include <layerx/layer4/Layer4Types.h>
 #include <vector>
 
 using namespace layer::transport;
@@ -26,7 +26,7 @@ struct TCP : TransportPDU {
 class tcp_functions {
 public:
 
-    static std::unique_ptr<TCP> tcp_parse(const std::vector<std::byte>& raw_data, parse_context& context);
+    static std::unique_ptr<TransportPDU> tcp_parse(const std::vector<std::byte>& raw_data, parse_context& context);
 
     static std::string tcp_flags_to_string(u_int8_t flags);
 

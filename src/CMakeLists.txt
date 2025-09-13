@@ -1,9 +1,13 @@
 add_subdirectory(capture)
 add_subdirectory(controller)
+add_subdirectory(layerx)
 add_subdirectory(model)
 add_subdirectory(Packet)
+add_subdirectory(parsing)
 add_subdirectory(util)
 add_subdirectory(view)
+
+
 
 add_library(sniffer_main)
 

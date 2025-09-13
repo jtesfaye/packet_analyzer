@@ -4,7 +4,9 @@
 
 #ifndef LAYER3TYPES_H
 #define LAYER3TYPES_H
+
 #include <cstdint>
+#include <layerx/ProtocolDataUnit.h>
 
 struct NetworkPDU : ProtocolDataUnit {
 
@@ -20,21 +22,6 @@ struct NetworkPDU : ProtocolDataUnit {
 
 namespace layer::ip {
 
-    namespace iana { //Values assigned by IANA
-
-        constexpr u_int16_t IPV4 = 0x0800;
-        constexpr u_int16_t IPV6 = 0x08DD;
-
-        constexpr u_int8_t ICMP = 1;
-        constexpr u_int8_t TCP = 6;
-        constexpr u_int8_t UDP = 17;
-
-    }
-
-
-
-
-    constexpr u_int16_t UNSUPPORTED = 0x0000;
 
     constexpr uint16_t IP_RF = 0x8000;
     constexpr uint16_t IP_DF = 0x4000;

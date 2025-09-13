@@ -4,8 +4,6 @@
 
 #include <packet/PcapReader.h>
 
-
-
 const std::vector<std::byte>
 MmapPcapReader::read(size_t offset, size_t len) {
 
