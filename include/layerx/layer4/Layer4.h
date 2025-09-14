@@ -8,17 +8,16 @@
 #include <vector>
 #include <functional>
 #include <layerx/layer4/TCP.h>
-#include <layerx/layer4/Layer4Types.h>
 #include <layerx/iana_numbers.h>
-
+#include <packet/PacketUtil.h>
 
 class Layer4 {
 
-    using function = std::function<std::unique_ptr<TransportPDU>>(
+    using function = std::function<std::unique_ptr<TransportPDU>(
         const std::vector<std::byte>&,
-        parse_context&);
+        parse_context&)>;
 
-    using key_pair = std::pair<int, function>;
+    using key_pair = std::pair<const int, function>;
 
 public:
 
@@ -31,7 +30,7 @@ public:
 private:
 
     inline static const std::initializer_list<key_pair> all_functions {
-        key_pair {iana::TCP, function(tcp_functions::tcp_parse)}
+        key_pair {iana::TCP, tcp_functions::tcp_parse}
     };
 
 

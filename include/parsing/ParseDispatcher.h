@@ -15,15 +15,16 @@ class ParseDispatcher {
 public:
 
     using function = std::function<RefType(const std::vector<std::byte>&, parse_context&)>;
+    using pair = std::pair<const int, function>;
 
     template<bool F = Fixed, typename = std::enable_if_t<F>>
-    explicit ParseDispatcher(int key, std::initializer_list<std::pair<int, function>> funcs)
+    explicit ParseDispatcher(int key, std::initializer_list<pair> funcs)
         : func_table(funcs)
         , parse_func(func_table.at(key))
     {}
 
     template<bool F = Fixed, typename = std::enable_if_t<!F>>
-    ParseDispatcher(std::initializer_list<std::pair<int, function>> funcs)
+    ParseDispatcher(std::initializer_list<pair> funcs)
         : func_table(funcs)
         , parse_func()
     {}

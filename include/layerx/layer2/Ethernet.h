@@ -10,12 +10,10 @@
 #include <packet/PacketUtil.h>
 #include <layerx/layer2/Layer2Types.h>
 
-using namespace packet::frame;
-using namespace packet;
-
 struct Ethernet final : LinkPDU {
 
     Ethernet(size_t len, std::string src, std::string dest, u_int16_t ether_type);
+    ~Ethernet() override;
 
     std::string make_info() const override;
     std::string name() const override;
@@ -27,7 +25,7 @@ struct Ethernet final : LinkPDU {
 class ethernet_functions {
 public:
 
-    static std::unique_ptr<LinkPDU> ethernet_parse(const std::vector<std::byte>&, parse_context&);
+    static std::unique_ptr<LinkPDU> ethernet_parse(const std::vector<std::byte>&, packet::parse_context&);
 
 };
 

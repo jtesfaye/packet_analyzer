@@ -16,6 +16,8 @@ struct ProtocolDataUnit {
   , src(std::move(s))
   , dest(std::move(d)) {}
 
+  virtual ~ProtocolDataUnit() = default;
+
   virtual std::string make_info() const = 0;
   virtual std::string name() const = 0;
 

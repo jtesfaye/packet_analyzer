@@ -58,7 +58,7 @@ namespace parse {
 
     ParseDispatcher<std::unique_ptr<TransportPDU>, false> transport_parser;
 
-    row_entry&& set_row_entry(size_t, double, packet_ref&) const;
+    row_entry set_row_entry(size_t, double, const packet_ref&) const;
 
     void set_inital_time(const timeval& time);
 

@@ -10,11 +10,12 @@
 #include <vector>
 
 using namespace layer::transport;
-using namespace  packet;
+using namespace packet;
 
 struct TCP : TransportPDU {
 
     TCP(size_t len, std::string src, std::string dest, u_int8_t flags);
+    ~TCP() override;
 
     std::string make_info() const override;
     std::string name() const override;

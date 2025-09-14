@@ -8,18 +8,17 @@
 #include <pcap/pcap.h>
 #include <vector>
 #include <functional>
-#include <layerx/layer2/Layer2Types.h>
 #include <layerx/layer2/Ethernet.h>
 #include <packet/PacketUtil.h>
 
 using namespace packet;
 class Layer2 {
 
-    using function = std::function<std::unique_ptr<LinkPDU>>(
+    using function = std::function<std::unique_ptr<LinkPDU>(
         const std::vector<std::byte>&,
-        packet::parse_context&);
+        parse_context&)>;
 
-    using key_pair = std::pair<int, function>;
+    using key_pair = std::pair<const int, function>;
 
 
 public:
@@ -33,7 +32,7 @@ public:
 private:
 
     inline static const std::initializer_list<key_pair> all_layer2_functions {
-        key_pair {DLT_EN10MB, function(ethernet_functions::ethernet_parse)}
+        key_pair {DLT_EN10MB, ethernet_functions::ethernet_parse}
     };
 
 };

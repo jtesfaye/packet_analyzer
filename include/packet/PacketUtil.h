@@ -2,15 +2,17 @@
 // Created by jeremiah tesfaye on 7/27/25.
 //
 
-#ifndef LAYERUTIL_H
-#define LAYERUTIL_H
+#ifndef PACKETUTIL_H
+#define PACKETUTIL_H
 
-#include <layerx/ProtocolTypes.h>
+#include <array>
 #include <pcap/pcap.h>
 #include <sstream>
 #include <iomanip>
-#include <utility>
 
+struct LinkPDU;
+struct NetworkPDU;
+struct TransportPDU;
 
 namespace packet {
 
@@ -49,7 +51,7 @@ namespace packet {
       std::ostringstream oss;
       oss << std::fixed << std::setprecision(10) << time;
 
-      return {oss.str(), src, dest, protocol, length, info};
+      return {oss.str(), src, dest, protocol, std::to_string(length), info};
     }
 
   };
@@ -100,4 +102,4 @@ namespace packet {
 
 
 
-#endif //LAYERUTIL_H
+#endif //PACKETUTIL_H

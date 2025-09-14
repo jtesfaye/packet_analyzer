@@ -7,19 +7,17 @@
 
 #include <vector>
 #include <functional>
-#include <layerx/layer3/Layer3Types.h>
 #include <layerx/iana_numbers.h>
 #include <layerx/layer3/IPv4.h>
-#include <packet/PacketUtil.h>
 
 using namespace layer;
 class Layer3 {
 
-    using function = std::function<std::unique_ptr<NetworkPDU>>(
+    using function = std::function<std::unique_ptr<NetworkPDU>(
         const std::vector<std::byte>&,
-        packet::parse_context&);
+        parse_context&)>;
 
-    using key_pair = std::pair<int, function>;
+    using key_pair = std::pair<const int, function>;
 
 public:
 
@@ -31,8 +29,9 @@ public:
 
 private:
 
+
     inline static const std::initializer_list<key_pair> all_functions {
-        key_pair {iana::IPV4, function(IPv4_functions::IPv4_parse)}
+        key_pair {iana::IPV4, IPv4_functions::ipv4_parse}
     };
 
 };

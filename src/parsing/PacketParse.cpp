@@ -1,16 +1,15 @@
 
 #include <parsing/PacketParse.h>
-#include <layerx/ProtocolTypes.h>
 
 namespace parse {
 
   PacketParse::PacketParse(int dlt, u_int8_t flags)
   : m_dlt{dlt}
   , m_flags{flags}
+  , m_inital_time()
   , link_parser(m_dlt, Layer2::get_all_functions())
   , net_parser(Layer3::get_all_functions())
   , transport_parser(Layer4::get_all_functions())
-  , m_inital_time()
   {}
 
   std::pair<row_entry,packet_ref>
@@ -42,13 +41,16 @@ namespace parse {
     
   }
 
-
   std::vector<PacketParse::LayerJob>
   PacketParse::create_jobs() {
 
     std::vector<LayerJob> jobs;
 
-    auto layer2_job = [&](packet_ref& pkt, auto& data, auto& context, auto& offsets) {
+    auto layer2_job = [&](
+      packet_ref& pkt,
+      const std::vector<std::byte>& data,
+      parse_context& context,
+      layer_offsets& offsets) {
 
       context.offset = sizeof(pcap_pkthdr);
 
@@ -59,11 +61,15 @@ namespace parse {
 
     };
 
-    jobs.emplace_back(layer2_job);
+    jobs.push_back({layer2_job});
 
     if (m_flags & DO_LAYER3) {
 
-      auto layer3_job = [&](auto& pkt, auto& data, auto& context, auto& offsets) {
+      auto layer3_job = [&](
+      packet_ref& pkt,
+      const std::vector<std::byte>& data,
+      parse_context& context,
+      layer_offsets& offsets) {
 
         context.offset = context.length;
 
@@ -74,13 +80,17 @@ namespace parse {
 
       };
 
-      jobs.emplace_back(layer3_job);
+      jobs.push_back({layer3_job});
 
     }
 
     if (m_flags & DO_LAYER4) {
 
-      auto layer4_job = [&](auto& pkt, auto& data, auto& context, auto& offsets) {
+      auto layer4_job = [&](
+      packet_ref& pkt,
+      const std::vector<std::byte>& data,
+      parse_context& context,
+      layer_offsets& offsets) {
 
         context.offset = context.length;
 
@@ -91,7 +101,7 @@ namespace parse {
 
       };
 
-      jobs.emplace_back(layer4_job);
+      jobs.push_back({layer4_job});
 
     }
 
@@ -99,49 +109,45 @@ namespace parse {
 
   }
 
-  row_entry &&PacketParse::set_row_entry(size_t index, double time, packet_ref& pkt_ref) const {
+  row_entry PacketParse::set_row_entry(size_t index, double time, const packet_ref& pkt) const {
 
     if (m_flags & DO_LAYER4) {
-
-      const auto layer4& = pkt_ref.layer4;
 
       return row_entry::make_row_entry(
         index,
         time,
-        layer4->src,
-        layer4->dest,
-        layer4->name(),
-        layer4->length,
-        layer4->make_info()
+        pkt.layer4->src,
+        pkt.layer4->dest,
+        pkt.layer4->name(),
+        pkt.layer4->length,
+        pkt.layer4->make_info()
         );
 
     }
 
     if (m_flags & DO_LAYER3) {
-      const auto layer3& = pkt_ref.layer3;
 
       return row_entry::make_row_entry(
         index,
         time,
-        layer3->src,
-        layer3->dest,
-        layer3->name(),
-        layer3->length,
-        layer3->make_info()
+        pkt.layer3->src,
+        pkt.layer3->dest,
+        pkt.layer3->name(),
+        pkt.layer3->length,
+        pkt.layer3->make_info()
         );
 
     }
 
-    const auto layer2& = pkt_ref.layer2;
 
     return row_entry::make_row_entry(
       index,
       time,
-      layer2->src,
-      layer2->dest,
-      layer2->name(),
-      layer2->length,
-      layer2->make_info()
+      pkt.layer2->src,
+      pkt.layer2->dest,
+      pkt.layer2->name(),
+      pkt.layer2->length,
+      pkt.layer2->make_info()
       );
 
   }

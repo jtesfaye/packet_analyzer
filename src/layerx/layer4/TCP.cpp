@@ -11,6 +11,9 @@ TCP::TCP(size_t len, std::string src, std::string dest, u_int8_t flags)
 , flags(flags)
 {}
 
+TCP::~TCP() = default;
+
+
 std::string TCP::make_info() const {
 
     std::string info = std::format("{} -> {} [", src, dest);

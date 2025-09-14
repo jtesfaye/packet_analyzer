@@ -13,7 +13,7 @@ struct TransportPDU : ProtocolDataUnit {
     : ProtocolDataUnit(len, std::move(src), std::move(dest))
     {}
 
-    virtual ~TransportPDU();
+    ~TransportPDU() override = default;
 
 };
 

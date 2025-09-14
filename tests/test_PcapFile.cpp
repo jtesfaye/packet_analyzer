@@ -4,9 +4,9 @@
 
 #include "MockPcapDumper.h"
 #include <gtest/gtest.h>
-#include <include/packet/PcapFile.h>
-#include <include/packet/PcapArray.h>
-#include <include/packet/LayerWrappers.h>
+#include <packet/PcapFile.h>
+#include <packet/PcapArray.h>
+#include <packet/PacketUtil.h>
 #include <fstream>
 #include <cstdio>
 #include <print>

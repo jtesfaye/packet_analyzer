@@ -14,7 +14,7 @@ struct NetworkPDU : ProtocolDataUnit {
     : ProtocolDataUnit(len, std::move(src), std::move(dest))
     {}
 
-    virtual ~NetworkPDU();
+    ~NetworkPDU() override = default;
 
 };
 

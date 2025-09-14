@@ -11,6 +11,9 @@ Ethernet::Ethernet(size_t len, std::string src, std::string dest, u_int16_t ethe
 {
 }
 
+Ethernet::~Ethernet() = default;
+
+
 std::string Ethernet::make_info() const {
 
     std::string protocol;
@@ -34,7 +37,7 @@ std::string Ethernet::name() const {
 
 std::unique_ptr<LinkPDU>
 ethernet_functions::ethernet_parse
-(const std::vector<std::byte> &raw_data, parse_context& context) {
+(const std::vector<std::byte> &raw_data, packet::parse_context& context) {
 
     using namespace packet::frame;
     using namespace packet;
@@ -51,28 +54,24 @@ ethernet_functions::ethernet_parse
 
     switch (ether_type) {
 
-        case 0x8100:
-
+        case 0x8100: {
             auto vlan = reinterpret_cast<const ether_802_1_Q_hdr*> (layer2_start);
-
             ether_type = ntohs(vlan->ether_type);
-
             context.length = 18;
-
             break;
+        }
 
-        case 0x88A8:
-
+        case 0x88A8: {
             auto q_ad = reinterpret_cast<const ether_802_1_ad_hdr*> (layer2_start);
-
             ether_type = ntohs(q_ad->ether_type);
-
             context.length = 22;
             break;
+        }
 
-        default:
-
+        default: {
             context.length = 14;
+            break;
+        }
     }
 
     context.next_type = ether_type;

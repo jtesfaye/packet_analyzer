@@ -10,9 +10,10 @@
 
 using namespace layer::ip;
 
-struct IPv4 : NetworkPDU {
+struct IPv4 final : NetworkPDU {
 
     IPv4(size_t len, std::string src, std::string dest, u_int16_t frag_field, u_int8_t protocol);
+    ~IPv4() override;
 
     std::string make_info() const override;
     std::string name() const override;
@@ -25,7 +26,7 @@ struct IPv4 : NetworkPDU {
 class IPv4_functions {
 public:
 
-    static std::unique_ptr<NetworkPDU> IPv4_parse(const std::vector<std::byte>&, parse_context&);
+    static std::unique_ptr<NetworkPDU> ipv4_parse(const std::vector<std::byte>&, packet::parse_context&);
 
 };
 #endif //IPV4_H
