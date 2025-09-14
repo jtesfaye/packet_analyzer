@@ -27,11 +27,16 @@ public:
     Layer2(const Layer2&) = delete;
     Layer2& operator= (const Layer2&) = delete;
 
+    static std::unique_ptr<LinkPDU> unsupported_layer(
+        const std::vector<std::byte>&,
+        parse_context&) {return nullptr;}
+
     static std::initializer_list<key_pair> get_all_functions() {return all_layer2_functions;}
 
 private:
 
     inline static const std::initializer_list<key_pair> all_layer2_functions {
+        key_pair {-1, unsupported_layer},
         key_pair {DLT_EN10MB, ethernet_functions::ethernet_parse}
     };
 

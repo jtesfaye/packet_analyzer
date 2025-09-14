@@ -21,6 +21,7 @@ namespace capture {
 
     ~Online() override;
 
+
   protected:
 
     void get_link_types() const;

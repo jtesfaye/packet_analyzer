@@ -31,7 +31,9 @@ namespace parse {
 
     for (const auto&[func] : jobs) {
 
-      func(pkt_ref, raw_data, context, offsets);
+      //if there's an error parsing we come across an unsupported type, return false and terminate loop
+      if (bool cont = func(pkt_ref, raw_data, context, offsets); !cont)
+        break;
 
     }
 
@@ -59,6 +61,10 @@ namespace parse {
       offsets.l2.length = context.length;
       offsets.l2.offset = context.offset;
 
+      if (pkt.layer2) return true;
+
+      return false;
+
     };
 
     jobs.push_back({layer2_job});
@@ -77,6 +83,10 @@ namespace parse {
 
         offsets.l3.length = context.length;
         offsets.l3.offset = context.offset;
+
+        if (pkt.layer3) return true;
+
+        return false;
 
       };
 
@@ -99,6 +109,10 @@ namespace parse {
         offsets.l4.length = context.length;
         offsets.l4.offset = context.offset;
 
+        if (pkt.layer4) return true;
+
+        return false;
+
       };
 
       jobs.push_back({layer4_job});
@@ -111,7 +125,7 @@ namespace parse {
 
   row_entry PacketParse::set_row_entry(size_t index, double time, const packet_ref& pkt) const {
 
-    if (m_flags & DO_LAYER4) {
+    if (m_flags & DO_LAYER4 && pkt.layer4) {
 
       return row_entry::make_row_entry(
         index,
@@ -125,7 +139,7 @@ namespace parse {
 
     }
 
-    if (m_flags & DO_LAYER3) {
+    if (m_flags & DO_LAYER3 && pkt.layer3) {
 
       return row_entry::make_row_entry(
         index,
@@ -139,16 +153,25 @@ namespace parse {
 
     }
 
+    if (pkt.layer2) {
+      return row_entry::make_row_entry(
+        index,
+        time,
+        pkt.layer2->src,
+        pkt.layer2->dest,
+        pkt.layer2->name(),
+        pkt.layer2->length,
+        pkt.layer2->make_info()
+        );
+    }
 
-    return row_entry::make_row_entry(
-      index,
+    return row_entry::make_row_entry(index,
       time,
-      pkt.layer2->src,
-      pkt.layer2->dest,
-      pkt.layer2->name(),
-      pkt.layer2->length,
-      pkt.layer2->make_info()
-      );
+      "N/A",
+      "N/A",
+      "N/A",
+      0,
+      "Unsupported");
 
   }
 

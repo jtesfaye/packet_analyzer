@@ -25,12 +25,17 @@ public:
     Layer3(const Layer3&) = delete;
     Layer3& operator= (const Layer3&) = delete;
 
+    static std::unique_ptr<NetworkPDU> unsupported_layer(
+        const std::vector<std::byte>&,
+        parse_context&) {return nullptr;}
+
     static std::initializer_list<key_pair> get_all_functions() {return all_functions;}
 
 private:
 
 
     inline static const std::initializer_list<key_pair> all_functions {
+        key_pair {-1, unsupported_layer},
         key_pair {iana::IPV4, IPv4_functions::ipv4_parse}
     };
 

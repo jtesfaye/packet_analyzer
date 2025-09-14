@@ -20,8 +20,19 @@ public:
     template<bool F = Fixed, typename = std::enable_if_t<F>>
     explicit ParseDispatcher(int key, std::initializer_list<pair> funcs)
         : func_table(funcs)
-        , parse_func(func_table.at(key))
-    {}
+    {
+        auto k = func_table.find(key);
+
+        if (k == func_table.end()) {
+
+            parse_func(func_table.at(-1));
+
+        } else {
+
+            parse_func(func_table.at(key));
+
+        }
+    }
 
     template<bool F = Fixed, typename = std::enable_if_t<!F>>
     ParseDispatcher(std::initializer_list<pair> funcs)
@@ -36,6 +47,10 @@ public:
 
     template<bool F = Fixed, typename = std::enable_if_t<!F>>
     RefType operator() (int key, const std::vector<std::byte> &raw_data, parse_context& context) {
+
+        if (auto k = func_table.find(key) == func_table.end()) {
+            return func_table.at(-1)(raw_data, context);
+        }
 
         return func_table.at(key)(raw_data, context);
     }

@@ -25,11 +25,16 @@ public:
     Layer4(const Layer4&) = delete;
     Layer4& operator= (const Layer4&) = delete;
 
+    static std::unique_ptr<TransportPDU> unsupported_layer(
+        const std::vector<std::byte>&,
+        parse_context&) {return nullptr;}
+
     static std::initializer_list<key_pair> get_all_functions() {return all_functions;}
 
 private:
 
     inline static const std::initializer_list<key_pair> all_functions {
+        key_pair {-1, unsupported_layer},
         key_pair {iana::TCP, tcp_functions::tcp_parse}
     };
 

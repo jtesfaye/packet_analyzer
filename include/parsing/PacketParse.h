@@ -34,7 +34,7 @@ namespace parse {
 
     struct LayerJob {
 
-      std::function<void(
+      std::function<bool(
         packet_ref&,
         const std::vector<std::byte>&,
         parse_context&,
