@@ -31,6 +31,8 @@ TEST_F(Layer2Test, EthernetTest) {
 
     std::unique_ptr<LinkPDU> ether = link_parser(raw_data, context);
 
+    ASSERT_NE(ether, nullptr);
+
     EXPECT_EQ(ether->length, 14);
     EXPECT_EQ(ether->src, "08:00:27:fc:6a:c9");
     EXPECT_EQ(ether->dest, "08:00:27:e2:9f:a6");
