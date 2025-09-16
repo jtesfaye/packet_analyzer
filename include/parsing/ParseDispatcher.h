@@ -25,11 +25,11 @@ public:
 
         if (k == func_table.end()) {
 
-            parse_func(func_table.at(-1));
+            parse_func = func_table.at(-1);
 
         } else {
 
-            parse_func(func_table.at(key));
+            parse_func = func_table.at(key);
 
         }
     }

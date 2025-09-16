@@ -6,6 +6,7 @@
 #include <util/PacketRead.h>
 #include <layerx/iana_numbers.h>
 #include <format>
+#include <iostream>
 #include <utility>
 
 IPv4::IPv4(size_t len, std::string src, std::string dest, u_int16_t frag_fields, u_int8_t protocol)
@@ -51,7 +52,6 @@ std::string IPv4::name() const {
     return "IPv4";
 }
 
-
 std::unique_ptr<NetworkPDU> IPv4_functions::ipv4_parse(
     const std::vector<std::byte> &raw_data,
     packet::parse_context &context) {
@@ -59,13 +59,17 @@ std::unique_ptr<NetworkPDU> IPv4_functions::ipv4_parse(
     size_t start = context.offset;
 
     if (!PacketRead::valid_length(raw_data, start, sizeof(ipv4_header))) {
+        std::cout << "not valid length\n";
         return nullptr;
     }
 
-    const auto ipv4_hdr = reinterpret_cast<const ipv4_header*> (raw_data.data());
+    const auto ipv4_hdr = reinterpret_cast<const ipv4_header*> (raw_data.data() + start);
 
     //If not equal probably means we have malformed data or misaligned data
-    if (context.next_type != ipv4_hdr->version_ihl & 0x0F) {
+
+    if (u_int8_t version = (ipv4_hdr->version_ihl >> 4) & 0x0F; version != 4) {
+        std::cout << version << std::endl;
+        std::cout << "misaligned\n";
         return nullptr;
     }
 
@@ -73,7 +77,7 @@ std::unique_ptr<NetworkPDU> IPv4_functions::ipv4_parse(
     u_int8_t flags = (frag_field >> 13) & 0x07;
 
     //more fragment flag is set
-    if (flags & 0x01 == IP_MF) {
+    if ((flags & 0x01) == IP_MF) {
         //fragmentation logic
     }
 

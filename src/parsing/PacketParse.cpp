@@ -54,7 +54,7 @@ namespace parse {
       parse_context& context,
       layer_offsets& offsets) {
 
-      context.offset = sizeof(pcap_pkthdr);
+      context.offset = sizeof(pcaprec_hdr_t);
 
       pkt.layer2 = link_parser(data, context);
 
@@ -136,8 +136,8 @@ namespace parse {
       return row_entry::make_row_entry(
         index,
         time,
-        pkt.layer4->src,
-        pkt.layer4->dest,
+        pkt.layer3->src,
+        pkt.layer3->dest,
         pkt.layer4->name(),
         pkt.layer4->length,
         pkt.layer4->make_info()

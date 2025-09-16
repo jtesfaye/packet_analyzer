@@ -36,7 +36,7 @@ public:
 private:
 
     inline static const std::initializer_list<key_pair> all_layer2_functions {
-        key_pair {-1, unsupported_layer},
+        key_pair {-1, function(unsupported_layer)},
         key_pair {DLT_EN10MB, ethernet_functions::ethernet_parse}
     };
 

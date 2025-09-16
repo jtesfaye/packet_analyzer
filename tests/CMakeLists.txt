@@ -17,3 +17,4 @@ function(add_gtest test_name)
 endfunction()
 
 add_gtest(test_parser ./test_PacketParse.cpp)
+add_gtest(test_layer2 ./test_layer2.cpp)

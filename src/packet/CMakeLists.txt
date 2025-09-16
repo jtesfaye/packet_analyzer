@@ -7,3 +7,4 @@ add_library(Packet
 
 target_include_directories(Packet PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_include_directories(Packet PRIVATE ${Boost_INCLUDE_DIRS})
+target_link_libraries(Packet PRIVATE pcap)
