@@ -4,10 +4,11 @@
 
 #include <layerx/layer4/TCP.h>
 #include <format>
+#include <iostream>
 #include <util/PacketRead.h>
 
-TCP::TCP(const size_t len, std::string src_port, std::string dest_port, u_int8_t flags)
-: TransportPDU(len, std::move(src), std::move(dest))
+TCP::TCP(const size_t len, std::string src_port, std::string dest_port, const u_int8_t flags)
+: TransportPDU(len, std::move(src_port), std::move(dest_port))
 , flags(flags)
 {}
 
@@ -102,8 +103,8 @@ std::unique_ptr<TransportPDU> tcp_functions::tcp_parse(
 
     return std::make_unique<TCP>(
         length,
-        std::to_string(ntohs(tcp_hdr->src)),
-        std::to_string(ntohs(tcp_hdr->dest)),
+        std::to_string(static_cast<unsigned int>(ntohs(tcp_hdr->src))),
+        std::to_string(static_cast<unsigned int>(ntohs(tcp_hdr->dest))),
         tcp_hdr->flags);
 
 }

@@ -33,23 +33,4 @@ protected:
 
 };
 
-TEST_F(PacketParseTest, Ipv4ParseTest) {
-
-    auto ipv4parser = IPv4_functions::ipv4_parse;
-
-    //assuming previous protocol was ethernet, ipv4 header would start 30 bytes in
-    //pcap header + ethernet header = start of ip_header
-    context.offset = 30;
-
-    auto ip = ipv4parser(raw_data, context);
-
-
-
-}
-
-TEST_F(PacketParseTest, TCPParseTest) {
-
-
-
-}
 

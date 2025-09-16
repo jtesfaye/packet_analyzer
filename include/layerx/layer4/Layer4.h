@@ -35,7 +35,7 @@ private:
 
     inline static const std::initializer_list<key_pair> all_functions {
         key_pair {-1, unsupported_layer},
-        key_pair {iana::TCP, tcp_functions::tcp_parse}
+        key_pair {layer::iana::TCP, tcp_functions::tcp_parse}
     };
 
 
