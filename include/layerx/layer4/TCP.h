@@ -12,9 +12,9 @@
 using namespace layer::transport;
 using namespace packet;
 
-struct TCP : TransportPDU {
+struct TCP final : TransportPDU {
 
-    TCP(size_t len, std::string src, std::string dest, u_int8_t flags);
+    TCP(size_t len, std::string src_port, std::string dest_port, u_int8_t flags);
     ~TCP() override;
 
     std::string make_info() const override;

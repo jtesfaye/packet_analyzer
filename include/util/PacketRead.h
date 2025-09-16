@@ -19,7 +19,6 @@ public:
 
     static std::string format_ipv4_src_dst(const u_int32_t& addr);
 
-
 };
 
 
