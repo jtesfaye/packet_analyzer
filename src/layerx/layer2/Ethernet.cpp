@@ -42,34 +42,45 @@ ethernet_functions::ethernet_parse
     using namespace packet::frame;
     using namespace packet;
 
-    if (raw_data.size() < sizeof(ethernet_hdr)) {
-        throw std::runtime_error("Packet too short for ethernet header");
+    const auto valid_len = PacketRead::valid_length;
+
+    size_t start = context.offset;
+    if(!valid_len(raw_data, start, sizeof(ethernet_hdr))) {
+        return nullptr;
     }
 
-    const std::byte* layer2_start = raw_data.data() + context.offset;
+    const std::byte* layer2_start = raw_data.data() + start;
 
-    auto ether = reinterpret_cast<const ethernet_hdr*> (layer2_start);
+    const auto ether = reinterpret_cast<const ethernet_hdr*> (layer2_start);
 
     u_int16_t ether_type = ntohs(ether->ether_type);
 
     switch (ether_type) {
 
         case 0x8100: {
-            auto vlan = reinterpret_cast<const ether_802_1_Q_hdr*> (layer2_start);
+
+            if (valid_len(raw_data, start, sizeof(ether_802_1_Q_hdr)))
+                return nullptr;
+
+            const auto vlan = reinterpret_cast<const ether_802_1_Q_hdr*> (layer2_start);
             ether_type = ntohs(vlan->ether_type);
-            context.length = 18;
+            context.curr_length = 18;
             break;
         }
 
         case 0x88A8: {
-            auto q_ad = reinterpret_cast<const ether_802_1_ad_hdr*> (layer2_start);
+
+            if (valid_len(raw_data, start, sizeof(ether_802_1_ad_hdr)))
+                return nullptr;
+
+            const auto q_ad = reinterpret_cast<const ether_802_1_ad_hdr*> (layer2_start);
             ether_type = ntohs(q_ad->ether_type);
-            context.length = 22;
+            context.curr_length = 22;
             break;
         }
 
         default: {
-            context.length = 14;
+            context.curr_length = 14;
             break;
         }
     }
@@ -80,7 +91,7 @@ ethernet_functions::ethernet_parse
     std::string dest = PacketRead::format_mac(ether->dest_addr);
 
     return std::make_unique<Ethernet>(
-        context.length,
+        context.curr_length,
         std::move(src),
         std::move(dest),
         ether_type

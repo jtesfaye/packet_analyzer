@@ -58,10 +58,11 @@ namespace packet {
 
   struct parse_context {
 
-    pcap_pkthdr header;
-    u_int16_t next_type;
-    size_t offset;
-    u_int16_t length;
+    pcap_pkthdr header;     //header of packet, which is present in all packets captured by pcap
+    u_int16_t next_type;    //Holds the value assigned to a protocol by the IEEE or IANA
+    size_t offset;          //start of the protocol
+    size_t curr_length;     //Represents length of protocol that was just parsed (set by parser)
+    size_t prev_length;     //Length of previous protocol, used to find the start of the next protocol
 
   };
 

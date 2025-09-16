@@ -56,7 +56,39 @@ std::unique_ptr<NetworkPDU> IPv4_functions::ipv4_parse(
     const std::vector<std::byte> &raw_data,
     packet::parse_context &context) {
 
-    return {};
+    size_t start = context.offset;
+
+    if (!PacketRead::valid_length(raw_data, start, sizeof(ipv4_header))) {
+        return nullptr;
+    }
+
+    const auto ipv4_hdr = reinterpret_cast<const ipv4_header*> (raw_data.data());
+
+    //If not equal probably means we have malformed data or misaligned data
+    if (context.next_type != ipv4_hdr->version_ihl & 0x0F) {
+        return nullptr;
+    }
+
+    u_int16_t frag_field = ntohs(ipv4_hdr->flags_foffset);
+    u_int8_t flags = (frag_field >> 13) & 0x07;
+
+    //more fragment flag is set
+    if (flags & 0x01 == IP_MF) {
+        //fragmentation logic
+    }
+
+    size_t header_len = (ipv4_hdr->version_ihl >> 4) * 5;
+    size_t next_protocol = ipv4_hdr->protocol;
+
+    context.curr_length = header_len;
+    context.next_type = next_protocol;
+
+    return std::make_unique<IPv4>(
+        header_len,
+        PacketRead::format_ipv4_src_dst(ipv4_hdr->src_addr),
+        PacketRead::format_ipv4_src_dst(ipv4_hdr->dest_adr),
+        frag_field,
+        next_protocol);
 
 }
 

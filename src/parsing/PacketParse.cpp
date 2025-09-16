@@ -58,8 +58,10 @@ namespace parse {
 
       pkt.layer2 = link_parser(data, context);
 
-      offsets.l2.length = context.length;
+      offsets.l2.length = context.curr_length;
       offsets.l2.offset = context.offset;
+
+      context.prev_length = context.curr_length;
 
       if (pkt.layer2) return true;
 
@@ -77,12 +79,14 @@ namespace parse {
       parse_context& context,
       layer_offsets& offsets) {
 
-        context.offset = context.length;
+        context.offset += context.prev_length;
 
         pkt.layer3 = net_parser(context.next_type, data, context);
 
-        offsets.l3.length = context.length;
+        offsets.l3.length = context.curr_length;
         offsets.l3.offset = context.offset;
+
+        context.prev_length = context.curr_length;
 
         if (pkt.layer3) return true;
 
@@ -102,12 +106,14 @@ namespace parse {
       parse_context& context,
       layer_offsets& offsets) {
 
-        context.offset = context.length;
+        context.offset += context.prev_length;
 
         pkt.layer4 = transport_parser(context.next_type, data, context);
 
-        offsets.l4.length = context.length;
+        offsets.l4.length = context.curr_length;
         offsets.l4.offset = context.offset;
+
+        context.prev_length = context.curr_length;
 
         if (pkt.layer4) return true;
 

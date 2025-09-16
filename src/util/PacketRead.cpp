@@ -7,6 +7,8 @@
 #include <util/PacketRead.h>
 #include <sstream>
 #include <iomanip>
+#include <vector>
+#include <format>
 
 //We are working on making linkread generic, and now trying to implement into this func
 
@@ -25,17 +27,26 @@ PacketRead::format_mac(const u_int8_t *addr) {
 }
 
 
-std::string PacketRead::format_ipv4_src_dst(const std::byte *addr) {
+std::string PacketRead::format_ipv4_src_dst(const u_int32_t& src_dest_add) {
 
-    std::ostringstream oss;
-    for (int i = 0; i < 4; ++i) {
-        if (i > 0)
-            oss << ".";
-        oss << std::hex << static_cast<int>(addr[i]);
-    }
+    const u_int32_t addr = ntohl(src_dest_add);
 
-    return oss.str();
+    return std::format("{}.{}.{}.{}",
+        addr >> 24 & 0xFF,
+        addr >> 16 & 0xFF,
+        addr >> 8 & 0xFF,
+        addr & 0xFF
+        );
 }
+
+bool PacketRead::valid_length(
+    const std::vector<std::byte> &data,
+    const size_t offset,
+    const size_t needed) {
+
+    return data.size() >= offset + needed;
+}
+
 
 
 

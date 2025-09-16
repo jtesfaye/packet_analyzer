@@ -10,13 +10,14 @@
 class PacketRead {
 public:
 
-    explicit PacketRead();
-
+    PacketRead();
     ~PacketRead() = default;
+
+    static bool valid_length(const std::vector<std::byte>& data, size_t offset, size_t needed);
 
     static std::string format_mac(const u_int8_t* addr);
 
-    static std::string format_ipv4_src_dst(const std::byte*);
+    static std::string format_ipv4_src_dst(const u_int32_t& addr);
 
 
 };
