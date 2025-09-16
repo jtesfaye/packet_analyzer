@@ -26,7 +26,7 @@ namespace parse {
 
     ~PacketParse() = default;
 
-    std::pair<row_entry,packet_ref> start_extract(
+    packet_ref start_extract(
       const std::vector<std::byte> &raw_data,
       size_t index);
 
@@ -58,9 +58,7 @@ namespace parse {
 
     ParseDispatcher<std::unique_ptr<TransportPDU>, false> transport_parser;
 
-    row_entry set_row_entry(size_t, double, const packet_ref&) const;
-
-    void set_inital_time(const timeval& time);
+    void set_initial_time(const timeval& time);
 
     double set_relative_time(const timeval& time);
 

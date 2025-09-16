@@ -6,6 +6,7 @@
 #include <parsing/PacketParse.h>
 #include <parsing/ParseDispatcher.h>
 #include <packet/PcapFile.h>
+#include <print>
 
 class PacketParseTest : public ::testing::Test {
 protected:
@@ -15,8 +16,22 @@ protected:
     file(file_name.c_str()) {}
 
     void SetUp() override {
+        for (int i = 0; i < 3; i++) {
 
-        raw_data = file.read(0);
+            data.push_back(file.read(i));
+
+        }
+    }
+
+    void print_arr(const std::array<std::string, 6> &row) {
+
+        std::print("{}, {}, {}, {}, {}, {} \n",
+            row[0],
+            row[1],
+            row[2],
+            row[3],
+            row[4],
+            row[5]);
 
     }
 
@@ -29,8 +44,22 @@ protected:
     parse::PacketParse parser;
     PcapFile file;
     parse_context context{};
-    std::vector<std::byte> raw_data;
+    std::vector<std::vector<std::byte>> data;
 
 };
+
+TEST_F(PacketParseTest, ParserTest) {
+
+    int counter = 0;
+    for (const auto& i : data) {
+
+        std::pair pair {parser.start_extract(i, counter)};
+        print_arr(pair.first.to_array());
+        counter++;
+    }
+
+    SUCCEED();
+
+}
 
 

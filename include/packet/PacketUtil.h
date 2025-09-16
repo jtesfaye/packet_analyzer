@@ -16,46 +16,6 @@ struct TransportPDU;
 
 namespace packet {
 
-  struct row_entry {
-
-    size_t index;
-    double time;
-    std::string src;
-    std::string dest;
-    std::string protocol;
-    size_t length;
-    std::string info;
-
-    static row_entry make_row_entry(size_t index,
-      double time,
-      std::string src,
-      std::string dest,
-      std::string protocol,
-      size_t length,
-      std::string info) {
-
-      return {
-        index,
-        time,
-        std::move(src),
-        std::move(dest),
-        std::move(protocol),
-        length,
-        std::move(info)
-      };
-
-    }
-
-    [[nodiscard]] std::array<std::string, 6> to_array() const {
-
-      std::ostringstream oss;
-      oss << std::fixed << std::setprecision(10) << time;
-
-      return {oss.str(), src, dest, protocol, std::to_string(length), info};
-    }
-
-  };
-
   struct parse_context {
 
     pcap_pkthdr header;     //header of packet, which is present in all packets captured by pcap
@@ -81,12 +41,12 @@ namespace packet {
 
   struct packet_ref {
 
+    size_t index;
+    double time;
+    size_t length;
     layer_offsets data;
-
     std::unique_ptr<LinkPDU> layer2;
-
     std::unique_ptr<NetworkPDU> layer3;
-
     std::unique_ptr<TransportPDU> layer4;
 
   };

@@ -12,34 +12,37 @@ namespace parse {
   , transport_parser(Layer4::get_all_functions())
   {}
 
-  std::pair<row_entry,packet_ref>
+  packet_ref
   PacketParse::start_extract(const std::vector<std::byte> &raw_data, const size_t index) {
 
     packet_ref pkt_ref{};
     layer_offsets offsets{};
-    row_entry entry {};
     parse_context context{};
 
-    std::memcpy(&context.header, raw_data.data(), 16);
+    pkt_ref.index = index;
+
+    std::memcpy(&context.header, raw_data.data(), sizeof(pcaprec_hdr_t));
 
     timeval& packet_ts = context.header.ts;
 
     //find time relative to first capture
-    double time = set_relative_time(packet_ts);
+    pkt_ref.time = set_relative_time(packet_ts);
+
+    pkt_ref.length = context.header.caplen;
 
     const std::vector<LayerJob> jobs = create_jobs();
 
     for (const auto&[func] : jobs) {
 
       //if there's an error parsing we come across an unsupported type, return false and terminate loop
-      if (bool cont = func(pkt_ref, raw_data, context, offsets); !cont)
+      if (bool keep_going = func(pkt_ref, raw_data, context, offsets); !keep_going)
         break;
 
     }
 
     pkt_ref.data = offsets;
 
-    return {set_row_entry(index, time, pkt_ref), std::move(pkt_ref)};
+    return pkt_ref;
     
   }
 
@@ -129,59 +132,7 @@ namespace parse {
 
   }
 
-  row_entry PacketParse::set_row_entry(size_t index, double time, const packet_ref& pkt) const {
-
-    if (m_flags & DO_LAYER4 && pkt.layer4) {
-
-      return row_entry::make_row_entry(
-        index,
-        time,
-        pkt.layer3->src,
-        pkt.layer3->dest,
-        pkt.layer4->name(),
-        pkt.layer4->length,
-        pkt.layer4->make_info()
-        );
-
-    }
-
-    if (m_flags & DO_LAYER3 && pkt.layer3) {
-
-      return row_entry::make_row_entry(
-        index,
-        time,
-        pkt.layer3->src,
-        pkt.layer3->dest,
-        pkt.layer3->name(),
-        pkt.layer3->length,
-        pkt.layer3->make_info()
-        );
-
-    }
-
-    if (pkt.layer2) {
-      return row_entry::make_row_entry(
-        index,
-        time,
-        pkt.layer2->src,
-        pkt.layer2->dest,
-        pkt.layer2->name(),
-        pkt.layer2->length,
-        pkt.layer2->make_info()
-        );
-    }
-
-    return row_entry::make_row_entry(index,
-      time,
-      "N/A",
-      "N/A",
-      "N/A",
-      0,
-      "Unsupported");
-
-  }
-
-  void PacketParse::set_inital_time(const timeval &time) {
+  void PacketParse::set_initial_time(const timeval &time) {
 
     std::call_once(time_init_flag, [&]() {
       m_inital_time = time;
@@ -191,12 +142,10 @@ namespace parse {
 
   double PacketParse::set_relative_time(const timeval &time) {
 
-    set_inital_time(time);
+    set_initial_time(time);
 
     return static_cast<double>(time.tv_sec - m_inital_time.tv_sec) +
       (time.tv_usec - m_inital_time.tv_usec) / 1e6;
 
   }
-
-
 }
