@@ -9,11 +9,10 @@
 #include <iostream>
 #include <utility>
 
-IPv4::IPv4(size_t len, std::string src, std::string dest, u_int16_t frag_fields, u_int8_t protocol)
+IPv4::IPv4(size_t len, std::string src, std::string dest, const bool is_fragmented, u_int8_t protocol)
 : NetworkPDU(len, std::move(src), std::move(dest))
 , protocol(protocol)
-, flags(frag_fields)
-, is_fragmented(flags & IP_MF)
+, is_fragmented(is_fragmented)
 {
 }
 
@@ -74,11 +73,13 @@ std::unique_ptr<NetworkPDU> IPv4_functions::ipv4_parse(
         return nullptr;
     }
 
+    bool is_fragmented = false;
     u_int16_t frag_field = ntohs(ipv4_hdr->flags_foffset);
     u_int8_t flags = (frag_field >> 13) & 0x07;
-
+    u_int16_t offset = frag_field & 0x1FFF;
     //more fragment flag is set
-    if ((flags & 0x01) == IP_MF) {
+    if ((flags & 0x01) || (offset > 0)) {
+        is_fragmented = true;
         //fragmentation logic
     }
 
@@ -92,7 +93,7 @@ std::unique_ptr<NetworkPDU> IPv4_functions::ipv4_parse(
         header_len,
         PacketRead::format_ipv4_src_dst(ipv4_hdr->src_addr),
         PacketRead::format_ipv4_src_dst(ipv4_hdr->dest_adr),
-        frag_field,
+        is_fragmented,
         next_protocol);
 
 }

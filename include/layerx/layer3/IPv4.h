@@ -12,15 +12,14 @@ using namespace layer::ip;
 
 struct IPv4 final : NetworkPDU {
 
-    IPv4(size_t len, std::string src, std::string dest, u_int16_t frag_field, u_int8_t protocol);
+    IPv4(size_t len, std::string src, std::string dest, bool is_fragmented, u_int8_t protocol);
     ~IPv4() override;
 
     std::string make_info() const override;
     std::string name() const override;
 
     u_int8_t protocol;
-    u_int16_t flags;
-    mutable bool is_fragmented;
+    bool is_fragmented;
 
 };
 
