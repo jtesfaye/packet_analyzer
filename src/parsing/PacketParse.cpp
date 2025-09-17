@@ -24,12 +24,12 @@ namespace parse {
 
     std::memcpy(&context.header, raw_data.data(), sizeof(pcaprec_hdr_t));
 
-    timeval& packet_ts = context.header.ts;
+    const parse_time time {context.header.ts_sec, context.header.ts_usec};
 
     //find time relative to first capture
-    pkt_ref.time = set_relative_time(packet_ts);
+    pkt_ref.time = set_relative_time(time);
 
-    pkt_ref.length = context.header.caplen;
+    pkt_ref.length = context.header.incl_len;
 
     const std::vector<LayerJob> jobs = create_jobs();
 
@@ -98,8 +98,6 @@ namespace parse {
 
         if (std::string type = pkt.layer3->name(); type == "IPv4") {
 
-          std::cout << type << std::endl;
-
           auto ipv4_pkt = dynamic_cast<IPv4*>(pkt.layer3.get());
 
           if (ipv4_pkt && ipv4_pkt->is_fragmented) {
@@ -147,7 +145,7 @@ namespace parse {
 
   }
 
-  void PacketParse::set_initial_time(const timeval &time) {
+  void PacketParse::set_initial_time(const parse_time &time) {
 
     std::call_once(time_init_flag, [&]() {
       m_inital_time = time;
@@ -155,12 +153,12 @@ namespace parse {
 
   }
 
-  double PacketParse::set_relative_time(const timeval &time) {
+  double PacketParse::set_relative_time(const parse_time &time) {
 
     set_initial_time(time);
 
-    return static_cast<double>(time.tv_sec - m_inital_time.tv_sec) +
-      (time.tv_usec - m_inital_time.tv_usec) / 1e6;
+    return static_cast<double>(time.ts_sec - m_inital_time.ts_sec) +
+      (time.ts_usec - m_inital_time.ts_usec) / 1e6;
 
   }
 }

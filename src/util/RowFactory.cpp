@@ -19,7 +19,7 @@ row_entry RowFactory::layer4_top_row(
         addr_data->src,
         addr_data->dest,
         data->name(),
-        std::to_string(data->length),
+        std::to_string(length),
         data->make_info()
     };
 }
@@ -36,7 +36,7 @@ row_entry RowFactory::layerx_top_row(
         data->src,
         data->dest,
         data->name(),
-        std::to_string(data->length),
+        std::to_string(length),
         data->make_info()
     };
 }

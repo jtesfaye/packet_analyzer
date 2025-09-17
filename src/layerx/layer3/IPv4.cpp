@@ -23,27 +23,27 @@ std::string IPv4::make_info() const {
 
     using namespace layer;
 
-    std::string info = std::format("{} -> {}", src, dest);
+    std::string info;
+
+    if (is_fragmented) {
+        info += "(Fragmented datagram) ";
+    }
 
     switch (protocol) {
 
         case iana::ICMP:
-            info += " ICMP";
+            info += "ICMP ";
             break;
 
         case iana::TCP:
-            info += " TCP";
+            info += "TCP ";
             break;
 
         case iana::UDP:
-            info += " UDP";
+            info += "UDP ";
             break;
 
         default:
-    }
-
-    if (is_fragmented) {
-        info += " MF Fragmented";
     }
 
     return info;

@@ -16,9 +16,23 @@ struct TransportPDU;
 
 namespace packet {
 
+  struct parse_time {
+    uint32_t ts_sec;
+    uint32_t ts_usec;
+  };
+
+  struct pcaprec_hdr_t {
+
+    uint32_t ts_sec;   // timestamp seconds
+    uint32_t ts_usec;  // timestamp microseconds
+    uint32_t incl_len; // number of bytes of packet saved in file
+    uint32_t orig_len; // actual length of packet
+
+  } __attribute__((packed));
+
   struct parse_context {
 
-    pcap_pkthdr header;     //header of packet, which is present in all packets captured by pcap
+    pcaprec_hdr_t header;    //header of packet, which is present in all packets captured by pcap
     u_int16_t next_type;    //Holds the value assigned to a protocol by the IEEE or IANA
     size_t offset;          //start of the protocol
     size_t curr_length;     //Represents length of protocol that was just parsed (set by parser)
@@ -51,14 +65,6 @@ namespace packet {
 
   };
 
-  struct pcaprec_hdr_t {
-
-    uint32_t ts_sec;   // timestamp seconds
-    uint32_t ts_usec;  // timestamp microseconds
-    uint32_t incl_len; // number of bytes of packet saved in file
-    uint32_t orig_len; // actual length of packet
-
-  } __attribute__((packed));
 }
 
 

@@ -44,15 +44,15 @@ namespace parse {
 
     std::vector<LayerJob> create_jobs();
 
-    void set_initial_time(const timeval& time);
+    void set_initial_time(const parse_time& time);
 
-    double set_relative_time(const timeval& time);
+    double set_relative_time(const parse_time& time);
 
     int m_dlt; //data link type
 
     u_int8_t m_flags;
 
-    timeval m_inital_time; //time at which first packet was captured
+    parse_time m_inital_time; //time at which first packet was captured
 
     std::once_flag time_init_flag;
 
