@@ -49,6 +49,34 @@ namespace layer::transport {
     struct upd_header {
 
     };
+
+    struct icmp_header {
+
+        u_int8_t type;
+        u_int8_t code;
+        u_int16_t checksum;
+        u_int32_t data;
+
+    };
+
+    namespace icmp_types {
+
+        constexpr u_int8_t ECHO_REPLY = 0;
+        constexpr u_int8_t DEST_UNREACHABLE = 3;
+        constexpr u_int8_t ECHO_REQUEST = 8;
+        constexpr u_int8_t SOURCE_QUENCH = 4;
+        constexpr u_int8_t REDIRECT = 5;
+        constexpr u_int8_t TIME_EXCEEDED = 11;
+        constexpr u_int8_t PARAMETER_PROBLEM = 12;
+        constexpr u_int8_t TIMESTAMP_REQUEST = 13;
+        constexpr u_int8_t TIMESTAMP_REPLY = 14;
+        constexpr u_int8_t INFORMATION_REQUEST = 15;
+        constexpr u_int8_t INFORMATION_REPLY = 16;
+        constexpr u_int8_t ADDRESS_MASK_REQUEST = 17;
+        constexpr u_int8_t ADDRESS_MASK_REPLY = 18;
+
+
+    }
 }
 
 

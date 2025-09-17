@@ -10,26 +10,29 @@
 #include <layerx/ProtocolDataUnit.h>
 #include <packet/PacketUtil.h>
 
+struct row_entry {
+
+    std::string index;
+    std::string time;
+    std::string src;
+    std::string dest;
+    std::string protocol;
+    std::string length;
+    std::string info;
+
+    std::array<const std::string*, 7> to_array() {
+        return {&index, &time, &src, &dest, &protocol, &length, &info};
+    }
+};
+
 class RowFactory {
 public:
-
-    struct row_entry {
-        size_t index;
-        double time;
-        std::string src;
-        std::string dest;
-        std::string protocol;
-        size_t length;
-        std::string info;
-
-    };
 
     static row_entry create_row(packet::packet_ref& ref);
 
     RowFactory() = delete;
 
 private:
-
 
     static row_entry layer4_top_row(
         size_t index,

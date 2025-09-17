@@ -29,6 +29,30 @@ std::string TCP::name() const {
     return "TCP";
 }
 
+std::unique_ptr<TransportPDU> tcp_functions::tcp_parse(
+    const std::vector<std::byte> &raw_data,
+    parse_context &context) {
+
+    using namespace layer::transport;
+
+    if (!PacketRead::valid_length(raw_data, context.offset, sizeof(tcp_header))) {
+        return nullptr;
+    }
+
+    const std::byte* start = raw_data.data() + context.offset;
+
+    const auto tcp_hdr = reinterpret_cast<const tcp_header*> (start);
+
+    size_t length = (tcp_hdr->offset >> 4) * 4;
+
+    return std::make_unique<TCP>(
+        length,
+        std::to_string(static_cast<unsigned int>(ntohs(tcp_hdr->src))),
+        std::to_string(static_cast<unsigned int>(ntohs(tcp_hdr->dest))),
+        tcp_hdr->flags);
+
+}
+
 std::string tcp_functions::tcp_flags_to_string(u_int8_t flags) {
 
     static constexpr std::array<std::pair<uint8_t, const char*>, 8> table{{
@@ -85,26 +109,4 @@ std::string tcp_functions::tcp_flags_to_string(u_int8_t flags) {
     return s;
 }
 
-std::unique_ptr<TransportPDU> tcp_functions::tcp_parse(
-    const std::vector<std::byte> &raw_data,
-    parse_context &context) {
 
-    using namespace layer::transport;
-
-    if (!PacketRead::valid_length(raw_data, context.offset, sizeof(tcp_header))) {
-        return nullptr;
-    }
-
-    const std::byte* start = raw_data.data() + context.offset;
-
-    const auto tcp_hdr = reinterpret_cast<const tcp_header*> (start);
-
-    size_t length = (tcp_hdr->offset >> 4) * 4;
-
-    return std::make_unique<TCP>(
-        length,
-        std::to_string(static_cast<unsigned int>(ntohs(tcp_hdr->src))),
-        std::to_string(static_cast<unsigned int>(ntohs(tcp_hdr->dest))),
-        tcp_hdr->flags);
-
-}

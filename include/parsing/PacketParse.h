@@ -44,6 +44,10 @@ namespace parse {
 
     std::vector<LayerJob> create_jobs();
 
+    void set_initial_time(const timeval& time);
+
+    double set_relative_time(const timeval& time);
+
     int m_dlt; //data link type
 
     u_int8_t m_flags;
@@ -57,11 +61,6 @@ namespace parse {
     ParseDispatcher<std::unique_ptr<NetworkPDU>, false> net_parser;
 
     ParseDispatcher<std::unique_ptr<TransportPDU>, false> transport_parser;
-
-    void set_initial_time(const timeval& time);
-
-    double set_relative_time(const timeval& time);
-
 
   };
 

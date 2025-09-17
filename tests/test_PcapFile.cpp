@@ -2,7 +2,6 @@
 // Created by jeremiah tesfaye on 7/31/25.
 //
 
-#include "MockPcapDumper.h"
 #include <gtest/gtest.h>
 #include <packet/PcapFile.h>
 #include <packet/PcapArray.h>

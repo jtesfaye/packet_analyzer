@@ -20,6 +20,7 @@ struct IPv4 final : NetworkPDU {
 
     u_int8_t protocol;
     u_int16_t flags;
+    mutable bool is_fragmented;
 
 };
 

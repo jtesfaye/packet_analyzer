@@ -8,6 +8,7 @@
 #include <vector>
 #include <functional>
 #include <layerx/layer4/TCP.h>
+#include <layerx/layer4/ICMP.h>
 #include <layerx/iana_numbers.h>
 #include <packet/PacketUtil.h>
 
@@ -35,10 +36,9 @@ private:
 
     inline static const std::initializer_list<key_pair> all_functions {
         key_pair {-1, unsupported_layer},
-        key_pair {layer::iana::TCP, tcp_functions::tcp_parse}
+        key_pair {layer::iana::TCP, tcp_functions::tcp_parse},
+        key_pair {layer::iana::ICMP, icmp_functions::icmp_parse}
     };
-
-
 };
 
 

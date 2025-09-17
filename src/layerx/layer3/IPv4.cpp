@@ -13,6 +13,7 @@ IPv4::IPv4(size_t len, std::string src, std::string dest, u_int16_t frag_fields,
 : NetworkPDU(len, std::move(src), std::move(dest))
 , protocol(protocol)
 , flags(frag_fields)
+, is_fragmented(flags & IP_MF)
 {
 }
 
@@ -41,7 +42,7 @@ std::string IPv4::make_info() const {
         default:
     }
 
-    if (flags & IP_MF) {
+    if (is_fragmented) {
         info += " MF Fragmented";
     }
 

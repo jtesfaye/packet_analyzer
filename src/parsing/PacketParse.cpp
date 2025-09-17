@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include <parsing/PacketParse.h>
 
 namespace parse {
@@ -91,9 +92,23 @@ namespace parse {
 
         context.prev_length = context.curr_length;
 
-        if (pkt.layer3) return true;
+        if (!pkt.layer3) {
+          return false;
+        }
 
-        return false;
+        if (std::string type = pkt.layer3->name(); type == "IPv4") {
+
+          std::cout << type << std::endl;
+
+          auto ipv4_pkt = dynamic_cast<IPv4*>(pkt.layer3.get());
+
+          if (ipv4_pkt && ipv4_pkt->is_fragmented) {
+
+            return false;
+          }
+        }
+
+        return true;
 
       };
 
