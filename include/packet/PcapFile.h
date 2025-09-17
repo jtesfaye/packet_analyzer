@@ -35,9 +35,9 @@ public:
 
     size_t write(const pcap_pkthdr* header, const u_char* data) const;
 
-    size_t get_buffer_size() const {return m_buffer_size;}
-
     size_t get_file_size() const {return m_file_size;}
+
+    size_t get_packet_count() const {return m_array->size();}
 
 
 private:
