@@ -25,7 +25,7 @@ std::string Ethernet::make_info() const {
         default: protocol = std::format("0x{:04X}", ether_type);
     }
 
-    return std::format("{} -> {} EtherType= {}" , src, dest, protocol);
+    return std::format("EtherType= {}" ,  protocol);
 
 }
 
