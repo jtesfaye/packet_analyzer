@@ -4,6 +4,8 @@
 
 #include <layerx/layer2/Ethernet.h>
 #include <util/PacketRead.h>
+#include <layerx/layer2/Layer2Registry.h>
+
 
 Ethernet::Ethernet(size_t len, std::string src, std::string dest, u_int16_t ether_type)
 : LinkPDU(len, std::move(src), std::move(dest))
@@ -32,6 +34,13 @@ std::string Ethernet::make_info() const {
 std::string Ethernet::name() const {
 
     return {"Ethernet II"};
+
+}
+
+Layer2Registry &ethernet_functions::get_ethernet_registry() {
+
+    static Layer2Registry ethernet_reg(DLT_EN10MB, ethernet_functions::ethernet_parse);
+    return ethernet_reg;
 
 }
 

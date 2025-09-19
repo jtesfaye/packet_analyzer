@@ -9,6 +9,7 @@
 #include <format>
 #include <packet/PacketUtil.h>
 #include <layerx/layer2/Layer2Types.h>
+#include <layerx/layer2/Layer2Registry.h>
 
 struct Ethernet final : LinkPDU {
 
@@ -25,6 +26,8 @@ struct Ethernet final : LinkPDU {
 class ethernet_functions {
 public:
 
+
+    static Layer2Registry& get_ethernet_registry();
     static std::unique_ptr<LinkPDU> ethernet_parse(const std::vector<std::byte>&, packet::parse_context&);
 
 };
