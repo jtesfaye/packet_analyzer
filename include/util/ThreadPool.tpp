@@ -53,7 +53,7 @@ inline void ThreadPool::shutdown() {
 
     m_work_to_do.notify_all();
 
-    for (auto t : m_workers) {
+    for (auto &t : m_workers) {
 
         if (t.joinable())
             t.join();

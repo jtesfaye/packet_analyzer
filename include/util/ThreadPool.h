@@ -12,17 +12,11 @@
 #include <condition_variable>
 #include <atomic>
 
-//thread pool should have
-//main loop
-//way to add tasks
-//way to shutdown
-//way to startup
-
 class ThreadPool {
 public:
 
     explicit ThreadPool(size_t thread_count = std::thread::hardware_concurrency());
-    ~ThreadPool();
+    ~ThreadPool() = default;
 
     template<class F, class... Args>
     void submit(F&& f, Args&&... args);

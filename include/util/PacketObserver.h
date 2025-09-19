@@ -15,9 +15,15 @@ public:
     explicit PacketObserver(PacketRefBuffer& buffer)
         : m_buffer(buffer) {}
 
+    ~PacketObserver() override = default;
+
     void notify_if_next(size_t index);
 
+    void notify_all() {m_cv.notify_all();}
+
     void wait_for_next();
+
+    void set_done() {m_done = true;}
 
 private:
 
@@ -26,6 +32,7 @@ private:
     std::condition_variable m_cv;
     size_t m_next_expected {0};
     size_t m_start_index {0};
+    bool m_done {false};
 
 signals:
 

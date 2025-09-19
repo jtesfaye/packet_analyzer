@@ -5,44 +5,34 @@
 #ifndef PACKETREFBUFFER_H
 #define PACKETREFBUFFER_H
 
-#include <QObject>
+#include <deque>
 #include <packet/PacketUtil.h>
+#include <optional>
+#include <deque>
 
 using namespace packet;
 
-class PacketRefBuffer : public QObject {
-
-Q_OBJECT
+class PacketRefBuffer {
 
 public:
 
-    using packet_tuple = std::pair<row_entry, packet_ref>;
+    explicit PacketRefBuffer(size_t capacity);
+    ~PacketRefBuffer() = default;
 
-    explicit PacketRefBuffer(size_t capacity, QObject* parent = nullptr)
-    : m_capacity(capacity) {
-
-        if (capacity < 1) {
-            m_capacity(256);
-        }
-        buffer.resize(m_capacity, std::nullopt);
-    }
-
-    void add(size_t index, packet_tuple&&);
+    void add(size_t index, packet_ref&&);
 
     packet_ref& get_ref(size_t index);
 
-    row_entry& get_entry(size_t index);
-
     [[nodiscard]] bool exists(size_t index) const;
+
+    [[nodiscard]] size_t size() const {return buffer.size();}
 
 private:
 
     size_t m_capacity;
-
-    std::vector<std::optional<packet_tuple>> buffer;
+    std::deque<std::optional<packet_ref>> buffer;
     std::mutex m_lock;
 
 };
-
 
 #endif //PACKETREFBUFFER_H
