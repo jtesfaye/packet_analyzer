@@ -17,7 +17,7 @@ protected:
     file(file_name.c_str()) {}
 
     void SetUp() override {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < file.get_packet_count(); i++) {
 
             data.push_back(file.read(i));
 
@@ -27,23 +27,16 @@ protected:
     void print_arr(const std::array<const std::string*, 7> row) {
 
         std::print("{}, {}, {}, {}, {}, {}, {} \n",
-            *row[0],
-            *row[1],
-            *row[2],
-            *row[3],
-            *row[4],
-            *row[5],
-            *row[6]);
-
+            *row[0], *row[1], *row[2], *row[3], *row[4], *row[5], *row[6]);
     }
 
     int dlt = DLT_EN10MB;
     u_int8_t flags = 0 | parse::DO_LAYER3 | parse::DO_LAYER4;
 
     //.pcap file holds packets with ethernet at layer2
-    std::string file_name = "/Users/jt/Desktop/pcap_files/ipv4frags.pcap";
+    std::string file_name = "/Users/jt/Desktop/pcap_files/mycap.pcap";
 
-    parse::PacketParse parser;
+    PacketParse parser;
     PcapFile file;
     parse_context context{};
     std::vector<std::vector<std::byte>> data;

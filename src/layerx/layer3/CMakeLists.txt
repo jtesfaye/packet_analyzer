@@ -1,5 +1,7 @@
 add_library(layer3_protocols
         IPv4.cpp
+        Layer3.cpp
+        IPv6.cpp
 
 )
 

@@ -1,6 +1,8 @@
 add_library(util
         PacketRead.cpp
         RowFactory.cpp
+        PacketRefBuffer.cpp
+        PacketObserver.cpp
 
 )
 

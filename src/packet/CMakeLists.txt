@@ -3,6 +3,7 @@ add_library(Packet
         PcapArray.cpp
         PcapFile.cpp
         PcapReader.cpp
+        PacketUtil.cpp
 )
 
 target_include_directories(Packet PUBLIC ${CMAKE_SOURCE_DIR}/include)

@@ -38,6 +38,7 @@ namespace packet {
     size_t curr_length;     //Represents length of protocol that was just parsed (set by parser)
     size_t prev_length;     //Length of previous protocol, used to find the start of the next protocol
 
+    bool is_fragmented;
   };
 
   struct LayerRegion {
@@ -55,13 +56,21 @@ namespace packet {
 
   struct packet_ref {
 
-    size_t index;
-    double time;
-    size_t length;
-    layer_offsets data;
+    size_t index{};
+    double time{};
+    size_t length{};
+    layer_offsets data{};
     std::unique_ptr<LinkPDU> layer2;
     std::unique_ptr<NetworkPDU> layer3;
     std::unique_ptr<TransportPDU> layer4;
+
+    packet_ref();
+    ~packet_ref();
+    packet_ref(packet_ref&&) noexcept;
+    packet_ref& operator=(packet_ref&&) noexcept;
+
+    packet_ref(const packet_ref&&) = delete;
+    packet_ref& operator=(const packet_ref&) = delete;
 
   };
 

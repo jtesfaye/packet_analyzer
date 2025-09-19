@@ -18,9 +18,10 @@ public:
     using pair = std::pair<const int, function>;
 
     template<bool F = Fixed, typename = std::enable_if_t<F>>
-    explicit ParseDispatcher(int key, std::initializer_list<pair> funcs)
-        : func_table(funcs)
+    explicit ParseDispatcher(int key, std::vector<pair> funcs)
     {
+
+        func_table = std::unordered_map<int, function>(funcs.begin(), funcs.end());
         auto k = func_table.find(key);
 
         if (k == func_table.end()) {
@@ -35,10 +36,9 @@ public:
     }
 
     template<bool F = Fixed, typename = std::enable_if_t<!F>>
-    ParseDispatcher(std::initializer_list<pair> funcs)
-        : func_table(funcs)
-        , parse_func()
-    {}
+    explicit ParseDispatcher(std::vector<pair> funcs) {
+        func_table = std::unordered_map<int, function>(funcs.begin(), funcs.end());
+    }
 
     template<bool F = Fixed, typename = std::enable_if_t<F>>
     RefType operator() (const std::vector<std::byte> &raw_data, parse_context& context) const {

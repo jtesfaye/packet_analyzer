@@ -6,6 +6,7 @@
 #include <parsing/ParseDispatcher.h>
 #include <packet/PcapFile.h>
 #include <layerx/layer4/Layer4.h>
+#include <layerx/iana_numbers.h>
 
 class Layer4Test : public ::testing::Test {
 protected:

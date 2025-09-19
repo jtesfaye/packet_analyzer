@@ -7,16 +7,14 @@
 
 #include <vector>
 #include <functional>
-#include <layerx/layer4/TCP.h>
-#include <layerx/layer4/ICMP.h>
-#include <layerx/iana_numbers.h>
 #include <packet/PacketUtil.h>
+#include <layerx/layer4/Layer4Types.h>
 
 class Layer4 {
 
     using function = std::function<std::unique_ptr<TransportPDU>(
         const std::vector<std::byte>&,
-        parse_context&)>;
+        packet::parse_context&)>;
 
     using key_pair = std::pair<const int, function>;
 
@@ -28,17 +26,11 @@ public:
 
     static std::unique_ptr<TransportPDU> unsupported_layer(
         const std::vector<std::byte>&,
-        parse_context&) {return nullptr;}
+        packet::parse_context&);
 
-    static std::initializer_list<key_pair> get_all_functions() {return all_functions;}
+    static const std::vector<std::pair<const int, function>> get_all_functions();
 
-private:
 
-    inline static const std::initializer_list<key_pair> all_functions {
-        key_pair {-1, unsupported_layer},
-        key_pair {layer::iana::TCP, tcp_functions::tcp_parse},
-        key_pair {layer::iana::ICMP, icmp_functions::icmp_parse}
-    };
 };
 
 

@@ -20,7 +20,6 @@ struct NetworkPDU : ProtocolDataUnit {
 
 namespace layer::ip {
 
-
     constexpr uint16_t IP_RF = 0x8000;
     constexpr uint16_t IP_DF = 0x4000;
     constexpr uint16_t IP_MF = 0x2000;
@@ -43,6 +42,12 @@ namespace layer::ip {
 
     struct ipv6_header {
 
+        uint32_t ver_tc_fl;    // version, traffic class, flow label
+        uint16_t payload_length;
+        uint8_t  next_header;
+        uint8_t  hop_limit;
+        uint8_t  src_addr[16];
+        uint8_t  dst_addr[16];
     };
 
 }

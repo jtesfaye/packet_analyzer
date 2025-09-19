@@ -137,7 +137,7 @@ namespace capture {
   }
 
   PacketCapture::capture_objects::capture_objects(
-    parse::PacketParse& p,
+    PacketParse& p,
     PacketRefBuffer* b,
     ThreadPool& tp,
     PacketObserver& o,
@@ -151,7 +151,7 @@ namespace capture {
 
   PacketCapture::capture_objects
   PacketCapture::capture_objects::make(
-    parse::PacketParse& p,
+    PacketParse& p,
     PacketRefBuffer* b,
     ThreadPool& tp,
     PacketObserver& o,
@@ -164,7 +164,7 @@ namespace capture {
   PacketCapture::capture_objects
   PacketCapture::capture_objects::setup_capture(
     const char* file_path,
-    parse::PacketParse &parser,
+    PacketParse &parser,
     const std::shared_ptr<PacketRefBuffer>& buffer,
     int thread_count,
     pcap_t *handle) {

@@ -4,6 +4,7 @@
 
 #include <layerx/layer4/ICMP.h>
 #include <util/PacketRead.h>
+#include <layerx/iana_numbers.h>
 #include <utility>
 
 ICMP::ICMP(const size_t len, const u_int8_t type, const u_int8_t code) :
@@ -21,6 +22,12 @@ std::string ICMP::make_info() const {
 std::string ICMP::name() const {
     return "ICMP";
 }
+
+Layer4Registry &icmp_functions::get_icmp_registry() {
+    static Layer4Registry icmp_reg(layer::iana::ICMP, icmp_parse);
+    return icmp_reg;
+}
+
 
 std::unique_ptr<TransportPDU> icmp_functions::icmp_parse(
     const std::vector<std::byte> &raw_data,

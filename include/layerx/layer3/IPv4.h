@@ -4,8 +4,10 @@
 
 #ifndef IPV4_H
 #define IPV4_H
+
 #include <packet/PacketUtil.h>
 #include <layerx/layer3/Layer3Types.h>
+#include <layerx/layer3/Layer3Registry.h>
 #include <vector>
 
 using namespace layer::ip;
@@ -27,6 +29,7 @@ class IPv4_functions {
 public:
 
     static std::unique_ptr<NetworkPDU> ipv4_parse(const std::vector<std::byte>&, packet::parse_context&);
+    static Layer3Registry& get_ipv4_registry();
 
 };
 #endif //IPV4_H

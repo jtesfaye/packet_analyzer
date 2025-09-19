@@ -84,25 +84,25 @@ namespace capture {
 
       static capture_objects setup_capture(
         const char* file_path,
-        parse::PacketParse& parser,
+        PacketParse& parser,
         const std::shared_ptr<PacketRefBuffer>&,
         int thread_count,
         pcap_t* handle
         );
 
-      static capture_objects make(parse::PacketParse& p,
+      static capture_objects make(PacketParse& p,
         PacketRefBuffer* b,
         ThreadPool& tp,
         PacketObserver& o,
         PcapFile& f);
 
-      parse::PacketParse& parser;
+      PacketParse& parser;
       PacketRefBuffer* pktref_buffer;
       ThreadPool& tpool;
       PacketObserver& pkt_observer;
       PcapFile& file;
 
-      capture_objects(parse::PacketParse& p,
+      capture_objects(PacketParse& p,
         PacketRefBuffer* b,
         ThreadPool& tp,
         PacketObserver& o,

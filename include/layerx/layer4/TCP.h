@@ -7,6 +7,7 @@
 
 #include <packet/PacketUtil.h>
 #include <layerx/layer4/Layer4Types.h>
+#include <layerx/layer4/Layer4Registry.h>
 #include <vector>
 
 using namespace layer::transport;
@@ -28,7 +29,7 @@ class tcp_functions {
 public:
 
     static std::unique_ptr<TransportPDU> tcp_parse(const std::vector<std::byte>& raw_data, parse_context& context);
-
+    static Layer4Registry& get_tcp_registry();
     static std::string tcp_flags_to_string(u_int8_t flags);
 
 };

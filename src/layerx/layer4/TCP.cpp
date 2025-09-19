@@ -6,6 +6,7 @@
 #include <format>
 #include <iostream>
 #include <util/PacketRead.h>
+#include <layerx/iana_numbers.h>
 
 TCP::TCP(const size_t len, std::string src_port, std::string dest_port, const u_int8_t flags)
 : TransportPDU(len, std::move(src_port), std::move(dest_port))
@@ -28,6 +29,12 @@ std::string TCP::make_info() const {
 std::string TCP::name() const {
     return "TCP";
 }
+
+Layer4Registry& tcp_functions::get_tcp_registry() {
+    static Layer4Registry tcp_reg(layer::iana::TCP, tcp_parse);
+    return tcp_reg;
+}
+
 
 std::unique_ptr<TransportPDU> tcp_functions::tcp_parse(
     const std::vector<std::byte> &raw_data,
