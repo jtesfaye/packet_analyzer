@@ -3,20 +3,16 @@
 //
 
 #include <model/DisplayModel.h>
+#include <util/RowFactory.h>
 
-#include <iostream>
-
-
-DisplayModel::DisplayModel(QObject* parent)
+DisplayModel::DisplayModel(PacketRefBuffer& buffer, QObject* parent)
 : QAbstractTableModel(parent)
+, buffer(buffer)
 , m_row_count(0)
 {
 }
 
-
-
-QVariant
-DisplayModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant DisplayModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
 
     if (role != Qt::DisplayRole) {
@@ -35,8 +31,7 @@ DisplayModel::headerData(int section, Qt::Orientation orientation, int role) con
 
 }
 
-int
-DisplayModel::rowCount(const QModelIndex &parent) const
+int DisplayModel::rowCount(const QModelIndex &parent) const
 {
 
     Q_UNUSED(parent)
@@ -44,8 +39,7 @@ DisplayModel::rowCount(const QModelIndex &parent) const
 
 }
 
-int
-DisplayModel::columnCount(const QModelIndex &parent) const
+int DisplayModel::columnCount(const QModelIndex &parent) const
 {
 
     Q_UNUSED(parent)
@@ -53,8 +47,7 @@ DisplayModel::columnCount(const QModelIndex &parent) const
 
 }
 
-QVariant
-DisplayModel::data(const QModelIndex &index, int role) const
+QVariant DisplayModel::data(const QModelIndex &index, int role) const
 {
 
     if (!index.isValid() || role != Qt::DisplayRole) {
@@ -74,30 +67,35 @@ DisplayModel::data(const QModelIndex &index, int role) const
 
     }
 
-    return m_row_entries[row][column].data();
+    return m_row_entries[row][column];
 
 }
 
+void DisplayModel::add_data(size_t start, size_t end) {
 
-
-void
-DisplayModel::add_data(const proccessed_packet& pkt) {
-
+    int length = end - start;
     int row = static_cast<int>(m_row_entries.size());
 
-    beginInsertRows(QModelIndex(), row, row);
+    beginInsertRows(QModelIndex(), row, row + length);
 
-    m_row_entries.push_back(pkt.packet_row_entry);
-    m_layer_details.push_back(pkt.details);
+    for (size_t i = start; i < end + 1 ; i++) {
+
+        auto row_entry_array = RowFactory::create_row(buffer.get_ref(i)).to_array();
+
+        std::vector<QString> row_vector(row_entry_array.size());
+
+        std::ranges::transform(row_entry_array, row_vector.begin(),
+        [](const QString* ptr) {
+            return *ptr;
+        });
+
+        m_row_entries.push_back(std::move(row_vector));
+    }
+
 
     endInsertRows();
 }
 
-layer_details& DisplayModel::get_details(const int row) {
-
-    return m_layer_details[row];
-
-}
 
 
 
