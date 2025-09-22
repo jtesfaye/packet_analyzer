@@ -39,7 +39,7 @@ void PacketObserver::wait_for_next() {
             }
         }
         std::print("Indicies that are ready: {} -> {}", m_start_index, m_next_expected - 1);
-        //emit_packets_ready(m_start_index, m_next_expected - 1);
+        emit_packets_ready(m_start_index, m_next_expected - 1);
     }
 }
 
