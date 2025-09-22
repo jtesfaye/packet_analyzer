@@ -9,18 +9,19 @@
 #include <array>
 #include <layerx/ProtocolDataUnit.h>
 #include <packet/PacketUtil.h>
+#include <QtCore/qstring.h>
 
 struct row_entry {
 
-    std::string index;
-    std::string time;
-    std::string src;
-    std::string dest;
-    std::string protocol;
-    std::string length;
-    std::string info;
+    QString index;
+    QString time;
+    QString src;
+    QString dest;
+    QString protocol;
+    QString length;
+    QString info;
 
-    std::array<const std::string*, 7> to_array() {
+    std::vector<QString*> to_array() {
         return {&index, &time, &src, &dest, &protocol, &length, &info};
     }
 };

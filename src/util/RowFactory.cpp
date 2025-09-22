@@ -14,13 +14,13 @@ row_entry RowFactory::layer4_top_row(
     const NetworkPDU *addr_data) {
 
     return row_entry {
-        std::to_string(index),
-        std::to_string(time),
-        addr_data->src,
-        addr_data->dest,
-        data->name(),
-        std::to_string(length),
-        data->make_info()
+        QString::number(index),
+        QString::number(time),
+        QString::fromStdString(addr_data->src),
+        QString::fromStdString(addr_data->dest),
+        QString::fromStdString(data->name()),
+        QString::number(length),
+        QString::fromStdString(data->make_info())
     };
 }
 
@@ -30,14 +30,14 @@ row_entry RowFactory::layerx_top_row(
     size_t length,
     const ProtocolDataUnit *data) {
 
-    return row_entry{
-        std::to_string(index),
-        std::to_string(time),
-        data->src,
-        data->dest,
-        data->name(),
-        std::to_string(length),
-        data->make_info()
+    return row_entry {
+        QString::number(index),
+        QString::number(time),
+        QString::fromStdString(data->src),
+        QString::fromStdString(data->dest),
+        QString::fromStdString(data->name()),
+        QString::number(length),
+        QString::fromStdString(data->make_info())
     };
 }
 
