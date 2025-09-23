@@ -5,15 +5,15 @@
 #ifndef SESSIONFORM_H
 #define SESSIONFORM_H
 
-#include <QDialog>
 #include <QComboBox>
 #include <QSpinBox>
 #include <QCheckBox>
 #include <QToolButton>
+#include <QPushButton>
 
 
 
-class SessionFormOnline : public QDialog {
+class SessionFormOnline : public QWidget {
     Q_OBJECT
 
 public:
@@ -32,6 +32,8 @@ public:
 
     u_int8_t get_flags() const;
 
+    QPushButton* get_start_session_button() const;
+
 private:
 
     void populate_device_list() const;
@@ -48,6 +50,8 @@ private:
     QCheckBox* monitor_mode;
     QCheckBox* high_prec_time;
     QCheckBox* low_buffer_timeout;
+
+    QPushButton* start_session_button;
 
     std::vector<std::string> device_list;
     int count;

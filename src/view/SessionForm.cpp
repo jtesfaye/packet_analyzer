@@ -2,6 +2,7 @@
 // Created by jeremiah tesfaye on 6/19/25.
 //
 
+#include <QDialogButtonBox>
 #include <view/SessionForm.h>
 #include <capture/PacketCapture.h>
 #include <QDialogButtonBox>
@@ -9,13 +10,15 @@
 
 #include <QLabel>
 #include <QHBoxLayout>
+#include <QPushButton>
 
 
 SessionFormOnline::SessionFormOnline(QWidget *parent)
-: QDialog(parent)
+: QWidget(parent)
 , count(0)
 , flags(0)
 , settings(0)
+, start_session_button(nullptr)
 {
 
     auto *layout = new QFormLayout();
@@ -24,13 +27,13 @@ SessionFormOnline::SessionFormOnline(QWidget *parent)
 
     layout->addRow(setup_packet_count_box());
 
-    auto *btnBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    auto button_layout = new QHBoxLayout();
+    start_session_button = new QPushButton("Start", this);
 
-    connect(btnBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    button_layout->addStretch();
+    button_layout->addWidget(start_session_button);
 
-    connect(btnBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
-
-    layout->addRow(btnBox);
+    layout->addRow(button_layout);
 
     auto toggle_button = setup_toggle_button();
 
@@ -54,6 +57,11 @@ SessionFormOnline::SessionFormOnline(QWidget *parent)
     });
 
 }
+
+QPushButton *SessionFormOnline::get_start_session_button() const {
+    return start_session_button;
+}
+
 
 
 QWidget* SessionFormOnline::setup_packet_count_box() {
