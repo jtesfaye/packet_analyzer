@@ -10,6 +10,8 @@
 #include <condition_variable>
 
 class PacketObserver : public QObject {
+
+    Q_OBJECT
 public:
 
     explicit PacketObserver(PacketRefBuffer& buffer)

@@ -6,24 +6,24 @@
 #include <capture/PacketCapture.h>
 #include <sys/_types/_u_int8_t.h>
 
-namespace capture {
 
-  class Offline final : public PacketCapture {
-  public:
-    Offline(std::string&& path_name, int count);
 
-  protected:
+class Offline final : public PacketCapture {
+public:
+  Offline(std::string&& path_name, int count);
 
-    void
-    initialize_handle();
+protected:
 
-  private:
+  void
+  initialize_handle();
 
-    std::string m_file_path;
+private:
 
-  };
+  std::string m_file_path;
 
-}
+};
+
+
 
 
 #endif

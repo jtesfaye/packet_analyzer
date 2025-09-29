@@ -13,7 +13,6 @@
 
 
 class StartupWindow : public QMainWindow {
-
     Q_OBJECT
 
 public:
@@ -22,7 +21,6 @@ public:
     ~StartupWindow() override = default;
 
     SessionFormOnline* get_form();
-public slots:
 
     void switch_view();
 

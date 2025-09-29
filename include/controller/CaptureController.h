@@ -35,11 +35,10 @@ private:
   void connect_session_form_to_main();
 
   StartupWindow* m_window_view;
-  SessionFormOnline* session_form;
 
   QThread* consumer_thread;
 
-  std::unique_ptr<capture::PacketCapture> capture;
+  std::unique_ptr<PacketCapture> capture;
 
 };
 

@@ -29,11 +29,14 @@ StartupWindow::StartupWindow(QWidget* parent)
 
     splitter->addWidget(m_sidebar);
 
+    stacked_widget->setCurrentIndex(1);
+
     setCentralWidget(stacked_widget);
 
 }
 
 void StartupWindow::switch_view() {
+
 
     if (stacked_widget->currentIndex() == 1)
         stacked_widget->setCurrentIndex(0);

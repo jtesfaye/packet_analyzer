@@ -3,6 +3,7 @@
 //
 
 #include <util/PacketRefBuffer.h>
+#include <print>
 
 PacketRefBuffer::PacketRefBuffer(size_t capacity)
 : m_capacity(capacity) {

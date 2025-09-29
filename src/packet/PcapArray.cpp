@@ -33,8 +33,6 @@ PcapArray::add_packet_index(const size_t pkt_size) {
 
     m_packets.emplace_back(pkt_metadata{offset, pkt_size});
 
-    std::println("Current size {}", m_packets.size());
-
     m_bytes_before_insert += sizeof(packet::pcaprec_hdr_t) + pkt_size;
 
     return 0;

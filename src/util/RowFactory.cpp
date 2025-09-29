@@ -15,7 +15,7 @@ row_entry RowFactory::layer4_top_row(
 
     return row_entry {
         QString::number(index),
-        QString::number(time),
+        QString::number(time, 'f', 6),
         QString::fromStdString(addr_data->src),
         QString::fromStdString(addr_data->dest),
         QString::fromStdString(data->name()),
@@ -32,7 +32,7 @@ row_entry RowFactory::layerx_top_row(
 
     return row_entry {
         QString::number(index),
-        QString::number(time),
+        QString::number(time, 'f', 6),
         QString::fromStdString(data->src),
         QString::fromStdString(data->dest),
         QString::fromStdString(data->name()),

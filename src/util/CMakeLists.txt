@@ -3,6 +3,7 @@ add_library(util
         RowFactory.cpp
         PacketRefBuffer.cpp
         PacketObserver.cpp
+        ${CMAKE_SOURCE_DIR}/include/util/PacketObserver.h
 
 )
 

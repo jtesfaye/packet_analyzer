@@ -35,6 +35,8 @@ public:
 
     size_t write(const pcap_pkthdr* header, const u_char* data) const;
 
+    void flush() const;
+
     size_t get_file_size() const {return m_file_size;}
 
     size_t get_packet_count() const {return m_array->size();}
@@ -50,6 +52,7 @@ private:
     pcap_dumper_t* m_dumper;
     size_t m_buffer_size;
     pcap_file_header m_header;
+
     int m_pcap_fd;
     std::unique_ptr<PcapReader> m_reader;
     std::shared_ptr<PcapArray> m_array;

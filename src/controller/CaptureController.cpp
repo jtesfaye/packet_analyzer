@@ -2,65 +2,24 @@
 
 #include <controller/CaptureController.h>
 #include <iostream>
+#include <print>
 #include <QMenuBar>
 #include <view/SessionForm.h>
-#include <util/PacketGetter.h>
-#include <util/DetailsReader.h>
-#include <packet/LayerWrappers.h>
 #include <util/PacketObserver.h>
 
 CaptureController::CaptureController() :
-m_window_view(new MainWindow()),
-m_model(new DisplayModel(this))
+m_window_view(new StartupWindow()),
+consumer_thread()
 {
 
     consumer_thread = nullptr;
 
-    qRegisterMetaType<proccessed_packet>("proccessed_packet");
-
     init_menubar();
 
-    m_window_view->get_table_view()->setModel(m_model);
-
-    //when a new packet(s) comes in, the controller will notify the model
-    connect(this,
-        &CaptureController::update_model,
-        m_model,
-        &DisplayModel::add_data
-        );
-
-
-    //signal for when a row on the table is selected
-    connect(
-        m_window_view->get_table_view(),
-        &QTableView::clicked,
-        m_window_view,
-        [this](const QModelIndex &index) {
-
-            emit m_window_view->packetSelected(index.row());
-
-        });
-
-
-    //after a row is selected, controller get the packet parsed.
-    connect(
-        m_window_view,
-        &MainWindow::packetSelected,
-        this,
-        &CaptureController::get_packet_details
-        );
-
-
-    /*  The view has a sidebar that displays details of a packet, when the controller gets data to display,
-     *  this signal passes that string to the view
-     */
-    connect(this,
-        &CaptureController::display_details,
-        m_window_view,
-        &MainWindow::displayPacketDetails
-        );
+    connect_session_form_to_main();
 
     m_window_view->show();
+
 }
 
 void CaptureController::init_menubar() {
@@ -77,28 +36,29 @@ void CaptureController::init_menubar() {
 
 }
 
+void CaptureController::connect_session_form_to_main() {
+
+    const QPushButton* form = m_window_view->get_form()->get_start_session_button();
+
+    connect(form, &QPushButton::clicked, this, &CaptureController::start_session);
+
+}
 
 void CaptureController::start_session() {
 
-    if (SessionFormOnline form(m_window_view); form.exec() == QDialog::Accepted) {
-        const std::string device_name = form.device_selected();
-        const int count = form.get_packet_count();
-        const int cap_size = form.get_capture_size();
-        const u_int8_t settings = form.get_settings();
-        const u_int8_t flags = form.get_flags();
+    auto form = m_window_view->get_form();
 
-        start_online_capture(device_name, count, cap_size, settings, flags);
-    }
+    const std::string device_name = form->device_selected();
+    const int count = form->get_packet_count();
+    const int cap_size = form->get_capture_size();
+    const u_int8_t settings = form->get_settings();
+    const u_int8_t flags = 0x1111;
 
-}
+    m_window_view->switch_view();
 
-
-void CaptureController::send_to_model(const proccessed_packet& pkt) {
-
-    emit update_model(pkt);
+    start_online_capture(device_name, count, cap_size, settings, flags);
 
 }
-
 
 void
 CaptureController::start_online_capture
@@ -106,6 +66,7 @@ CaptureController::start_online_capture
 
     using namespace capture;
 
+    flags = 0xff;
     capture = PacketCapture::createOnlineCapture(
         device_name
         , count
@@ -114,38 +75,47 @@ CaptureController::start_online_capture
         , flags);
 
     PacketRefBuffer* buffer_ref = capture->get_buffer().get();
+    PacketObserver* observer = capture->get_observer().get();
 
+    DisplayModel* model = new DisplayModel{*buffer_ref, this};
 
+    m_window_view->get_table_view()->setModel(model);
+
+    consumer_thread = new QThread;
+
+    observer->moveToThread(consumer_thread);
+
+    connect(consumer_thread, &QThread::started, observer, &PacketObserver::wait_for_next);
+
+    connect(
+        observer,
+        &PacketObserver::emit_packets_ready,
+        model,
+        &DisplayModel::add_data,
+        Qt::QueuedConnection);
+
+    consumer_thread->start();
+
+    m_window_view->get_table_view()->setModel(model);
+
+    m_window_view->show();
+
+    std::thread capture_thread([&] {
+
+        capture->start_capture();
+
+        while (true) {
+
+        }
+
+    });
+
+    capture_thread.detach();
 
 }
 
 
-DisplayModel *CaptureController::get_model() const {
 
-    return m_model;
-
-}
-
-
-void CaptureController::get_packet_details(const int row) {
-
-    DetailsReader str_repr;
-    auto&[layer2_details, layer_3_details, layer2_str] = m_model->get_details(row);
-    link_layer& layer2 = *layer2_details;
-
-    layer2_str = std::visit([&](auto&& arg) {
-
-        return str_repr(arg);
-
-    }, layer2);
-
-    //then get a string of said string
-
-    std::string full_details {layer2_str + "\n"};
-
-    emit display_details(full_details);
-
-}
 
 
 

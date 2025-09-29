@@ -2,6 +2,8 @@
 // Created by jeremiah tesfaye on 5/18/25.
 //
 
+#include <iostream>
+#include <print>
 #include <model/DisplayModel.h>
 #include <util/RowFactory.h>
 
@@ -62,13 +64,11 @@ QVariant DisplayModel::data(const QModelIndex &index, int role) const
 
     if (row >= static_cast<int>(m_row_entries.size()) || column >= static_cast<int>(m_column_names.size())) {
 
-
         return {};
 
     }
 
     return m_row_entries[row][column];
-
 }
 
 void DisplayModel::add_data(size_t start, size_t end) {
@@ -76,22 +76,24 @@ void DisplayModel::add_data(size_t start, size_t end) {
     int length = end - start;
     int row = static_cast<int>(m_row_entries.size());
 
+    std::println("Adding to model: {} to {}", start, end);
+
     beginInsertRows(QModelIndex(), row, row + length);
 
-    for (size_t i = start; i < end + 1 ; i++) {
+    for (size_t i = start; i <= end; i++) {
 
-        auto row_entry_array = RowFactory::create_row(buffer.get_ref(i)).to_array();
+        auto pkt_row_entry = RowFactory::create_row(buffer.get_ref(i));
+        auto row_array = pkt_row_entry.to_array();
 
-        std::vector<QString> row_vector(row_entry_array.size());
+        std::vector<QString> row_vector(row_array.size());
 
-        std::ranges::transform(row_entry_array, row_vector.begin(),
+        std::ranges::transform(row_array, row_vector.begin(),
         [](const QString* ptr) {
             return *ptr;
         });
 
-        m_row_entries.push_back(std::move(row_vector));
+        m_row_entries.push_back(row_vector);
     }
-
 
     endInsertRows();
 }

@@ -24,94 +24,71 @@ namespace capture {
   constexpr u_int8_t PRECISION = 0x04;
   constexpr u_int8_t HIGH_TRAFF = 0x02;
 
-  class PacketCapture {
-  protected:
-
-    int _packets_to_capture;
-
-    int m_data_link;
-
-    char errbuf[PCAP_ERRBUF_SIZE]{};
-
-    static void free_devices(pcap_if_t* devlist);
-
-    static void close_handle(pcap_t* handle);
-
-    std::shared_ptr<PacketRefBuffer> _buffer;
-
-    std::unique_ptr<pcap_t, decltype(&close_handle)> _handle;
-
-    std::unique_ptr<pcap_if_t, decltype(&free_devices)> _device_list;
-
-    [[nodiscard]] pcap_t* handle() const;
-
-    [[nodiscard]] pcap_if_t* devices() const;
-
-    void set_data_link(int dlt);
-
-    void set_buffer(const std::shared_ptr<PacketRefBuffer> &);
-
-    explicit PacketCapture();
-
-  public:
-
-    std::shared_ptr<PacketRefBuffer> get_buffer();
-
-    static std::unique_ptr<PacketCapture> createOnlineCapture
-    (std::string& device_name, int count, int capture_size, u_int8_t settings, u_int8_t flags);
-
-    static std::unique_ptr<PacketCapture> createOfflineCapture
-    (std::string& path_name,int count);
-
-    int get_datalink() const;
-
-    static std::vector<std::string> get_devices();
-
-    void start_capture() const;
-
-    void stop_capture();
-
-    PacketCapture(const PacketCapture&) = delete;
-    PacketCapture& operator=(const PacketCapture&) = delete;
-
-    virtual ~PacketCapture();
-
-  private:
-
-    static void pcap_loop_callback(u_char* data, const pcap_pkthdr* header, const u_char* packet);
-
-    struct capture_objects {
-
-      static capture_objects setup_capture(
-        const char* file_path,
-        PacketParse& parser,
-        const std::shared_ptr<PacketRefBuffer>&,
-        int thread_count,
-        pcap_t* handle
-        );
-
-      static capture_objects make(PacketParse& p,
-        PacketRefBuffer* b,
-        ThreadPool& tp,
-        PacketObserver& o,
-        PcapFile& f);
-
-      PacketParse& parser;
-      PacketRefBuffer* pktref_buffer;
-      ThreadPool& tpool;
-      PacketObserver& pkt_observer;
-      PcapFile& file;
-
-      capture_objects(PacketParse& p,
-        PacketRefBuffer* b,
-        ThreadPool& tp,
-        PacketObserver& o,
-        PcapFile& f);
-    };
-
-  };
-
 }
+
+class PacketCapture {
+public:
+
+  static std::unique_ptr<PacketCapture> createOnlineCapture(
+    std::string& device_name,
+    int count,
+    int capture_size,
+    u_int8_t settings,
+    u_int8_t flags);
+
+  static std::unique_ptr<PacketCapture> createOfflineCapture(std::string& path_name,int count);
+
+  std::shared_ptr<PacketRefBuffer> get_buffer();
+
+  std::shared_ptr<PacketObserver> get_observer();
+
+  static std::vector<std::string> get_devices();
+
+  int get_datalink() const;
+
+  void start_capture();
+
+  void stop_capture();
+
+  PacketCapture(const PacketCapture&) = delete;
+  PacketCapture& operator=(const PacketCapture&) = delete;
+  virtual ~PacketCapture();
+
+protected:
+
+  explicit PacketCapture();
+
+  virtual void capture_func();
+
+  static void free_devices(pcap_if_t* devlist);
+
+  static void close_handle(pcap_t* handle);
+
+  pcap_t* handle() const;
+
+  pcap_if_t* devices() const;
+
+  void set_data_link(int dlt);
+
+  void set_buffer(const std::shared_ptr<PacketRefBuffer>&);
+
+  void set_observer(const std::shared_ptr<PacketObserver>&);
+
+  std::unique_ptr<pcap_t, decltype(&close_handle)> _handle;
+
+  std::unique_ptr<pcap_if_t, decltype(&free_devices)> _device_list;
+
+  int _packets_to_capture;
+
+  int m_data_link;
+
+  char errbuf[PCAP_ERRBUF_SIZE]{};
+
+  std::shared_ptr<PacketRefBuffer> _buffer;
+  std::shared_ptr<PacketObserver> observer;
+
+};
+
 
 
 

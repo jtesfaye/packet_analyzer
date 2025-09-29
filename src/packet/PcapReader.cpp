@@ -21,14 +21,17 @@ MmapPcapReader::read(size_t offset, size_t len) {
     return {start, end};
 }
 
-const std::vector<std::byte>
-IoPcapReader::read(size_t offset, size_t len) {
+const std::vector<std::byte> IoPcapReader::read(size_t offset, size_t len) {
 
     std::vector<std::byte> buffer(len);
 
     ssize_t bytes_read = pread(m_fd, buffer.data(), len, offset);
 
-    if (bytes_read <= 0) throw std::runtime_error("pread failed");
+    if (bytes_read <= 0) {
+
+        throw std::runtime_error(std::string("pread failed: ") + strerror(errno));
+    }
+
 
     buffer.resize(bytes_read);
     return buffer;

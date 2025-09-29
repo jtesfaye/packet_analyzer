@@ -20,6 +20,7 @@ void ThreadPool::submit(F&& f, Args&&... args) {
         f(std::forward<Args>(args)...);
     });
 
+     m_work_to_do.notify_all();
 }
 
 inline void ThreadPool::do_work() {

@@ -9,25 +9,31 @@
 PcapFile::PcapFile(const char* file_name, pcap_t* handle, size_t buffer_size)
 : m_file_name(file_name)
 , m_file(file_name, std::ios::binary)
-, m_dumper(pcap_dump_open(handle, file_name))
 , m_buffer_size(buffer_size)
 , m_header()
 , m_array(std::make_unique<PcapArray>(m_file_size, m_global_header_size))
 {
 
+    FILE* pcap_file = fopen(file_name, "w");
+
+    if (!pcap_file) {
+        throw std::runtime_error(std::string("Failed to open dumper file: ") + strerror(errno));
+    }
+
+    m_pcap_fd = pcap_file->_file;
+
+    m_dumper = pcap_dump_fopen(handle, pcap_file);
+
     if (!m_dumper) {
         throw std::runtime_error("PcapFile: pcap_dump_open failed");
     }
 
-    m_file_size = -1;
+    m_pcap_fd = open(file_name, O_RDONLY);
+    if (m_pcap_fd < 0) {
+        throw std::runtime_error(std::string("Failed to open fd for reader: ") + strerror(errno));
+    }
 
-    FILE* f = pcap_dump_file(m_dumper);
-
-    m_pcap_fd = f->_file;
-
-    setvbuf(f, nullptr, _IOFBF, buffer_size);
-
-    m_file.read(reinterpret_cast<char*> (&m_header), sizeof(m_header));
+    m_file.read(reinterpret_cast<char*>(&m_header), sizeof(m_header));
 
     m_reader = create_reader(ReaderType::IO);
 
@@ -39,7 +45,6 @@ PcapFile::PcapFile(const char *file_path)
 , m_dumper(nullptr)
 , m_buffer_size(-1)
 , m_header()
-, m_pcap_fd(-1)
 {
 
     if (m_file) {
@@ -92,6 +97,12 @@ std::vector<std::byte> PcapFile::read(size_t index) const {
     return m_reader->read(meta.offset, meta.pkt_size);
 
 }
+
+void PcapFile::flush() const {
+
+    pcap_dump_flush(m_dumper);
+}
+
 
 
 
