@@ -19,6 +19,8 @@ public:
 
     static std::string format_ipv4_src_dst(const u_int32_t& addr);
 
+    static std::string format_ipv6_src_dest(const u_int8_t* addr);
+
 };
 
 
