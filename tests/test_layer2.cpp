@@ -21,7 +21,7 @@ protected:
 
 TEST_F(Layer2Test, EthernetTest) {
 
-    ParseDispatcher<std::unique_ptr<LinkPDU>, true> link_parser(
+    ParseDispatcher<std::unique_ptr<ProtocolDataUnit>, true> link_parser(
         DLT_EN10MB,
         Layer2::get_all_functions());
 
@@ -29,7 +29,7 @@ TEST_F(Layer2Test, EthernetTest) {
 
     context.offset = 16;
 
-    std::unique_ptr<LinkPDU> ether = link_parser(raw_data, context);
+    std::unique_ptr<ProtocolDataUnit> ether = link_parser(raw_data, context);
 
     ASSERT_NE(ether, nullptr);
 

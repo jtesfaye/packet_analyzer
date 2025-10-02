@@ -24,7 +24,7 @@ TEST_F(Layer4Test, TCPParseSuccess) {
 
     int key = layer::iana::TCP;
 
-    ParseDispatcher<std::unique_ptr<TransportPDU>, false> transport_parse(
+    ParseDispatcher<std::unique_ptr<ProtocolDataUnit>, false> transport_parse(
         Layer4::get_all_functions());
 
     auto raw_data = file.read(2);

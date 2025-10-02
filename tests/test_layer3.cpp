@@ -25,7 +25,7 @@ TEST_F(Layer3Test, IPv4ParseTest) {
 
     int key = iana::IPV4;
 
-    ParseDispatcher<std::unique_ptr<NetworkPDU>, false> net_parse(
+    ParseDispatcher<std::unique_ptr<ProtocolDataUnit>, false> net_parse(
         Layer3::get_all_functions());
 
     auto raw_data = file.read(0);
