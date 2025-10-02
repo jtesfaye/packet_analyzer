@@ -39,6 +39,24 @@ std::string PacketRead::format_ipv4_src_dst(const u_int32_t& src_dest_add) {
         );
 }
 
+std::string PacketRead::format_ipv6_src_dest(const u_int8_t *addr) {
+
+    std::ostringstream oss;
+    for (int i = 0; i < 16; i++) {
+
+        // If i is greater than 0 and even.
+        if (i > 0 && i & !(i & 1)) {
+            oss << ":";
+        }
+
+        oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(addr[i]);
+
+    }
+
+    return oss.str();
+}
+
+
 bool PacketRead::valid_length(
     const std::vector<std::byte> &data,
     const size_t offset,
