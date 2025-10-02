@@ -7,19 +7,15 @@
 
 #include <functional>
 #include <vector>
-#include <packet/PacketUtil.h>
-
-using parse_function = std::function<std::unique_ptr<TransportPDU>(
-    const std::vector<std::byte>&,
-    packet::parse_context&)>;
+#include <layerx/Layer.h>
 
 struct Layer4Registry {
-    static std::vector<std::pair<const int, parse_function>>& get_registry() {
-        static std::vector<std::pair<const int, parse_function>> registry;
+    static std::vector<std::pair<const int, Layer::function>>& get_registry() {
+        static std::vector<std::pair<const int, Layer::function>> registry;
         return registry;
     }
 
-    Layer4Registry(int key, parse_function func) {
+    Layer4Registry(int key, Layer::function func) {
         get_registry().push_back(std::pair{key, func});
     }
 

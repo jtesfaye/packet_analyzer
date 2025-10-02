@@ -56,11 +56,11 @@ private:
 
   std::once_flag time_init_flag;
 
-  ParseDispatcher<std::unique_ptr<LinkPDU>, true> link_parser;
+  ParseDispatcher<std::unique_ptr<ProtocolDataUnit>, true> link_parser;
 
-  ParseDispatcher<std::unique_ptr<NetworkPDU>, false> net_parser;
+  ParseDispatcher<std::unique_ptr<ProtocolDataUnit>, false> net_parser;
 
-  ParseDispatcher<std::unique_ptr<TransportPDU>, false> transport_parser;
+  ParseDispatcher<std::unique_ptr<ProtocolDataUnit>, false> transport_parser;
 
 };
 

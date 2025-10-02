@@ -9,6 +9,7 @@
 #include <pcap/pcap.h>
 #include <sstream>
 #include <iomanip>
+#include <layerx/ProtocolDataUnit.h>
 
 struct LinkPDU;
 struct NetworkPDU;
@@ -60,9 +61,9 @@ namespace packet {
     double time{};
     size_t length{};
     layer_offsets data{};
-    std::unique_ptr<LinkPDU> layer2;
-    std::unique_ptr<NetworkPDU> layer3;
-    std::unique_ptr<TransportPDU> layer4;
+    std::unique_ptr<ProtocolDataUnit> layer2;
+    std::unique_ptr<ProtocolDataUnit> layer3;
+    std::unique_ptr<ProtocolDataUnit> layer4;
 
     packet_ref();
     ~packet_ref();

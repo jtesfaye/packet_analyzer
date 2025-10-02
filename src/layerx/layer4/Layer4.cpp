@@ -6,7 +6,7 @@
 #include <layerx/layer4/TCP.h>
 #include <layerx/layer4/ICMP.h>
 
-std::unique_ptr<TransportPDU> Layer4::unsupported_layer(
+std::unique_ptr<TransportPDU> Layer4::unsupported_type(
     const std::vector<std::byte>&,
     packet::parse_context&) {
     return nullptr;
@@ -16,7 +16,7 @@ const std::vector<std::pair<const int, Layer4::function> > Layer4::get_all_funct
 
     (void)tcp_functions::get_tcp_registry();
     (void)icmp_functions::get_icmp_registry();
-    Layer4Registry(-1, unsupported_layer);
+    Layer4Registry(-1, unsupported_type);
 
     return Layer4Registry::get_registry();
 }
