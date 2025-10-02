@@ -50,8 +50,8 @@ row_entry RowFactory::create_row(packet_ref &ref) {
             ref.index,
             ref.time,
             ref.length,
-            ref.layer4.get(),
-            ref.layer3.get()
+            dynamic_cast<const TransportPDU *>(ref.layer4.get()),
+            dynamic_cast<const NetworkPDU *>(ref.layer3.get())
             );
     }
 
