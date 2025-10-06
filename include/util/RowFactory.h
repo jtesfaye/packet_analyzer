@@ -48,6 +48,10 @@ private:
         size_t length,
         const ProtocolDataUnit* data);
 
+    static row_entry layerx_error_row(
+        size_t index,
+        double time);
+
 };
 
 #endif //ROWFACTORY_H

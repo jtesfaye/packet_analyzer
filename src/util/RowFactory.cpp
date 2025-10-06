@@ -41,6 +41,22 @@ row_entry RowFactory::layerx_top_row(
     };
 }
 
+row_entry RowFactory::layerx_error_row(size_t index,
+    double time) {
+
+    return row_entry {
+        QString::number(index),
+        QString::number(time, 'f', 6),
+        "null",
+        "null",
+        "null",
+        "null",
+        "Error with packet"
+    };
+
+}
+
+
 row_entry RowFactory::create_row(packet_ref &ref) {
 
     //if layer4 is defined, info and protocol field will be in place for that layer
@@ -66,11 +82,14 @@ row_entry RowFactory::create_row(packet_ref &ref) {
             );
     }
 
-    //otherwise default to layer2 data
-    return layerx_top_row(
+
+    if (ref.layer2)
+        return layerx_top_row(
         ref.index,
         ref.time,
         ref.length,
         ref.layer2.get()
         );
+
+    return layerx_error_row(ref.index, ref.time);
 }
