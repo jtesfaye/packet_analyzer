@@ -16,6 +16,8 @@ consumer_thread()
 
     init_menubar();
 
+    init_start_btn(m_window_view->get_start_session_btn());
+
     connect_session_form_to_main();
 
     m_window_view->show();
@@ -36,6 +38,17 @@ void CaptureController::init_menubar() {
 
 }
 
+void CaptureController::init_start_btn(QPushButton *btn) {
+
+    connect(btn, &QPushButton::clicked, this, [=]() {
+
+        m_window_view->get_form()->show();
+
+    });
+
+}
+
+
 void CaptureController::connect_session_form_to_main() {
 
     const QPushButton* form = m_window_view->get_form()->get_start_session_button();
@@ -48,16 +61,15 @@ void CaptureController::start_session() {
 
     auto form = m_window_view->get_form();
 
-    const std::string device_name = form->device_selected();
-    const int count = form->get_packet_count();
-    const int cap_size = form->get_capture_size();
-    const u_int8_t settings = form->get_settings();
-    const u_int8_t flags = 0x1111;
+    if (form->isOnline()) {
 
-    m_window_view->switch_view();
-
-    start_online_capture(device_name, count, cap_size, settings, flags);
-
+        start_online_capture(form->device_selected(),
+            form->get_packet_count(),
+            form->get_capture_size(),
+            form->get_settings(),
+            0x1111
+        );
+    }
 }
 
 void

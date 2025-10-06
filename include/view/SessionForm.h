@@ -10,37 +10,52 @@
 #include <QCheckBox>
 #include <QToolButton>
 #include <QPushButton>
+#include <QDialog>
+#include <QFormLayout>
+#include <QGroupBox>
+#include <QRadioButton>
 
 
 
-class SessionFormOnline : public QWidget {
+class SessionForm : public QDialog {
     Q_OBJECT
 
 public:
 
-    explicit SessionFormOnline(QWidget* parent = nullptr);
+    explicit SessionForm(QWidget* parent = nullptr);
 
-    ~SessionFormOnline() override = default;
+    ~SessionForm() override = default;
 
-    int get_packet_count() const;
+    [[nodiscard]] int get_packet_count() const;
 
-    std::string device_selected() const;
+    [[nodiscard]] std::string device_selected() const;
 
-    int get_capture_size() const;
+    [[nodiscard]] int get_capture_size() const;
+
+    [[nodiscard]] u_int8_t get_flags() const;
+
+    [[nodiscard]] QPushButton* get_start_session_button() const;
+
+    [[nodiscard]] QString get_file_path() const;
+
+    bool isOnline() {
+        return is_online;
+    }
 
     u_int8_t get_settings();
 
-    u_int8_t get_flags() const;
-
-    QPushButton* get_start_session_button() const;
-
 private:
+
+    [[nodiscard]] QGroupBox* setup_online_form();
+    [[nodiscard]] QGroupBox* setup_offline_form();
 
     void populate_device_list() const;
     QWidget* setup_packet_count_box();
     QWidget* setup_device_list_box();
     QToolButton* setup_toggle_button();
     QWidget* setup_more_settings_section();
+
+    QLineEdit* file_path;
 
     QComboBox* device_list_combo;
     QSpinBox* packet_count_box;
@@ -58,6 +73,7 @@ private:
     u_int8_t settings;
     u_int8_t flags;
 
+    bool is_online;
 
 };
 

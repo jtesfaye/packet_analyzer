@@ -30,6 +30,10 @@ private:
 
   void init_menubar();
 
+  void init_start_btn(QPushButton* btn);
+
+  void init_stop_btn(QPushButton* btn);
+
   void start_session();
 
   void connect_session_form_to_main();

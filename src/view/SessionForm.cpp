@@ -5,35 +5,107 @@
 #include <QDialogButtonBox>
 #include <view/SessionForm.h>
 #include <capture/PacketCapture.h>
-#include <QDialogButtonBox>
 #include <QFormLayout>
-
 #include <QLabel>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <QLineEdit>
+#include <QFileDialog>
 
 
-SessionFormOnline::SessionFormOnline(QWidget *parent)
-: QWidget(parent)
+SessionForm::SessionForm(QWidget *parent)
+: QDialog(parent)
 , count(0)
 , flags(0)
 , settings(0)
 , start_session_button(nullptr)
 {
 
-    auto *layout = new QFormLayout();
+    auto main_layout = new QVBoxLayout(this);
+
+    auto offline_box = setup_offline_form();
+    auto online_box = setup_online_form();
+
+    connect(offline_box, &QGroupBox::toggled, online_box, [=](bool toggled) {
+
+        if (toggled)
+            online_box->setChecked(false);
+            is_online = false;
+
+    });
+
+    connect(online_box, &QGroupBox::toggled, offline_box, [=](bool toggled) {
+
+        if(toggled)
+            offline_box->setChecked(false);
+            is_online = true;
+
+    });
+
+    main_layout->addWidget(offline_box);
+    main_layout->addWidget(online_box);
+
+    auto btn_widget = new QWidget(this);
+    auto btn_layout = new QHBoxLayout(this);
+
+    start_session_button = new QPushButton("Start", this);
+
+    btn_layout->addStretch();
+    btn_layout->addWidget(start_session_button);
+    btn_widget->setLayout(btn_layout);
+
+    main_layout->addWidget(btn_widget);
+
+    setLayout(main_layout);
+
+}
+
+QPushButton *SessionForm::get_start_session_button() const {
+    return start_session_button;
+}
+
+QGroupBox *SessionForm::setup_offline_form() {
+
+    file_path = new QLineEdit(this);
+    file_path->setReadOnly(true);
+
+    auto file_select_btn = new QPushButton("&Select .pcap",this);
+
+    connect(file_select_btn, &QPushButton::clicked, this, [=]() {
+
+        QString path = QFileDialog::getOpenFileName(this,
+            "Select a file",
+            "",
+            "PCAP Files (*.pcap)");
+
+        if (!path.isEmpty()) {
+            file_path->setText(path);
+        }
+    });
+
+    auto layout = new QHBoxLayout(this);
+
+    layout->addWidget(file_path);
+    layout->addWidget(file_select_btn);
+
+    auto offline_group_box = new QGroupBox("offline capture");
+    offline_group_box->setCheckable(true);
+    offline_group_box->setChecked(false);
+
+    offline_group_box->setLayout(layout);
+
+    return offline_group_box;
+
+}
+
+
+QGroupBox *SessionForm::setup_online_form() {
+
+    auto *layout = new QFormLayout(this);
 
     layout->addRow(setup_device_list_box());
 
     layout->addRow(setup_packet_count_box());
-
-    auto button_layout = new QHBoxLayout();
-    start_session_button = new QPushButton("Start", this);
-
-    button_layout->addStretch();
-    button_layout->addWidget(start_session_button);
-
-    layout->addRow(button_layout);
 
     auto toggle_button = setup_toggle_button();
 
@@ -42,8 +114,6 @@ SessionFormOnline::SessionFormOnline(QWidget *parent)
     auto adv_settings_widget = setup_more_settings_section();
 
     layout->addRow(adv_settings_widget);
-
-    this->setLayout(layout);
 
     //toggle show/hide button
     connect(toggle_button, &QToolButton::toggled, [=](bool checked) {
@@ -56,15 +126,16 @@ SessionFormOnline::SessionFormOnline(QWidget *parent)
         toggle_button->setText(checked ? "Hide more settings ▲" : "Show more settings ▼");
     });
 
+    auto box = new QGroupBox("Online capture");
+    box->setCheckable(true);
+    box->setLayout(layout);
+    box->setChecked(false);
+
+    return box;
 }
 
-QPushButton *SessionFormOnline::get_start_session_button() const {
-    return start_session_button;
-}
 
-
-
-QWidget* SessionFormOnline::setup_packet_count_box() {
+QWidget* SessionForm::setup_packet_count_box() {
 
     auto container = new QWidget(this);
 
@@ -88,7 +159,7 @@ QWidget* SessionFormOnline::setup_packet_count_box() {
 
 }
 
-QWidget *SessionFormOnline::setup_device_list_box() {
+QWidget *SessionForm::setup_device_list_box() {
 
     auto container = new QWidget(this);
 
@@ -111,7 +182,7 @@ QWidget *SessionFormOnline::setup_device_list_box() {
 }
 
 
-QToolButton* SessionFormOnline::setup_toggle_button() {
+QToolButton* SessionForm::setup_toggle_button() {
 
     QToolButton* toggle_button = new QToolButton(this);
 
@@ -126,7 +197,7 @@ QToolButton* SessionFormOnline::setup_toggle_button() {
 }
 
 
-QWidget *SessionFormOnline::setup_more_settings_section() {
+QWidget *SessionForm::setup_more_settings_section() {
 
     auto* settings_widget = new QWidget(this);
 
@@ -174,12 +245,8 @@ QWidget *SessionFormOnline::setup_more_settings_section() {
 
 }
 
-
-
-
-
 void
-SessionFormOnline::populate_device_list() const {
+SessionForm::populate_device_list() const {
 
     using namespace capture;
 
@@ -193,10 +260,8 @@ SessionFormOnline::populate_device_list() const {
 
 }
 
-
-
 int
-SessionFormOnline::get_packet_count() const {
+SessionForm::get_packet_count() const {
 
     return packet_count_box->value();
 
@@ -204,25 +269,21 @@ SessionFormOnline::get_packet_count() const {
 
 
 std::string
-SessionFormOnline::device_selected() const {
+SessionForm::device_selected() const {
 
     return device_list_combo->currentText().toStdString();
 
 }
 
-
-
 int
-SessionFormOnline::get_capture_size() const {
+SessionForm::get_capture_size() const {
 
     return capture_size_spin_box->value();
 
 }
 
-
-
 u_int8_t
-SessionFormOnline::get_settings() {
+SessionForm::get_settings() {
 
     using namespace capture;
 
@@ -255,11 +316,21 @@ SessionFormOnline::get_settings() {
 
 }
 
-
 u_int8_t
-SessionFormOnline::get_flags() const {
+SessionForm::get_flags() const {
 
     return flags;
+
+}
+
+
+QString SessionForm::get_file_path() const {
+
+    if (file_path->text().isEmpty()) {
+        throw std::runtime_error("No file selected");
+    }
+
+    return file_path->text();
 
 }
 
