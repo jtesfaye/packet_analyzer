@@ -46,7 +46,12 @@ namespace layer::transport {
 
     };
 
-    struct upd_header {
+    struct udp_header {
+
+        u_int16_t src;
+        u_int16_t dest;
+        u_int16_t len;
+        u_int16_t checksum;
 
     };
 
