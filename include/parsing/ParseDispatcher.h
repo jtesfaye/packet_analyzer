@@ -42,14 +42,18 @@ public:
 
     template<bool F = Fixed, typename = std::enable_if_t<F>>
     RefType operator() (const std::vector<std::byte> &raw_data, parse_context& context) const {
+
         return parse_func(raw_data, context);
+
     }
 
     template<bool F = Fixed, typename = std::enable_if_t<!F>>
     RefType operator() (int key, const std::vector<std::byte> &raw_data, parse_context& context) {
 
         if (auto k = func_table.find(key) == func_table.end()) {
+
             return func_table.at(-1)(raw_data, context);
+
         }
 
         return func_table.at(key)(raw_data, context);
