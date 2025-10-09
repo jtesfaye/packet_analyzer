@@ -37,7 +37,6 @@ std::string IPv6::make_info() const {
     }
 
     return info;
-
 }
 
 std::string IPv6::name() const {
@@ -47,7 +46,6 @@ std::string IPv6::name() const {
 Layer3Registry &IPv6_functions::get_ipv6_registry() {
     static Layer3Registry ipv6_reg(layer::iana::IPV6, ipv6_parse);
     return ipv6_reg;
-
 }
 
 std::unique_ptr<NetworkPDU> IPv6_functions::ipv6_parse(
@@ -65,14 +63,13 @@ std::unique_ptr<NetworkPDU> IPv6_functions::ipv6_parse(
         return nullptr;
     }
 
-    size_t payload_length = ntohs(ipv6_hdr->payload_length);
     size_t next_protocol = ipv6_hdr->next_header;
 
-    context.curr_length = payload_length;
+    context.curr_length = sizeof(ipv6_header);
     context.next_type = next_protocol;
 
     return std::make_unique<IPv6>(
-        payload_length,
+        context.curr_length,
         PacketRead::format_ipv6_src_dest(ipv6_hdr->src_addr),
         PacketRead::format_ipv6_src_dest(ipv6_hdr->dst_addr),
         next_protocol
