@@ -24,10 +24,16 @@ protected:
         }
     }
 
-    void print_arr(const std::array<const std::string*, 7> row) {
+    void print_arr(const std::vector<QString*>& row) {
 
         std::print("{}, {}, {}, {}, {}, {}, {} \n",
-            *row[0], *row[1], *row[2], *row[3], *row[4], *row[5], *row[6]);
+            row[0]->toStdString(),
+            row[1]->toStdString(),
+            row[2]->toStdString(),
+            row[3]->toStdString(),
+            row[4]->toStdString(),
+            row[5]->toStdString(),
+            row[6]->toStdString());
     }
 
     int dlt = DLT_EN10MB;

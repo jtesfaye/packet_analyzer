@@ -40,4 +40,6 @@ TEST_F(Layer4Test, TCPParseSuccess) {
     EXPECT_EQ(tcp->dest, "443");
     EXPECT_EQ(tcp->length, 32);
 
+    std::cout << tcp->make_info();
+
 }

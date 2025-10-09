@@ -11,12 +11,16 @@
 class Layer3Test : public ::testing::Test {
 protected:
     Layer3Test() :
-    file(file_name.c_str())
+    file(ipv4_file_test.c_str()),
+    file2(ipv6_file_test.c_str())
     {}
 
     parse_context context{};
-    const std::string file_name = "/Users/jt/Desktop/pcap_files/ipv4frags.pcap";
+    const std::string ipv4_file_test = "/Users/jt/Desktop/pcap_files/ipv4frags.pcap";
+    const std::string ipv6_file_test = "/Users/jt/Desktop/pcap_files/mycap.pcap";
+
     PcapFile file;
+    PcapFile file2;
 
 };
 
@@ -39,5 +43,25 @@ TEST_F(Layer3Test, IPv4ParseTest) {
     EXPECT_EQ(ip->src, "2.1.1.2");
     EXPECT_EQ(ip->dest, "2.1.1.1");
     EXPECT_EQ(ip->length, 20);
+
+}
+
+TEST_F(Layer3Test, IPv6ParseTest) {
+
+    int key = iana::IPV6;
+
+    ParseDispatcher<std::unique_ptr<ProtocolDataUnit>, false> net_parse(
+        Layer3::get_all_functions());
+
+    context.offset = 30;
+
+    auto raw_data = file2.read(2);
+
+    auto ip = net_parse(key, raw_data, context);
+
+    ASSERT_NE(ip, nullptr);
+    EXPECT_EQ(ip->src, "2605:a601:ac61:f600:145:4c82:701d:1168");
+    EXPECT_EQ(ip->dest, "2606:4700:4400::ac40:94eb");
+    EXPECT_EQ(ip->length, 40);
 
 }
