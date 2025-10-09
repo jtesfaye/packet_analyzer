@@ -36,7 +36,7 @@ public:
 
     [[nodiscard]] QPushButton* get_start_session_button() const;
 
-    [[nodiscard]] QString get_file_path() const;
+    [[nodiscard]] std::string get_file_path() const;
 
     bool isOnline() {
         return is_online;

@@ -324,13 +324,13 @@ SessionForm::get_flags() const {
 }
 
 
-QString SessionForm::get_file_path() const {
+std::string SessionForm::get_file_path() const {
 
     if (file_path->text().isEmpty()) {
         throw std::runtime_error("No file selected");
     }
 
-    return file_path->text();
+    return file_path->text().toStdString();
 
 }
 
