@@ -83,13 +83,18 @@ row_entry RowFactory::create_row(packet_ref &ref) {
     }
 
 
-    if (ref.layer2)
+    if (ref.layer2) {
+
         return layerx_top_row(
         ref.index,
         ref.time,
         ref.length,
         ref.layer2.get()
         );
+
+    }
+
+
 
     return layerx_error_row(ref.index, ref.time);
 }
