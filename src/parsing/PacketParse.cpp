@@ -37,6 +37,7 @@ PacketParse::start_extract(const std::vector<std::byte> &raw_data, const size_t 
 
     //if there's an error parsing we come across an unsupported type, return false and terminate loop
     if (bool keep_going = func(pkt_ref, raw_data, context, offsets); !keep_going)
+
       break;
 
   }

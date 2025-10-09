@@ -54,8 +54,8 @@ std::unique_ptr<TransportPDU> tcp_functions::tcp_parse(
 
     return std::make_unique<TCP>(
         length,
-        std::to_string(static_cast<unsigned int>(ntohs(tcp_hdr->src))),
-        std::to_string(static_cast<unsigned int>(ntohs(tcp_hdr->dest))),
+        std::to_string(ntohs(tcp_hdr->src)),
+        std::to_string(ntohs(tcp_hdr->dest)),
         tcp_hdr->flags);
 
 }

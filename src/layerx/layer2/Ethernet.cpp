@@ -2,6 +2,7 @@
 // Created by jeremiah tesfaye on 7/27/25.
 //
 
+#include <iostream>
 #include <layerx/layer2/Ethernet.h>
 #include <util/PacketRead.h>
 #include <layerx/layer2/Layer2Registry.h>
