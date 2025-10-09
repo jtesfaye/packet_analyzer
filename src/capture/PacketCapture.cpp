@@ -40,20 +40,17 @@ PacketCapture::createOnlineCapture(
 
 std::unique_ptr<PacketCapture>
 PacketCapture::createOfflineCapture(
-  std::string &path_name,
-  int count) {
+  std::string &path_name) {
 
   auto cap = std::make_unique<Offline>(
-    std::move(path_name)
-    , count);
+    std::move(path_name));
 
-  cap->set_buffer(std::make_shared<PacketRefBuffer>(count));
+  cap->set_buffer(std::make_shared<PacketRefBuffer>(20));
+
+  auto obs = cap->get_buffer();
+  cap->set_observer(std::make_shared<PacketObserver>(*obs));
 
   return cap;
-
-}
-
-void PacketCapture::capture_func() {
 
 }
 

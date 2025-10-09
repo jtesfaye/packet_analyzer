@@ -36,7 +36,7 @@ public:
     u_int8_t settings,
     u_int8_t flags);
 
-  static std::unique_ptr<PacketCapture> createOfflineCapture(std::string& path_name,int count);
+  static std::unique_ptr<PacketCapture> createOfflineCapture(std::string& path_name);
 
   std::shared_ptr<PacketRefBuffer> get_buffer();
 
@@ -58,7 +58,7 @@ protected:
 
   explicit PacketCapture();
 
-  virtual void capture_func();
+  virtual void capture_func() = 0;
 
   static void free_devices(pcap_if_t* devlist);
 
