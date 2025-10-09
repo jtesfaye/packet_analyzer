@@ -10,7 +10,7 @@
 namespace layer::iana {
 
     constexpr u_int16_t IPV4 = 0x0800;
-    constexpr u_int16_t IPV6 = 0x08DD;
+    constexpr u_int16_t IPV6 = 0x86DD;
 
     constexpr u_int8_t ICMP = 1;
     constexpr u_int8_t TCP = 6;
