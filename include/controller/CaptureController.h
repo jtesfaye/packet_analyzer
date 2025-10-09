@@ -26,6 +26,8 @@ public:
 
   void start_online_capture(std::string, int, int, u_int8_t, u_int8_t);
 
+  void start_offline_capture(std::string);
+
 private:
 
   void init_menubar();

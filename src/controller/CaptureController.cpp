@@ -62,19 +62,24 @@ void CaptureController::start_session() {
     auto form = m_window_view->get_form();
 
     if (form->isOnline()) {
-
         start_online_capture(form->device_selected(),
             form->get_packet_count(),
             form->get_capture_size(),
             form->get_settings(),
             0x1111
         );
+    } else if (!form->isOnline()) {
+
+        start_offline_capture(form->get_file_path());
     }
 }
 
-void
-CaptureController::start_online_capture
-(std::string device_name, int count, int size, u_int8_t settings, u_int8_t flags) {
+void CaptureController::start_online_capture(
+    std::string device_name,
+    int count,
+    int size,
+    u_int8_t settings,
+    u_int8_t flags) {
 
     using namespace capture;
 
@@ -125,6 +130,52 @@ CaptureController::start_online_capture
     capture_thread.detach();
 
 }
+
+void CaptureController::start_offline_capture(std::string pcap_file) {
+
+
+    capture = PacketCapture::createOfflineCapture(pcap_file);
+
+    PacketRefBuffer* buffer_ref = capture->get_buffer().get();
+    PacketObserver* observer = capture->get_observer().get();
+
+    DisplayModel* model = new DisplayModel{*buffer_ref, this};
+
+    m_window_view->get_table_view()->setModel(model);
+
+    consumer_thread = new QThread;
+
+    observer->moveToThread(consumer_thread);
+
+    connect(consumer_thread, &QThread::started, observer, &PacketObserver::wait_for_next);
+
+    connect(
+        observer,
+        &PacketObserver::emit_packets_ready,
+        model,
+        &DisplayModel::add_data,
+        Qt::QueuedConnection);
+
+    consumer_thread->start();
+
+    m_window_view->get_table_view()->setModel(model);
+
+    m_window_view->show();
+
+    std::thread capture_thread([&] {
+
+        capture->start_capture();
+
+        while (true) {
+
+        }
+
+    });
+
+    capture_thread.detach();
+
+}
+
 
 
 
