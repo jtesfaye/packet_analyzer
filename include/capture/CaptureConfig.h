@@ -5,4 +5,21 @@
 #ifndef CAPTURECONFIG_H
 #define CAPTURECONFIG_H
 
+#include <cstdint>
+
+enum class CaptureMode {
+    Online, Offline
+  };
+
+struct CaptureConfig {
+
+    CaptureMode mode;
+    std::string source;
+    int packet_count = 0;
+    int capture_size = 255;
+    u_int8_t settings;
+    u_int8_t flags;
+
+};
+
 #endif //CAPTURECONFIG_H

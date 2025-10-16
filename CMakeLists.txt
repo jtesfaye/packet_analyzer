@@ -5,9 +5,12 @@ set(CMAKE_CXX_STANDARD 23)
 
 set(Qt6_DIR "/opt/homebrew/opt/qt")
 
+
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+
 
 find_package(Boost)
 find_package(GTest REQUIRED)

@@ -7,7 +7,7 @@
 
 #include <string>
 #include <sys/_types/_u_int8_t.h>
-#include <capture/PacketCapture.h>
+#include <capture/CaptureSession.h>
 #include <model/DisplayModel.h>
 #include <view/StartupWindow.h>
 #include <util/PacketRefBuffer.h>
@@ -24,9 +24,9 @@ public:
   CaptureController();
   ~CaptureController() override = default;
 
-  void start_online_capture(std::string, int, int, u_int8_t, u_int8_t);
+  void start_capture(const CaptureConfig&);
 
-  void start_offline_capture(std::string);
+  void stop_online_capture(const std::shared_ptr<CaptureSession>& cap);
 
 private:
 
@@ -34,17 +34,20 @@ private:
 
   void init_start_btn(QPushButton* btn);
 
-  void init_stop_btn(QPushButton* btn);
+  void init_stop_btn(QPushButton* btn, const std::shared_ptr<CaptureSession>& ses);
+
+  void connect_observer_to_model(const CaptureSession&);
 
   void start_session();
 
   void connect_session_form_to_main();
 
+  void prompt_save() const;
+
   StartupWindow* m_window_view;
 
+  std::shared_ptr<CaptureSession> current_session;
   QThread* consumer_thread;
-
-  std::unique_ptr<PacketCapture> capture;
 
 };
 

@@ -7,16 +7,16 @@
 #include <capture/PacketCapture.h>
 #include <QFormLayout>
 #include <QLabel>
-#include <QHBoxLayout>
 #include <QPushButton>
 #include <QLineEdit>
 #include <QFileDialog>
+#include <QToolButton>
 
 
 SessionForm::SessionForm(QWidget *parent)
 : QDialog(parent)
 , count(0)
-, flags(0)
+, flags(0xff)
 , settings(0)
 , start_session_button(nullptr)
 {
@@ -57,8 +57,32 @@ SessionForm::SessionForm(QWidget *parent)
     main_layout->addWidget(btn_widget);
 
     setLayout(main_layout);
-
 }
+
+CaptureConfig SessionForm::get_config() {
+
+    if (isOnline()) {
+
+        return CaptureConfig {
+            CaptureMode::Online,
+            get_device_selected(),
+            get_packet_count(),
+            get_capture_size(),
+            get_settings(),
+            get_flags(),
+        };
+    }
+
+    return CaptureConfig{
+        CaptureMode::Offline,
+        get_file_path(),
+        0,
+        0,
+        0,
+        get_flags(),
+    };
+}
+
 
 QPushButton *SessionForm::get_start_session_button() const {
     return start_session_button;
@@ -213,7 +237,7 @@ QWidget *SessionForm::setup_more_settings_section() {
 
     capture_size_spin_box->setMaximum(65535);
 
-    capture_size_spin_box->setMinimum(1);
+    capture_size_spin_box->setMinimum(128);
 
     cap_size_layout->addWidget(cap_size_label);
 
@@ -222,27 +246,15 @@ QWidget *SessionForm::setup_more_settings_section() {
     cap_size_widget->setLayout(cap_size_layout);
 
     promisc_mode = new QCheckBox("Promiscuous mode", this);
-
-    immediate_mode = new QCheckBox("Immediate mode", this);
-
-    monitor_mode = new QCheckBox("Monitor mode", this);
-
     high_prec_time = new QCheckBox("High precision timestamp", this);
-
-    low_buffer_timeout = new QCheckBox("Slow mode", this);
 
     settings_layout->addWidget(cap_size_widget);
     settings_layout->addWidget(promisc_mode);
-    settings_layout->addWidget(immediate_mode);
-    settings_layout->addWidget(monitor_mode);
     settings_layout->addWidget(high_prec_time);
-    settings_layout->addWidget(low_buffer_timeout);
 
    settings_widget->setLayout(settings_layout);
 
     return settings_widget;
-
-
 }
 
 void
@@ -255,9 +267,7 @@ SessionForm::populate_device_list() const {
     for (auto n : names) {
 
         device_list_combo->addItem(n.data());
-
     }
-
 }
 
 int
@@ -267,9 +277,8 @@ SessionForm::get_packet_count() const {
 
 }
 
-
 std::string
-SessionForm::device_selected() const {
+SessionForm::get_device_selected() const {
 
     return device_list_combo->currentText().toStdString();
 
@@ -292,24 +301,9 @@ SessionForm::get_settings() {
         settings ^= PROMISC;
     }
 
-    if (immediate_mode->isChecked()) {
-        settings ^= IMMEDIATE;
-    }
-
-    if (monitor_mode->isChecked()) {
-        settings ^= MONITOR;
-    }
-
     if (high_prec_time->isChecked()) {
 
         settings ^= PRECISION;
-    }
-
-
-    if (!low_buffer_timeout->isChecked()) {
-
-        settings ^= HIGH_TRAFF;
-
     }
 
     return settings;
@@ -322,7 +316,6 @@ SessionForm::get_flags() const {
     return flags;
 
 }
-
 
 std::string SessionForm::get_file_path() const {
 

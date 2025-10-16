@@ -3,33 +3,23 @@
 #include <capture/Online.h>
 #include <capture/Offline.h>
 #include <iostream>
-#include <span>
 #include <packet/PcapFile.h>
 
 
-PacketCapture::PacketCapture()
-: _handle(nullptr, close_handle)
-, _device_list(nullptr, free_devices)
-, _packets_to_capture(0)
-, m_data_link(-1) {
-}
+PacketCapture::PacketCapture(pcap_t* handle)
+: _handle(handle)
+, m_data_link() {}
 
 std::unique_ptr<PacketCapture>
 PacketCapture::createOnlineCapture(
-  std::string& device_name,
-  int count,
-  int capture_size,
-  u_int8_t settings,
-  u_int8_t flags) {
+  pcap_t* handle,
+  int packet_count,
+  size_t layer_flags,
+  const std::shared_ptr<PcapFile> &file) {
 
-  auto cap = std::make_unique<Online>(
-    std::move(device_name)
-    , count
-    , capture_size
-    , settings
-    , flags);
+  auto cap = std::make_unique<Online>(handle, packet_count, layer_flags, file);
 
-  cap->set_buffer(std::make_shared<PacketRefBuffer>(count));
+  cap->set_buffer(std::make_shared<PacketRefBuffer>(packet_count));
 
   auto obs = cap->get_buffer();
   cap->set_observer(std::make_shared<PacketObserver>(*obs));
@@ -40,11 +30,10 @@ PacketCapture::createOnlineCapture(
 
 std::unique_ptr<PacketCapture>
 PacketCapture::createOfflineCapture(
-  std::string &path_name) {
+  pcap_t* handle,
+  const std::shared_ptr<PcapFile>& file) {
 
-  auto cap = std::make_unique<Offline>(
-    std::move(path_name));
-
+  auto cap = std::make_unique<Offline>(handle, file);
   cap->set_buffer(std::make_shared<PacketRefBuffer>(20));
 
   auto obs = cap->get_buffer();
@@ -55,8 +44,13 @@ PacketCapture::createOfflineCapture(
 }
 
 void PacketCapture::start_capture() {
-  this->capture_func();
+  capture_func();
 }
+
+void PacketCapture::stop_capture() {
+  stop_func();
+}
+
 
 std::vector<std::string> PacketCapture::get_devices() {
 
@@ -83,32 +77,9 @@ std::vector<std::string> PacketCapture::get_devices() {
   return names;
 }
 
-void PacketCapture::free_devices (pcap_if_t* dev_list) {
-  if (!dev_list) {
-    return;
-  }
-
-  pcap_freealldevs(dev_list);
-
-}
-
-void PacketCapture::close_handle(pcap_t* handle) {
-  if (!handle)
-    return;
-
-  pcap_close(handle);
-
-}
-
-
 pcap_t* PacketCapture::handle() const {
 
-  return _handle.get();
-}
-
-pcap_if_t* PacketCapture::devices() const {
-
-  return _device_list.get();
+  return _handle;
 }
 
 void PacketCapture::set_data_link(int dlt) {
@@ -119,6 +90,7 @@ void PacketCapture::set_data_link(int dlt) {
 int PacketCapture::get_datalink() const {
 
   return m_data_link;
+
 }
 
 void PacketCapture::set_buffer(const std::shared_ptr<PacketRefBuffer> &buf) {

@@ -7,7 +7,7 @@
 #include <model/DisplayModel.h>
 #include <util/RowFactory.h>
 
-DisplayModel::DisplayModel(PacketRefBuffer& buffer, QObject* parent)
+DisplayModel::DisplayModel(const std::shared_ptr<PacketRefBuffer>& buffer, QObject* parent)
 : QAbstractTableModel(parent)
 , buffer(buffer)
 , m_row_count(0)
@@ -82,7 +82,7 @@ void DisplayModel::add_data(size_t start, size_t end) {
 
     for (size_t i = start; i <= end; i++) {
 
-        auto pkt_row_entry = RowFactory::create_row(buffer.get_ref(i));
+        auto pkt_row_entry = RowFactory::create_row(buffer->get_ref(i));
         auto row_array = pkt_row_entry.to_array();
 
         std::vector<QString> row_vector(row_array.size());

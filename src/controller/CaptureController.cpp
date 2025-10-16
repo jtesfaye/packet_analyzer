@@ -1,11 +1,12 @@
 
-
-#include <controller/CaptureController.h>
-#include <iostream>
-#include <print>
+#include <QFileDialog>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <view/SessionForm.h>
 #include <util/PacketObserver.h>
+#include <capture/CaptureSession.h>
+#include <controller/CaptureController.h>
+
 
 CaptureController::CaptureController() :
 m_window_view(new StartupWindow()),
@@ -42,12 +43,26 @@ void CaptureController::init_start_btn(QPushButton *btn) {
 
     connect(btn, &QPushButton::clicked, this, [=]() {
 
+        if (current_session) {
+            prompt_save();
+            current_session->send_command(SessionCommand::end());
+            current_session.reset();
+        }
+
         m_window_view->get_form()->show();
+
+    });
+}
+
+void CaptureController::init_stop_btn(QPushButton *btn, const std::shared_ptr<CaptureSession>& session) {
+
+    connect(btn, &QPushButton::clicked, this, [=]() {
+
+        this->stop_online_capture(session);
 
     });
 
 }
-
 
 void CaptureController::connect_session_form_to_main() {
 
@@ -60,41 +75,51 @@ void CaptureController::connect_session_form_to_main() {
 void CaptureController::start_session() {
 
     auto form = m_window_view->get_form();
-
-    if (form->isOnline()) {
-        start_online_capture(form->device_selected(),
-            form->get_packet_count(),
-            form->get_capture_size(),
-            form->get_settings(),
-            0x1111
-        );
-    } else if (!form->isOnline()) {
-
-        start_offline_capture(form->get_file_path());
-    }
+    start_capture(form->get_config());
+    form->hide();
 }
 
-void CaptureController::start_online_capture(
-    std::string device_name,
-    int count,
-    int size,
-    u_int8_t settings,
-    u_int8_t flags) {
+
+void CaptureController::stop_online_capture(const std::shared_ptr<CaptureSession>& session) {
+    session->send_command(SessionCommand::stop());
+}
+
+
+void CaptureController::start_capture(const CaptureConfig& config) {
 
     using namespace capture;
 
-    flags = 0xff;
-    capture = PacketCapture::createOnlineCapture(
-        device_name
-        , count
-        , size
-        , settings
-        , flags);
+    current_session = std::make_shared<CaptureSession>(config);
 
-    PacketRefBuffer* buffer_ref = capture->get_buffer().get();
-    PacketObserver* observer = capture->get_observer().get();
+    if (config.mode == CaptureMode::Online) {
+        init_stop_btn(m_window_view->get_stop_session_btn(), current_session);
+    }
 
-    DisplayModel* model = new DisplayModel{*buffer_ref, this};
+    connect_observer_to_model(*current_session);
+
+    std::thread session_thread([this] {
+
+        current_session->start_session();
+
+    });
+
+    session_thread.detach();
+
+    current_session->send_command(SessionCommand::start());
+
+}
+
+void CaptureController::connect_observer_to_model(const CaptureSession& session) {
+
+    //This removes any pre-existing models from a previous session.
+    if (auto m = m_window_view->get_table_view(); m->model()) {
+        delete m->model();
+    }
+
+    const std::shared_ptr<PacketRefBuffer> buffer_ref = session.get_buffer();
+    const std::shared_ptr<PacketObserver> observer = session.get_observer();
+
+    DisplayModel* model = new DisplayModel{buffer_ref, this};
 
     m_window_view->get_table_view()->setModel(model);
 
@@ -102,10 +127,10 @@ void CaptureController::start_online_capture(
 
     observer->moveToThread(consumer_thread);
 
-    connect(consumer_thread, &QThread::started, observer, &PacketObserver::wait_for_next);
+    connect(consumer_thread, &QThread::started, observer.get(), &PacketObserver::wait_for_next);
 
     connect(
-        observer,
+        observer.get(),
         &PacketObserver::emit_packets_ready,
         model,
         &DisplayModel::add_data,
@@ -113,68 +138,30 @@ void CaptureController::start_online_capture(
 
     consumer_thread->start();
 
-    m_window_view->get_table_view()->setModel(model);
-
-    m_window_view->show();
-
-    std::thread capture_thread([&] {
-
-        capture->start_capture();
-
-        while (true) {
-
-        }
-
-    });
-
-    capture_thread.detach();
-
 }
 
-void CaptureController::start_offline_capture(std::string pcap_file) {
+void CaptureController::prompt_save() const {
 
+    QMessageBox::StandardButton reply;
 
-    capture = PacketCapture::createOfflineCapture(pcap_file);
+    reply = QMessageBox::question(nullptr,
+        "End session",
+        "Do you want to save the current capture before starting a new one?",
+        QMessageBox::Yes | QMessageBox::No
+        );
 
-    PacketRefBuffer* buffer_ref = capture->get_buffer().get();
-    PacketObserver* observer = capture->get_observer().get();
+    if (reply == QMessageBox::Yes) {
 
-    DisplayModel* model = new DisplayModel{*buffer_ref, this};
+        QString path = QFileDialog::getSaveFileName(nullptr,
+        "Create a file",
+        "",
+        "PCAP Files (*.pcap)"
+        );
 
-    m_window_view->get_table_view()->setModel(model);
-
-    consumer_thread = new QThread;
-
-    observer->moveToThread(consumer_thread);
-
-    connect(consumer_thread, &QThread::started, observer, &PacketObserver::wait_for_next);
-
-    connect(
-        observer,
-        &PacketObserver::emit_packets_ready,
-        model,
-        &DisplayModel::add_data,
-        Qt::QueuedConnection);
-
-    consumer_thread->start();
-
-    m_window_view->get_table_view()->setModel(model);
-
-    m_window_view->show();
-
-    std::thread capture_thread([&] {
-
-        capture->start_capture();
-
-        while (true) {
-
-        }
-
-    });
-
-    capture_thread.detach();
-
+        current_session->send_command(SessionCommand::save(path.toStdString()));
+    }
 }
+
 
 
 

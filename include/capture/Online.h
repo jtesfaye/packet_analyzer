@@ -15,13 +15,14 @@ public:
   Online(const Online&) = delete;
   Online& operator= (const Online&) = delete;
 
-  Online(std::string&& device_name, int count, int capture_size, u_int8_t set, u_int8_t flags);
+  Online(
+    pcap_t* handle,
+    int packet_count,
+    size_t layer_flags,
+    const std::shared_ptr<PcapFile> &file
+    );
 
   ~Online() override;
-
-protected:
-
-  void get_link_types() const;
 
 private:
 
@@ -29,41 +30,21 @@ private:
 
   void capture_func() override;
 
+  void stop_func() override;
+
   struct capture_objects {
-
-    static capture_objects setup_capture(
-      const char* file_path,
-      PacketParse& parser,
-      const std::shared_ptr<PacketRefBuffer>&,
-      int thread_count,
-      pcap_t* handle,
-      PacketObserver&
-      );
-
-    static capture_objects make(PacketParse& p,
-      PacketRefBuffer* b,
-      std::shared_ptr<ThreadPool> tp,
-      PacketObserver& o,
-      std::shared_ptr<PcapFile> f);
-
-    PacketParse& parser;
-    PacketRefBuffer* pktref_buffer;
+    std::shared_ptr<PacketParse> parser;
+    std::shared_ptr<PacketRefBuffer> buffer;
     std::shared_ptr<ThreadPool> tpool;
-    PacketObserver& pkt_observer;
+    std::shared_ptr<PacketObserver> pkt_observer;
     std::shared_ptr<PcapFile> file;
 
-    capture_objects(PacketParse& p,
-      PacketRefBuffer* b,
-      std::shared_ptr<ThreadPool> tp,
-      PacketObserver& o,
-      std::shared_ptr<PcapFile> f);
   };
 
-  void initialize_handle(int capture_size);
-
-  std::string _device;
-  u_int8_t _settings;
+  int m_packets_to_capture;
   u_int8_t m_flags;
+  std::shared_ptr<ThreadPool> m_pool;
+  std::shared_ptr<PcapFile> m_file;
 
 };
 

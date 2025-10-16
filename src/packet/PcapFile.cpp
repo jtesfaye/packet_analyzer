@@ -5,16 +5,19 @@
 #include <iostream>
 #include <packet/PcapFile.h>
 #include <print>
+#include <filesystem>
+#include <utility>
 
-PcapFile::PcapFile(const char* file_name, pcap_t* handle, size_t buffer_size)
-: m_file_name(file_name)
-, m_file(file_name, std::ios::binary)
-, m_buffer_size(buffer_size)
+PcapFile::PcapFile(const std::filesystem::path& file_name, pcap_t* handle)
+: m_abs_file_path(file_name)
+, m_file(m_abs_file_path, std::ios::binary)
 , m_header()
 , m_array(std::make_unique<PcapArray>(m_file_size, m_global_header_size))
 {
 
-    FILE* pcap_file = fopen(file_name, "w");
+    auto f = m_abs_file_path;
+
+    FILE* pcap_file = fopen(f.c_str(), "w");
 
     if (!pcap_file) {
         throw std::runtime_error(std::string("Failed to open dumper file: ") + strerror(errno));
@@ -28,7 +31,7 @@ PcapFile::PcapFile(const char* file_name, pcap_t* handle, size_t buffer_size)
         throw std::runtime_error("PcapFile: pcap_dump_open failed");
     }
 
-    m_pcap_fd = open(file_name, O_RDONLY);
+    m_pcap_fd = open(f.c_str(), O_RDONLY);
     if (m_pcap_fd < 0) {
         throw std::runtime_error(std::string("Failed to open fd for reader: ") + strerror(errno));
     }
@@ -39,11 +42,10 @@ PcapFile::PcapFile(const char* file_name, pcap_t* handle, size_t buffer_size)
 
 }
 
-PcapFile::PcapFile(const char *file_path)
-: m_file_name(file_path)
-, m_file(m_file_name, std::ios::binary | std::ios::in)
+PcapFile::PcapFile(const std::filesystem::path& file_path)
+: m_abs_file_path(file_path)
+, m_file(m_abs_file_path, std::ios::binary | std::ios::in)
 , m_dumper(nullptr)
-, m_buffer_size(-1)
 , m_header()
 {
 
@@ -62,7 +64,7 @@ PcapFile::PcapFile(const char *file_path)
         }
 
     } else {
-        std::println("Failed to open file: {}", file_path);
+        std::println("Failed to open file: {}", file_path.c_str());
         std::cout << std::strerror(errno) << "\n";
     }
 
@@ -75,6 +77,15 @@ PcapFile::PcapFile(const char *file_path)
         );
 
     m_reader = create_reader(ReaderType::Mmap);
+
+}
+
+PcapFile::~PcapFile() {
+
+    if (m_dumper) {
+        flush();
+        close_dumper();
+    }
 
 }
 
@@ -98,12 +109,44 @@ std::vector<std::byte> PcapFile::read(size_t index) const {
 
 }
 
+bool PcapFile::save_file(std::string file_path) {
+
+    flush();
+    close_dumper();
+
+    std::cout << file_path << std::endl;
+
+    std::filesystem::copy(
+        m_abs_file_path,
+        file_path,
+        std::filesystem::copy_options::overwrite_existing
+        );
+
+    char errbuf[PCAP_ERRBUF_SIZE];
+
+    pcap_t* handle = pcap_open_offline(file_path.c_str(), errbuf);
+
+    if (!handle) {
+        std::println("File copy exists but failed to open with pcap: {}", errbuf);
+        return false;
+    }
+
+    pcap_close(handle);
+    return true;
+
+}
+
+
 void PcapFile::flush() const {
 
     pcap_dump_flush(m_dumper);
 }
 
+void PcapFile::close_dumper() {
 
+    pcap_dump_close(m_dumper);
+    m_dumper = nullptr;
+}
 
 
 std::unique_ptr<PcapReader> PcapFile::create_reader(const ReaderType type) {
@@ -111,7 +154,7 @@ std::unique_ptr<PcapReader> PcapFile::create_reader(const ReaderType type) {
     switch (type) {
 
         case ReaderType::Mmap:
-            return std::make_unique<MmapPcapReader>(m_file_name.c_str());
+            return std::make_unique<MmapPcapReader>(m_abs_file_path.c_str());
 
         case ReaderType::IO:
             return std::make_unique<IoPcapReader>(m_pcap_fd);

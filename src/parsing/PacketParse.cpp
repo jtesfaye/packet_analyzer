@@ -21,15 +21,16 @@ PacketParse::start_extract(const std::vector<std::byte> &raw_data, const size_t 
   parse_context context{};
 
   pkt_ref.index = index;
+  pkt_ref.length = 0;
 
   std::memcpy(&context.header, raw_data.data(), sizeof(pcaprec_hdr_t));
+  std::cout << context.header.ts_sec << "\n";
+  std::cout << context.header.ts_usec << "\n";
 
   const parse_time time {context.header.ts_sec, context.header.ts_usec};
 
   //find time relative to first capture
   pkt_ref.time = set_relative_time(time);
-
-  pkt_ref.length = context.header.incl_len;
 
   const std::vector<LayerJob> jobs = create_jobs();
 
@@ -68,9 +69,12 @@ PacketParse::create_jobs() {
 
     context.prev_length = context.curr_length;
 
-    if (pkt.layer2) return true;
+    if (!pkt.layer2)
+      return false;
 
-    return false;
+    pkt.length += context.curr_length;
+
+    return true;
 
   };
 
@@ -101,6 +105,8 @@ PacketParse::create_jobs() {
         return false;
       }
 
+      pkt.length += context.curr_length;
+
       return true;
 
     };
@@ -126,9 +132,12 @@ PacketParse::create_jobs() {
 
       context.prev_length = context.curr_length;
 
-      if (pkt.layer4) return true;
+      if (!pkt.layer4)
+        return false;
 
-      return false;
+      pkt.length += context.curr_length;
+
+      return true;
 
     };
 
@@ -152,7 +161,7 @@ double PacketParse::set_relative_time(const parse_time &time) {
 
   set_initial_time(time);
 
-  return static_cast<double>(time.ts_sec - m_inital_time.ts_sec) +
+  return (time.ts_sec - m_inital_time.ts_sec) +
     (time.ts_usec - m_inital_time.ts_usec) / 1e6;
 
 }

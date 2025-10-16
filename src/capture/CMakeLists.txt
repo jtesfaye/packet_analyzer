@@ -2,6 +2,7 @@ add_library(capture
         Offline.cpp
         Online.cpp
         PacketCapture.cpp
+        CaptureSession.cpp
 )
 
 target_include_directories(capture PUBLIC ${CMAKE_SOURCE_DIR}/include)

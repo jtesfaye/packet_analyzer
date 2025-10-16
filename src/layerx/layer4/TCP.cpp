@@ -18,7 +18,7 @@ TCP::~TCP() = default;
 
 std::string TCP::make_info() const {
 
-    std::string info = std::format("{} -> {} [", src, dest);
+    std::string info = std::format("{} -> {} ", src, dest);
 
     info += tcp_functions::tcp_flags_to_string(flags);
 

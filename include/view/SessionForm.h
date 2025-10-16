@@ -8,13 +8,10 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QCheckBox>
-#include <QToolButton>
-#include <QPushButton>
 #include <QDialog>
-#include <QFormLayout>
 #include <QGroupBox>
-#include <QRadioButton>
-
+#include <capture/CaptureConfig.h>
+#include <QToolButton>
 
 
 class SessionForm : public QDialog {
@@ -26,25 +23,23 @@ public:
 
     ~SessionForm() override = default;
 
-    [[nodiscard]] int get_packet_count() const;
-
-    [[nodiscard]] std::string device_selected() const;
-
-    [[nodiscard]] int get_capture_size() const;
-
-    [[nodiscard]] u_int8_t get_flags() const;
-
-    [[nodiscard]] QPushButton* get_start_session_button() const;
-
-    [[nodiscard]] std::string get_file_path() const;
-
     bool isOnline() {
         return is_online;
     }
 
-    u_int8_t get_settings();
+    QPushButton* get_start_session_button() const;
+
+    CaptureConfig get_config();
 
 private:
+
+    int get_packet_count() const;
+    std::string get_device_selected() const;
+    int get_capture_size() const;
+    u_int8_t get_flags() const;
+
+    std::string get_file_path() const;
+    u_int8_t get_settings();
 
     [[nodiscard]] QGroupBox* setup_online_form();
     [[nodiscard]] QGroupBox* setup_offline_form();
@@ -61,10 +56,7 @@ private:
     QSpinBox* packet_count_box;
     QSpinBox* capture_size_spin_box;
     QCheckBox* promisc_mode;
-    QCheckBox* immediate_mode;
-    QCheckBox* monitor_mode;
     QCheckBox* high_prec_time;
-    QCheckBox* low_buffer_timeout;
 
     QPushButton* start_session_button;
 

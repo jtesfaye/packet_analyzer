@@ -40,9 +40,7 @@ inline void ThreadPool::do_work() {
         }
 
         task();
-
     }
-
 }
 
 inline void ThreadPool::shutdown() {
@@ -60,5 +58,4 @@ inline void ThreadPool::shutdown() {
             t.join();
 
     }
-
 }

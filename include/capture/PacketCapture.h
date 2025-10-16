@@ -3,12 +3,12 @@
 #define PACKETCAPTURE_H
 
 #include <pcap/pcap.h>
-#include <parsing/PacketParse.h>
 #include <string>
 #include <packet/PcapFile.h>
 #include <util/PacketRefBuffer.h>
 #include <util/ThreadPool.h>
 #include <util/PacketObserver.h>
+#include <parsing/PacketParse.h>
 
 namespace capture {
 
@@ -26,17 +26,30 @@ namespace capture {
 
 }
 
+enum class CaptureState {
+  Idle,
+  Running,
+  Paused
+};
+
 class PacketCapture {
 public:
 
-  static std::unique_ptr<PacketCapture> createOnlineCapture(
-    std::string& device_name,
-    int count,
-    int capture_size,
-    u_int8_t settings,
-    u_int8_t flags);
+  void start_capture();
 
-  static std::unique_ptr<PacketCapture> createOfflineCapture(std::string& path_name);
+  void stop_capture();
+
+  static std::unique_ptr<PacketCapture> createOnlineCapture(
+    pcap_t* handle,
+    int packet_count,
+    size_t layer_flags,
+    const std::shared_ptr<PcapFile> &file
+    );
+
+  static std::unique_ptr<PacketCapture> createOfflineCapture(
+    pcap_t* handle,
+    const std::shared_ptr<PcapFile> &file
+    );
 
   std::shared_ptr<PacketRefBuffer> get_buffer();
 
@@ -46,27 +59,19 @@ public:
 
   int get_datalink() const;
 
-  void start_capture();
-
-  void stop_capture();
-
   PacketCapture(const PacketCapture&) = delete;
   PacketCapture& operator=(const PacketCapture&) = delete;
   virtual ~PacketCapture();
 
 protected:
 
-  explicit PacketCapture();
+  explicit PacketCapture(pcap_t* h);
 
   virtual void capture_func() = 0;
 
-  static void free_devices(pcap_if_t* devlist);
-
-  static void close_handle(pcap_t* handle);
+  virtual void stop_func() = 0;
 
   pcap_t* handle() const;
-
-  pcap_if_t* devices() const;
 
   void set_data_link(int dlt);
 
@@ -74,11 +79,7 @@ protected:
 
   void set_observer(const std::shared_ptr<PacketObserver>&);
 
-  std::unique_ptr<pcap_t, decltype(&close_handle)> _handle;
-
-  std::unique_ptr<pcap_if_t, decltype(&free_devices)> _device_list;
-
-  int _packets_to_capture;
+  pcap_t* _handle;
 
   int m_data_link;
 
