@@ -10,6 +10,7 @@
 
 CaptureSession::CaptureSession(const CaptureConfig &config)
 : m_handle(nullptr, close_handle)
+, m_bpf_program(nullptr, free_bpf_program)
 , running(true)
 {
 
@@ -18,7 +19,8 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
         initialize_online_handle(
             config.source,
             config.settings,
-            config.capture_size
+            config.capture_size,
+            config.filter
             );
 
         std::string temp_file = std::filesystem::temp_directory_path().generic_string() + "foobar.pcap";
@@ -139,7 +141,8 @@ void CaptureSession::close_handle(pcap_t *handle) {
 void CaptureSession::initialize_online_handle(
     const std::string& device,
     u_int8_t settings,
-    int capture_size) {
+    int capture_size,
+    const std::string& filter) {
 
 
     using namespace capture;
@@ -194,8 +197,9 @@ void CaptureSession::initialize_online_handle(
         throw std::runtime_error(pcap_geterr(m_handle.get()));
     }
 
-
-
+    if (!filter.empty()) {
+        apply_filter(device, filter);
+    }
 }
 
 void CaptureSession::initialize_offline_handle(const std::string& path) {
@@ -216,6 +220,35 @@ void CaptureSession::initialize_offline_handle(const std::string& path) {
     }
 
 }
+
+void CaptureSession::free_bpf_program(bpf_program *program) {
+
+    pcap_freecode(program);
+
+}
+
+
+void CaptureSession::apply_filter(const std::string& device_name, const std::string &filter) {
+
+    if (!m_handle) {
+        throw std::runtime_error("apply_filter called before handle initialized");
+    }
+
+    char errbuf[PCAP_ERRBUF_SIZE];
+
+    bpf_u_int32 net, mask;
+    if (pcap_lookupnet(device_name.c_str(), &net, &mask, errbuf) == -1) {
+        net = 0;
+        mask = 0;
+    }
+
+    pcap_compile(m_handle.get(), m_bpf_program.get(), filter.c_str(), 1, mask);
+    pcap_setfilter(m_handle.get(), m_bpf_program.get());
+
+}
+
+
+
 
 std::shared_ptr<PacketRefBuffer> CaptureSession::get_buffer() const {
 

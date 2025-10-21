@@ -19,6 +19,7 @@ struct CaptureConfig {
     int capture_size = 255;
     u_int8_t settings;
     u_int8_t flags;
+    std::string filter;
 
 };
 

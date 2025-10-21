@@ -39,6 +39,7 @@ private:
     u_int8_t get_flags() const;
 
     std::string get_file_path() const;
+    std::string get_filter() const;
     u_int8_t get_settings();
 
     [[nodiscard]] QGroupBox* setup_online_form();
@@ -51,6 +52,7 @@ private:
     QWidget* setup_more_settings_section();
 
     QLineEdit* file_path;
+    QLineEdit* filter;
 
     QComboBox* device_list_combo;
     QSpinBox* packet_count_box;

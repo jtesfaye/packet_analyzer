@@ -51,10 +51,20 @@ private:
   void stop_capture() const;
   bool save_capture(const std::string& path) const;
 
-  void initialize_online_handle(const std::string& device_name, u_int8_t settings, int capture_size);
+  void initialize_online_handle(
+    const std::string& device_name,
+    u_int8_t settings,
+    int capture_size,
+    const std::string& filter
+    );
+
   void initialize_offline_handle(const std::string& path);
 
+  void apply_filter(const std::string& device_name, const std::string& filter);
+
   static void close_handle(pcap_t* handle);
+
+  static void free_bpf_program(bpf_program* program);
 
   std::queue<SessionCommand> commands;
 
@@ -65,6 +75,7 @@ private:
 
   std::unique_ptr<PacketCapture> capture;
   std::unique_ptr<pcap_t, decltype(&close_handle)> m_handle;
+  std::unique_ptr<bpf_program, decltype(&free_bpf_program)> m_bpf_program;
 
   std::shared_ptr<PcapFile> m_pcap_file;
 };

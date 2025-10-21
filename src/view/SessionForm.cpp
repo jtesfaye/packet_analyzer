@@ -70,6 +70,7 @@ CaptureConfig SessionForm::get_config() {
             get_capture_size(),
             get_settings(),
             get_flags(),
+            get_filter()
         };
     }
 
@@ -80,6 +81,7 @@ CaptureConfig SessionForm::get_config() {
         0,
         0,
         get_flags(),
+        ""
     };
 }
 
@@ -224,9 +226,7 @@ QToolButton* SessionForm::setup_toggle_button() {
 QWidget *SessionForm::setup_more_settings_section() {
 
     auto* settings_widget = new QWidget(this);
-
     settings_widget->setVisible(false);
-
     auto settings_layout = new QFormLayout(settings_widget);
 
     auto cap_size_widget = new QWidget(settings_widget);
@@ -234,16 +234,16 @@ QWidget *SessionForm::setup_more_settings_section() {
     auto cap_size_layout = new QHBoxLayout(cap_size_widget);
 
     capture_size_spin_box = new QSpinBox();
-
     capture_size_spin_box->setMaximum(65535);
-
     capture_size_spin_box->setMinimum(128);
 
     cap_size_layout->addWidget(cap_size_label);
-
     cap_size_layout->addWidget(capture_size_spin_box);
-
     cap_size_widget->setLayout(cap_size_layout);
+
+    filter = new QLineEdit(this);
+    filter->setPlaceholderText("Enter filter (optional)");
+    filter->setMinimumWidth(250);
 
     promisc_mode = new QCheckBox("Promiscuous mode", this);
     high_prec_time = new QCheckBox("High precision timestamp", this);
@@ -251,6 +251,7 @@ QWidget *SessionForm::setup_more_settings_section() {
     settings_layout->addWidget(cap_size_widget);
     settings_layout->addWidget(promisc_mode);
     settings_layout->addWidget(high_prec_time);
+    settings_layout->addWidget(filter);
 
    settings_widget->setLayout(settings_layout);
 
@@ -307,7 +308,6 @@ SessionForm::get_settings() {
     }
 
     return settings;
-
 }
 
 u_int8_t
@@ -317,6 +317,13 @@ SessionForm::get_flags() const {
 
 }
 
+std::string SessionForm::get_filter() const {
+
+    return filter->text().toStdString();
+
+}
+
+
 std::string SessionForm::get_file_path() const {
 
     if (file_path->text().isEmpty()) {
@@ -324,7 +331,6 @@ std::string SessionForm::get_file_path() const {
     }
 
     return file_path->text().toStdString();
-
 }
 
 
