@@ -15,8 +15,6 @@ consumer_thread()
 
     consumer_thread = nullptr;
 
-    init_menubar();
-
     init_start_btn(m_window_view->get_start_session_btn());
 
     connect_session_form_to_main();
@@ -25,19 +23,6 @@ consumer_thread()
 
 }
 
-void CaptureController::init_menubar() {
-
-    QAction* start = m_window_view->get_session_start_action();
-
-    connect(start,
-        &QAction::triggered,
-        this,
-        &CaptureController::start_session
-        );
-
-    m_window_view->get_session_menu()->addAction(start);
-
-}
 
 void CaptureController::init_start_btn(QPushButton *btn) {
 

@@ -30,8 +30,6 @@ public:
 
 private:
 
-  void init_menubar();
-
   void init_start_btn(QPushButton* btn);
 
   void init_stop_btn(QPushButton* btn, const std::shared_ptr<CaptureSession>& ses);

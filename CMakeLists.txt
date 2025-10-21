@@ -18,8 +18,8 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui)
 include_directories("/opt/homebrew/opt/libpcap/include")
 
 add_subdirectory(src)
-
 add_executable(main_src src/main.cpp)
+
 
 target_link_libraries(main_src
         PRIVATE
@@ -36,8 +36,7 @@ target_link_libraries(main_src
         util
         view
 )
+
 target_include_directories(main_src PRIVATE ${Boost_INCLUDE_DIRS})
-
 add_subdirectory(tests)
-
 target_include_directories(main_src PUBLIC ${CMAKE_SOURCE_DIR}/include)
