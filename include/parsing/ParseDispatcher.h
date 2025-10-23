@@ -64,8 +64,6 @@ private:
     std::unordered_map<int, function> func_table;
     std::function<RefType(const std::vector<std::byte>&, parse_context&)> parse_func;
 
-
-
 };
 
 #endif //PARSEDISPATCHER_H

@@ -66,6 +66,7 @@ PacketParse::create_jobs() {
 
     offsets.l2.length = context.curr_length;
     offsets.l2.offset = context.offset;
+    offsets.l2.protocol_type = m_dlt;
 
     context.prev_length = context.curr_length;
 
@@ -89,6 +90,8 @@ PacketParse::create_jobs() {
     layer_offsets& offsets) {
 
       context.offset += context.prev_length;
+
+      offsets.l3.protocol_type = context.next_type;
 
       pkt.layer3 = net_parser(context.next_type, data, context);
 
@@ -124,6 +127,8 @@ PacketParse::create_jobs() {
     layer_offsets& offsets) {
 
       context.offset += context.prev_length;
+
+      offsets.l4.protocol_type = context.next_type;
 
       pkt.layer4 = transport_parser(context.next_type, data, context);
 

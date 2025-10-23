@@ -45,6 +45,7 @@ namespace packet {
   struct LayerRegion {
     size_t offset;
     size_t length;
+    size_t protocol_type;
   };
 
   struct layer_offsets {
