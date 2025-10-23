@@ -34,6 +34,7 @@ private:
 
     QTableView *m_table_view;
     Sidebar* m_sidebar;
+    QLineEdit* m_filter_box;
     QPushButton* m_start_session_btn;
     QPushButton* m_stop_session_btn;
     QPushButton* m_save_capture_btn;

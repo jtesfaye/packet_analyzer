@@ -8,6 +8,7 @@
 #include <QMenuBar>
 #include <QStackedWidget>
 #include <QIcon>
+#include <QLineEdit>
 
 
 StartupWindow::StartupWindow(QWidget* parent)
@@ -17,7 +18,8 @@ StartupWindow::StartupWindow(QWidget* parent)
 , m_sidebar(new Sidebar(this))
 , m_start_session_btn(new QPushButton( this))
 , m_stop_session_btn(new QPushButton(this))
-, m_save_capture_btn(new QPushButton(this)) {
+, m_save_capture_btn(new QPushButton(this))
+, m_filter_box(new QLineEdit(this)){
 
     configure_table_view();
     setCentralWidget(setup_central_view());
@@ -29,16 +31,25 @@ QWidget *StartupWindow::setup_central_view() {
 
     auto main_widget = new QWidget(this);
     auto main_layout = new QVBoxLayout(main_widget);
+    auto splitter = new QSplitter(Qt::Orientation::Vertical, this);
 
     auto btn_widget = setup_buttons();
 
     main_layout->addWidget(btn_widget);
-    main_layout->addWidget(m_table_view);
+
+    m_filter_box->setReadOnly(false);
+    main_layout->addWidget(m_filter_box);
+
+    m_table_view->setSelectionMode(QTableView::SingleSelection);
+
+    splitter->addWidget(m_table_view);
+
+    splitter->addWidget(m_sidebar);
+    main_layout->addWidget(splitter);
 
     main_widget->setLayout(main_layout);
 
     return main_widget;
-
 }
 
 
