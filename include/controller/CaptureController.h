@@ -36,6 +36,8 @@ private:
 
   void connect_observer_to_model(const CaptureSession&);
 
+  void connect_session_to_table_view(const QTableView&);
+
   void start_session();
 
   void connect_session_form_to_main();

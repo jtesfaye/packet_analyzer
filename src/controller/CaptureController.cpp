@@ -69,6 +69,13 @@ void CaptureController::stop_online_capture(const std::shared_ptr<CaptureSession
     session->send_command(SessionCommand::stop());
 }
 
+void CaptureController::connect_session_to_table_view(const QTableView& table) {
+
+    connect(table, QTableView::clicked, m_window_view->get_sidebar(), )
+
+}
+
+
 
 void CaptureController::start_capture(const CaptureConfig& config) {
 
