@@ -96,6 +96,10 @@ void CaptureSession::process_cmd(const SessionCommand &cmd) {
             save_capture(std::get<std::string>(cmd.cmd_data));
             break;
 
+        case CommandType::GetDetails:
+            get_details(std::get<int>(cmd.cmd_data));
+            break;
+
         case CommandType::End:
             running = false;
             break;
@@ -120,6 +124,23 @@ void CaptureSession::stop_capture() const {
     capture->stop_capture();
 
 }
+
+void CaptureSession::get_details(int index) {
+
+    std::thread thread{ [this, index]() {
+
+        std::thread::id t_id = std::this_thread::get_id();
+
+        auto raw_data = m_pcap_file->read(index);
+        packet_ref& ref = get_buffer()->get_ref(index);
+
+
+    }};
+
+    thread.detach();
+
+}
+
 
 bool CaptureSession::save_capture(const std::string& path) const {
 

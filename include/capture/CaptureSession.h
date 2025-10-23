@@ -15,17 +15,19 @@ enum class CommandType {
   Start,
   Stop,
   Save,
+  GetDetails,
   End
 };
 
 struct SessionCommand {
 
   CommandType type;
-  std::variant<std::monostate, std::string> cmd_data;
+  std::variant<std::monostate, std::string, int> cmd_data;
 
   static SessionCommand start() { return {CommandType::Start, {}}; }
   static SessionCommand stop() { return {CommandType::Stop,{}}; }
   static SessionCommand save(const std::string& path) { return {CommandType::Save, {path}}; }
+  static SessionCommand get_details(int index) {return {CommandType::GetDetails, {index}};}
   static SessionCommand end() { return {CommandType::End, {}}; }
 
 };
@@ -50,6 +52,7 @@ private:
   void start_capture() const;
   void stop_capture() const;
   bool save_capture(const std::string& path) const;
+  void get_details(int index);
 
   void initialize_online_handle(
     const std::string& device_name,
