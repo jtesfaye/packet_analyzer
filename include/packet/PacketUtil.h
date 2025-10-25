@@ -9,6 +9,7 @@
 #include <pcap/pcap.h>
 #include <sstream>
 #include <iomanip>
+#include <vector>
 #include <layerx/ProtocolDataUnit.h>
 
 struct LinkPDU;
@@ -45,7 +46,7 @@ namespace packet {
   struct LayerRegion {
     size_t offset;
     size_t length;
-    size_t protocol_type;
+    int protocol_type;
   };
 
   struct layer_offsets {
@@ -74,6 +75,11 @@ namespace packet {
     packet_ref(const packet_ref&&) = delete;
     packet_ref& operator=(const packet_ref&) = delete;
 
+  };
+
+  struct ProtocolDetails {
+    const std::string name;
+    const std::vector<std::string> fields;
   };
 
 }
