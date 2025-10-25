@@ -12,11 +12,20 @@ std::unique_ptr<NetworkPDU> Layer3::unsupported_type(
     return nullptr;
 }
 
-const std::vector<std::pair<const int, Layer3::function>> Layer3::get_all_functions() {
+void Layer3::register_all_functions() {
 
     (void)IPv4_functions::get_ipv4_registry();
     (void)IPv6_functions::get_ipv6_registry();
     Layer3Registry(-1, unsupported_type);
 
+}
+
+const std::vector<std::pair<int, Layer::function>>& Layer3::get_first_parse_registry() {
     return Layer3Registry::get_registry();
 }
+
+const std::vector<std::pair<int, Layer::detail_function> > &Layer3::get_detail_parse_registry() {
+    return Layer3Registry::get_detail_registry();
+}
+
+

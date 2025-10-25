@@ -8,6 +8,12 @@
 #include <util/PacketRead.h>
 #include <layerx/iana_numbers.h>
 
+Layer4Registry& udp_functions::get_udp_registry() {
+    static Layer4Registry udp_reg(layer::iana::UDP, udp_parse);
+    static Layer4Registry udp_detail_reg(layer::iana::UDP, udp_detailed_parse);
+    return udp_reg;
+}
+
 UDP::UDP(const size_t len, std::string src_port, std::string dest_port)
 : TransportPDU(len, std::move(src_port), std::move(dest_port))
 {}
@@ -21,11 +27,6 @@ std::string UDP::make_info() const {
 
 std::string UDP::name() const {
     return "UDP";
-}
-
-Layer4Registry& udp_functions::get_udp_registry() {
-    static Layer4Registry udp_reg(layer::iana::UDP, udp_parse);
-    return udp_reg;
 }
 
 std::unique_ptr<TransportPDU> udp_functions::udp_parse(
@@ -50,3 +51,22 @@ std::unique_ptr<TransportPDU> udp_functions::udp_parse(
         std::to_string(ntohs(udp_hdr->dest))
         );
 }
+
+ProtocolDetails udp_functions::udp_detailed_parse(
+    const std::vector<std::byte> &raw_data,
+    parse_context &context) {
+
+    const auto hdr = reinterpret_cast<const udp_header*> (raw_data.data() + context.offset);
+
+    std::vector<std::string> details;
+    details.reserve(5);
+
+    details.emplace_back(std::format("Source: {}", ntohs(hdr->src)));
+    details.emplace_back(std::format("Destination: {}", ntohs(hdr->dest)));
+    details.emplace_back(std::format("Length: {}", ntohs(hdr->len)));
+    details.emplace_back("Checksum: " + std::format(":x", ntohs(hdr->checksum)));
+    details.emplace_back(std::format("UDP Payload ({})", std::to_string(ntohs(hdr->len) - 8)));
+
+    return { full_protocol_name(), details };
+}
+

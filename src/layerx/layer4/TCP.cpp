@@ -8,13 +8,18 @@
 #include <util/PacketRead.h>
 #include <layerx/iana_numbers.h>
 
+void tcp_functions::register_tcp() {
+    static Layer4Registry tcp_reg(layer::iana::TCP, tcp_parse);
+    static Layer4Registry detail_reg(layer::iana::TCP, tcp_detailed_parse);
+}
+
+
 TCP::TCP(const size_t len, std::string src_port, std::string dest_port, const u_int8_t flags)
 : TransportPDU(len, std::move(src_port), std::move(dest_port))
 , flags(flags)
 {}
 
 TCP::~TCP() = default;
-
 
 std::string TCP::make_info() const {
 
@@ -29,12 +34,6 @@ std::string TCP::make_info() const {
 std::string TCP::name() const {
     return "TCP";
 }
-
-Layer4Registry& tcp_functions::get_tcp_registry() {
-    static Layer4Registry tcp_reg(layer::iana::TCP, tcp_parse);
-    return tcp_reg;
-}
-
 
 std::unique_ptr<TransportPDU> tcp_functions::tcp_parse(
     const std::vector<std::byte> &raw_data,
@@ -59,6 +58,29 @@ std::unique_ptr<TransportPDU> tcp_functions::tcp_parse(
         tcp_hdr->flags);
 
 }
+
+ProtocolDetails tcp_functions::tcp_detailed_parse(
+    const std::vector<std::byte> &raw_data,
+    parse_context& context) {
+
+    const auto* hdr = reinterpret_cast<const tcp_header*>(raw_data.data() + context.offset);
+
+    std::vector<std::string> details;
+    details.reserve(10);
+
+    details.emplace_back(std::format("Source port: {}", ntohs(hdr->src)));
+    details.emplace_back(std::format("Destination port: {}", ntohs(hdr->dest)));
+    details.emplace_back(std::format("Sequence number (raw): {}", ntohl(hdr->sequence)));
+    details.emplace_back(std::format("Acknowledgement Number (raw) {}: ", ntohl(hdr->ack)));
+    details.emplace_back(std::format("Header length: {} ({})", (hdr->offset >> 4) * 4, hdr->offset >> 4));
+    details.emplace_back(std::format("Flags: {}", tcp_flags_to_string(hdr->flags)));
+    details.emplace_back(std::format("Window: {}", ntohs(hdr->window)));
+    details.emplace_back(std::format("Checksum: {}", ntohs(hdr->chksum)));
+    details.emplace_back(std::format("Urgent pointer: {}", ntohs(hdr->urgent)));
+
+    return {full_protocol_name(),details};
+}
+
 
 std::string tcp_functions::tcp_flags_to_string(u_int8_t flags) {
 

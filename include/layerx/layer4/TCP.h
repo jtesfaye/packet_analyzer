@@ -26,12 +26,28 @@ struct TCP final : TransportPDU {
 };
 
 class tcp_functions {
+
+    friend struct TCP;
+
 public:
 
-    static std::unique_ptr<TransportPDU> tcp_parse(const std::vector<std::byte>& raw_data, parse_context& context);
-    static Layer4Registry& get_tcp_registry();
+    static std::unique_ptr<TransportPDU> tcp_parse(
+        const std::vector<std::byte>& raw_data,
+        parse_context& context);
+
+    static ProtocolDetails tcp_detailed_parse(
+        const std::vector<std::byte>& raw_data,
+        parse_context& context);
+
+    static void register_tcp();
+
+private:
+
     static std::string tcp_flags_to_string(u_int8_t flags);
 
+    static std::string full_protocol_name() {
+        return "Transmission Control Protocol";
+    }
 };
 
 

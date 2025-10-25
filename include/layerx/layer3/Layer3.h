@@ -16,8 +16,13 @@ public:
         const std::vector<std::byte>&,
         packet::parse_context&);
 
-    static const std::vector<std::pair<const int, function>> get_all_functions();
+    static void register_all_functions();
 
+    static const std::vector<std::pair<int, function>>& get_first_parse_registry();
+
+    static const std::vector<std::pair<int, detail_function>> &get_detail_parse_registry();
+
+    ~Layer3() override = default;
 };
 
 #endif //LAYER3_H
