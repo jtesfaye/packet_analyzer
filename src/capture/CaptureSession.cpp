@@ -12,7 +12,11 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
 : m_handle(nullptr, close_handle)
 , m_bpf_program(nullptr, free_bpf_program)
 , running(true)
+, m_buffer(std::make_shared<PacketBuffer<packet_ref>>(20))
+, m_observer(std::make_shared<PacketObserver>(*m_buffer))
 {
+
+    m_cache = std::make_shared<LRUCache<ProtocolDetails>>(config.packet_count > 0 ? config.packet_count : 100);
 
     if (config.mode == CaptureMode::Online) {
 
@@ -23,28 +27,52 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
             config.filter
             );
 
+        int data_link_type = pcap_datalink(m_handle.get());
+
         std::string temp_file = std::filesystem::temp_directory_path().generic_string() + "foobar.pcap";
+
+        m_initial_parser = std::make_shared<InitialParser>(data_link_type, config.flags);
+        m_detail_parser = std::make_shared<DetailParser>(m_buffer, m_cache, m_observer);
 
         m_pcap_file = std::make_shared<PcapFile> (
             temp_file,
             m_handle.get()
             );
 
-        capture = PacketCapture::createOnlineCapture(m_handle.get(),
+        PoolInit init {m_initial_parser, m_detail_parser, m_buffer};
+        m_pool = std::make_shared<ThreadPool>(init);
+
+        capture = PacketCapture::createOnlineCapture(
+            m_handle.get(),
+            data_link_type,
             config.packet_count,
             config.flags,
-            m_pcap_file
+            m_pcap_file,
+            m_pool
             );
 
     } else if (config.mode == CaptureMode::Offline) {
 
         initialize_offline_handle(config.source);
 
+        int data_link_type = pcap_datalink(m_handle.get());
+
         m_pcap_file = std::make_shared<PcapFile>(
             config.source
         );
 
-        capture = PacketCapture::createOfflineCapture(m_handle.get(), m_pcap_file);
+        m_initial_parser = std::make_shared<InitialParser>(data_link_type, config.flags);
+        m_detail_parser = std::make_shared<DetailParser>(m_buffer, m_cache, m_observer);
+
+        PoolInit init {m_initial_parser, m_detail_parser, m_buffer};
+        m_pool = std::make_shared<ThreadPool>(init, 1);
+
+        capture = PacketCapture::createOfflineCapture(
+            m_handle.get(),
+            data_link_type,
+            m_pcap_file,
+            m_pool
+            );
 
     } else {
 
@@ -112,8 +140,6 @@ void CaptureSession::start_capture() const {
 
     std::thread capture_thread { [this] () {
         this->capture->start_capture();
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        std::cout << "finished\n";
     }};
 
     capture_thread.detach();
@@ -124,23 +150,6 @@ void CaptureSession::stop_capture() const {
     capture->stop_capture();
 
 }
-
-void CaptureSession::get_details(int index) {
-
-    std::thread thread{ [this, index]() {
-
-        std::thread::id t_id = std::this_thread::get_id();
-
-        auto raw_data = m_pcap_file->read(index);
-        packet_ref& ref = get_buffer()->get_ref(index);
-
-
-    }};
-
-    thread.detach();
-
-}
-
 
 bool CaptureSession::save_capture(const std::string& path) const {
 
@@ -268,18 +277,18 @@ void CaptureSession::apply_filter(const std::string& device_name, const std::str
 
 }
 
+std::shared_ptr<IContainerType<packet_ref>> CaptureSession::get_buffer() const {
 
-
-
-std::shared_ptr<PacketRefBuffer> CaptureSession::get_buffer() const {
-
-    return capture->get_buffer();
+    return m_buffer;
 }
 
 std::shared_ptr<PacketObserver> CaptureSession::get_observer() const {
 
-    return capture->get_observer();
+    return m_observer;
 }
+
+
+
 
 
 

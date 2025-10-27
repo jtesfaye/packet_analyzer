@@ -6,23 +6,24 @@
 #include <packet/PcapFile.h>
 
 
-PacketCapture::PacketCapture(pcap_t* handle)
-: _handle(handle)
-, m_data_link() {}
+PacketCapture::PacketCapture(pcap_t *h, int dlt, const std::shared_ptr<PcapFile> &file, const std::shared_ptr<ThreadPool> &pool)
+: _handle(h)
+, m_data_link(dlt)
+, file(file)
+, pool(pool)
+{
+}
 
 std::unique_ptr<PacketCapture>
 PacketCapture::createOnlineCapture(
   pcap_t* handle,
+  int dlt,
   int packet_count,
   size_t layer_flags,
-  const std::shared_ptr<PcapFile> &file) {
+  const std::shared_ptr<PcapFile>& file,
+  const std::shared_ptr<ThreadPool> &pool) {
 
-  auto cap = std::make_unique<Online>(handle, packet_count, layer_flags, file);
-
-  cap->set_buffer(std::make_shared<PacketRefBuffer>(packet_count));
-
-  auto obs = cap->get_buffer();
-  cap->set_observer(std::make_shared<PacketObserver>(*obs));
+  auto cap = std::make_unique<Online>(handle, dlt, packet_count, layer_flags, file, pool);
 
   return cap;
 
@@ -31,13 +32,11 @@ PacketCapture::createOnlineCapture(
 std::unique_ptr<PacketCapture>
 PacketCapture::createOfflineCapture(
   pcap_t* handle,
-  const std::shared_ptr<PcapFile>& file) {
+  int dlt,
+  const std::shared_ptr<PcapFile>& file,
+  const std::shared_ptr<ThreadPool> &pool) {
 
-  auto cap = std::make_unique<Offline>(handle, file);
-  cap->set_buffer(std::make_shared<PacketRefBuffer>(20));
-
-  auto obs = cap->get_buffer();
-  cap->set_observer(std::make_shared<PacketObserver>(*obs));
+  auto cap = std::make_unique<Offline>(handle, dlt, file, pool);
 
   return cap;
 
@@ -82,37 +81,11 @@ pcap_t* PacketCapture::handle() const {
   return _handle;
 }
 
-void PacketCapture::set_data_link(int dlt) {
-
-  m_data_link = dlt;
-}
-
 int PacketCapture::get_datalink() const {
 
   return m_data_link;
 
 }
-
-void PacketCapture::set_buffer(const std::shared_ptr<PacketRefBuffer> &buf) {
-
-  _buffer = buf;
-}
-
-std::shared_ptr<PacketRefBuffer> PacketCapture::get_buffer() {
-
-  return _buffer;
-}
-
-void PacketCapture::set_observer(const std::shared_ptr<PacketObserver> & ob) {
-
-  observer = ob;
-}
-
-std::shared_ptr<PacketObserver> PacketCapture::get_observer() {
-
-  return observer;
-}
-
 
 PacketCapture::~PacketCapture() = default;
 

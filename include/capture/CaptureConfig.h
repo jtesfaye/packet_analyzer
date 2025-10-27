@@ -23,4 +23,12 @@ struct CaptureConfig {
 
 };
 
+struct PoolInit {
+
+
+    const std::shared_ptr<InitialParser>& init_parser;
+    const std::shared_ptr<DetailParser>& detail_parser;
+    const std::shared_ptr<IContainerType<packet_ref>> &buffer;
+};
+
 #endif //CAPTURECONFIG_H

@@ -6,26 +6,26 @@
 Offline::Offline
 (
   pcap_t* handle,
-  const std::shared_ptr<PcapFile>& file
+  const int dlt,
+  const std::shared_ptr<PcapFile>& file,
+  const std::shared_ptr<ThreadPool>& pool
 )
-: PacketCapture(handle)
-, m_file(file) {
-
-  set_data_link(pcap_datalink(handle));
+: PacketCapture(handle, dlt ,file, pool)
+{
 }
 
 void Offline::capture_func() {
 
-  PacketParse parser(get_datalink(), 0xff);
-  std::shared_ptr<PacketRefBuffer> buffer = get_buffer();
+  InitialParser parser(get_datalink(), 0xff);
+  std::shared_ptr<IContainerType<packet_ref>> buffer = get_buffer();
   std::shared_ptr<PacketObserver> observer = get_observer();
 
-  size_t amt = m_file->get_packet_count();
+  size_t amt = file->get_packet_count();
   std::cout << amt << std::endl;
 
   for (int i = 0; i < amt; i++) {
 
-    auto data = m_file->read(i);
+    auto data = file->read(i);
     auto pkt_ref = parser.start_extract(data, i);
     buffer->add(i, std::move(pkt_ref));
     observer->notify_if_next(i);

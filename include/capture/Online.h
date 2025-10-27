@@ -6,8 +6,6 @@
 #include <cstring>
 #include <sys/_types/_u_int8_t.h>
 
-using namespace packet::frame;
-
 class Online final : public PacketCapture {
 public:
 
@@ -17,9 +15,11 @@ public:
 
   Online(
     pcap_t* handle,
+    int dlt,
     int packet_count,
     size_t layer_flags,
-    const std::shared_ptr<PcapFile> &file
+    const std::shared_ptr<PcapFile> &file,
+    const std::shared_ptr<ThreadPool> &pool
     );
 
   ~Online() override;
@@ -33,18 +33,12 @@ private:
   void stop_func() override;
 
   struct capture_objects {
-    std::shared_ptr<PacketParse> parser;
-    std::shared_ptr<PacketRefBuffer> buffer;
     std::shared_ptr<ThreadPool> tpool;
-    std::shared_ptr<PacketObserver> pkt_observer;
     std::shared_ptr<PcapFile> file;
-
   };
 
   int m_packets_to_capture;
   u_int8_t m_flags;
-  std::shared_ptr<ThreadPool> m_pool;
-  std::shared_ptr<PcapFile> m_file;
 
 };
 

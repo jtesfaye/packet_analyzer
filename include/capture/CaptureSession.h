@@ -7,9 +7,11 @@
 
 #include <pcap/pcap.h>
 #include <packet/PcapFile.h>
-#include <util/PacketRefBuffer.h>
+#include <util/PacketBuffer.h>
+#include <util/LRUCache.h>
 #include <capture/PacketCapture.h>
 #include <capture/CaptureConfig.h>
+
 
 enum class CommandType {
   Start,
@@ -42,7 +44,7 @@ public:
 
   void start_session();
 
-  std::shared_ptr<PacketRefBuffer> get_buffer() const;
+  std::shared_ptr<IContainerType<packet_ref>> get_buffer() const;
   std::shared_ptr<PacketObserver> get_observer() const;
 
 private:
@@ -76,11 +78,19 @@ private:
   std::mutex lock;
   std::condition_variable cv;
 
+  std::shared_ptr<InitialParser> m_initial_parser;
+  std::shared_ptr<DetailParser> m_detail_parser;
+
   std::unique_ptr<PacketCapture> capture;
+  std::shared_ptr<LRUCache<ProtocolDetails>> m_cache;
+  std::shared_ptr<IContainerType<packet_ref>> m_buffer;
+  std::shared_ptr<PacketObserver> m_observer;
+  std::shared_ptr<PcapFile> m_pcap_file;
+  std::shared_ptr<ThreadPool> m_pool;
+
   std::unique_ptr<pcap_t, decltype(&close_handle)> m_handle;
   std::unique_ptr<bpf_program, decltype(&free_bpf_program)> m_bpf_program;
 
-  std::shared_ptr<PcapFile> m_pcap_file;
 };
 
 #endif //CAPTURESESSION_H

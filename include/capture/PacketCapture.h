@@ -5,10 +5,10 @@
 #include <pcap/pcap.h>
 #include <string>
 #include <packet/PcapFile.h>
-#include <util/PacketRefBuffer.h>
-#include <util/ThreadPool.h>
+#include <util/PacketBuffer.h>
+#include <parsing/ThreadPool.h>
 #include <util/PacketObserver.h>
-#include <parsing/PacketParse.h>
+#include <parsing/InitialParser.h>
 
 namespace capture {
 
@@ -41,19 +41,19 @@ public:
 
   static std::unique_ptr<PacketCapture> createOnlineCapture(
     pcap_t* handle,
+    int data_link_type,
     int packet_count,
     size_t layer_flags,
-    const std::shared_ptr<PcapFile> &file
+    const std::shared_ptr<PcapFile>& file,
+    const std::shared_ptr<ThreadPool> &pool
     );
 
   static std::unique_ptr<PacketCapture> createOfflineCapture(
     pcap_t* handle,
-    const std::shared_ptr<PcapFile> &file
+    int data_link_type,
+    const std::shared_ptr<PcapFile>& file,
+    const std::shared_ptr<ThreadPool> &pool
     );
-
-  std::shared_ptr<PacketRefBuffer> get_buffer();
-
-  std::shared_ptr<PacketObserver> get_observer();
 
   static std::vector<std::string> get_devices();
 
@@ -65,7 +65,12 @@ public:
 
 protected:
 
-  explicit PacketCapture(pcap_t* h);
+  PacketCapture(
+    pcap_t* h,
+    int data_link_type,
+    const std::shared_ptr<PcapFile>& file,
+    const std::shared_ptr<ThreadPool> &pool
+    );
 
   virtual void capture_func() = 0;
 
@@ -73,20 +78,14 @@ protected:
 
   pcap_t* handle() const;
 
-  void set_data_link(int dlt);
-
-  void set_buffer(const std::shared_ptr<PacketRefBuffer>&);
-
-  void set_observer(const std::shared_ptr<PacketObserver>&);
-
   pcap_t* _handle;
 
   int m_data_link;
 
   char errbuf[PCAP_ERRBUF_SIZE]{};
 
-  std::shared_ptr<PacketRefBuffer> _buffer;
-  std::shared_ptr<PacketObserver> observer;
+  std::shared_ptr<PcapFile> file;
+  std::shared_ptr<ThreadPool> pool;
 
 };
 
