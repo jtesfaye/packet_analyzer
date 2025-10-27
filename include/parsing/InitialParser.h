@@ -1,6 +1,6 @@
 
-#ifndef PACKETPARSE_H
-#define PACKETPARSE_H
+#ifndef INITIALPARSER_H
+#define INITIALPARSER_H
 
 #include <packet/PacketUtil.h>
 #include <parsing/ParseDispatcher.h>
@@ -15,16 +15,16 @@ namespace parse {
 
 using namespace packet;
 
-class PacketParse {
+class InitialParser {
 public:
 
-  PacketParse(int dlt, u_int8_t flags);
+  InitialParser(int dlt, u_int8_t flags);
 
-  PacketParse(const PacketParse&) = delete;
-  PacketParse operator=(const PacketParse&) = delete;
-  PacketParse& operator= (PacketParse&&) = delete;
+  InitialParser(const InitialParser&) = delete;
+  InitialParser operator=(const InitialParser&) = delete;
+  InitialParser& operator= (InitialParser&&) = delete;
 
-  ~PacketParse() = default;
+  ~InitialParser() = default;
 
   packet_ref start_extract(
     const std::vector<std::byte> &raw_data,

@@ -4,11 +4,18 @@
 
 #pragma once
 
-inline ThreadPool::ThreadPool(size_t thread_count) {
+inline ThreadPool::ThreadPool(
+    const PoolInit &init,
+    size_t thread_count)
+: m_initial_parser(init.init_parser)
+, m_detail_parser(init.detail_parser)
+, m_initial_buffer(init.buffer)
+{
     for (size_t i = 0; i < thread_count; ++i) {
         m_workers.emplace_back([this] {do_work(); });
     }
 }
+
 
 
 template<class F, class... Args>
@@ -21,6 +28,12 @@ void ThreadPool::submit(F&& f, Args&&... args) {
     });
 
      m_work_to_do.notify_all();
+}
+
+inline void ThreadPool::add(const size_t index, const ParseJob job_type) {
+
+
+
 }
 
 inline void ThreadPool::do_work() {

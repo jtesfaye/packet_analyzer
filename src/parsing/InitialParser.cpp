@@ -1,10 +1,10 @@
 
 #include <iostream>
-#include <parsing/PacketParse.h>
+#include <parsing/InitialParser.h>
 
 
 
-PacketParse::PacketParse(int dlt, u_int8_t flags)
+InitialParser::InitialParser(int dlt, u_int8_t flags)
 : m_dlt{dlt}
 , m_flags{flags}
 , m_inital_time()
@@ -12,7 +12,7 @@ PacketParse::PacketParse(int dlt, u_int8_t flags)
 , detail_parse_dispatcher(Layer::get_detail_parse_functions())
 {}
 
-packet_ref PacketParse::start_extract(
+packet_ref InitialParser::start_extract(
   const std::vector<std::byte> &raw_data,
   const size_t index) {
 
@@ -44,7 +44,7 @@ packet_ref PacketParse::start_extract(
 
 }
 
-std::vector<ProtocolDetails> PacketParse::detail_parse(
+std::vector<ProtocolDetails> InitialParser::detail_parse(
   const std::vector<std::byte> &raw_data,
   const layer_offsets &offsets) {
 
@@ -66,7 +66,7 @@ std::vector<ProtocolDetails> PacketParse::detail_parse(
   return details_arr;
 }
 
-std::vector<PacketParse::LayerJob> PacketParse::create_first_parse_jobs() {
+std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
 
   std::vector<LayerJob> jobs;
 
@@ -186,7 +186,7 @@ std::vector<PacketParse::LayerJob> PacketParse::create_first_parse_jobs() {
 
 }
 
-std::vector<PacketParse::LayerJob> PacketParse::create_detail_parse_jobs() {
+std::vector<InitialParser::LayerJob> InitialParser::create_detail_parse_jobs() {
 
   auto layer2 = [&] (
     const std::vector<std::byte>& raw_data,
@@ -241,7 +241,7 @@ std::vector<PacketParse::LayerJob> PacketParse::create_detail_parse_jobs() {
 }
 
 
-void PacketParse::set_initial_time(const parse_time &time) {
+void InitialParser::set_initial_time(const parse_time &time) {
 
   std::call_once(time_init_flag, [&]() {
     m_inital_time = time;
@@ -249,7 +249,7 @@ void PacketParse::set_initial_time(const parse_time &time) {
 
 }
 
-double PacketParse::set_relative_time(const parse_time &time) {
+double InitialParser::set_relative_time(const parse_time &time) {
 
   set_initial_time(time);
 
