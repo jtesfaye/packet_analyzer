@@ -6,7 +6,7 @@
 #define PACKETOBSERVER_H
 
 #include <QObject>
-#include <util/PacketRefBuffer.h>
+#include <util/PacketBuffer.h>
 #include <condition_variable>
 
 class PacketObserver : public QObject {
@@ -14,7 +14,7 @@ class PacketObserver : public QObject {
     Q_OBJECT
 public:
 
-    explicit PacketObserver(PacketRefBuffer& buffer)
+    explicit PacketObserver(IContainerType<packet_ref>& buffer)
         : m_buffer(buffer) {}
 
     ~PacketObserver() override = default;
@@ -29,7 +29,7 @@ public:
 
 private:
 
-    PacketRefBuffer& m_buffer;
+    IContainerType<packet_ref>& m_buffer;
     std::mutex m_lock;
     std::condition_variable m_cv;
     size_t m_next_expected {0};

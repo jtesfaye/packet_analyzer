@@ -7,9 +7,10 @@
 
 #include <unordered_map>
 #include <list>
+#include <util/IContainerType.h>
 
 template<typename CacheType>
-class LRUCache {
+class LRUCache : public IContainerType<CacheType> {
 public:
 
     explicit LRUCache(size_t max_limit)
@@ -20,7 +21,9 @@ public:
         }
     }
 
-    void push(size_t index, CacheType item) {
+    ~LRUCache() override = default;
+
+    void add(size_t index, CacheType item) override  {
 
         if (recency_list.size() == max_limit) {
             evict();
@@ -32,7 +35,7 @@ public:
 
     }
 
-    std::optional<CacheType> get(size_t key) {
+    std::optional<CacheType> get(size_t key) override {
 
         if (!cache.contains(key)) {
             return std::nullopt;
@@ -43,8 +46,20 @@ public:
         return cache[key].item;
     }
 
+    size_t size() const override {
+        return recency_list.size();
+    }
+
+    bool exists(size_t key) const override {
+        return cache.contains(key);
+    }
+
 
 private:
+
+    std::optional<CacheType> poll(size_t key) override {
+        return std::nullopt;
+    }
 
     std::list<size_t>::iterator move_to_front(const std::list<size_t>::iterator iter) {
 

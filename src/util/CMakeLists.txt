@@ -1,9 +1,12 @@
 add_library(util
         PacketRead.cpp
         RowFactory.cpp
-        PacketRefBuffer.cpp
+        ${CMAKE_SOURCE_DIR}/include/util/PacketBuffer.h
         PacketObserver.cpp
         ${CMAKE_SOURCE_DIR}/include/util/PacketObserver.h
+        ${CMAKE_SOURCE_DIR}/include/util/LRUCache.h
+        ${CMAKE_SOURCE_DIR}/include/util/IContainerType.h
+        TreeModelFactory.cpp
 
 )
 

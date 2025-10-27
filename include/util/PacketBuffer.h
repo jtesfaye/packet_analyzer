@@ -2,37 +2,85 @@
 // Created by jeremiah tesfaye on 8/14/25.
 //
 
-#ifndef PACKETREFBUFFER_H
-#define PACKETREFBUFFER_H
+#ifndef PACKETBUFFER_H
+#define PACKETBUFFER_H
 
 #include <deque>
 #include <packet/PacketUtil.h>
+#include <util/IContainerType.h>
 #include <optional>
 #include <deque>
 
 using namespace packet;
 
-class PacketRefBuffer {
+template<typename T>
+class PacketBuffer : public IContainerType<T> {
 
 public:
 
-    explicit PacketRefBuffer(size_t capacity);
-    ~PacketRefBuffer() = default;
+    explicit PacketBuffer(size_t capacity) :
+    m_capacity(capacity) {
 
-    void add(size_t index, packet_ref&&);
+        buffer.resize(m_capacity);
+    }
 
-    packet_ref& get_ref(size_t index);
+    ~PacketBuffer() override = default;
 
-    [[nodiscard]] bool exists(size_t index) const;
+    void add(size_t index, T ref) override {
 
-    [[nodiscard]] size_t size() const {return buffer.size();}
+        if (index > buffer.size() - 1) {
+            m_capacity *= 2;
+            buffer.resize(m_capacity);
+        }
+
+        buffer[index] = std::move(ref);
+    }
+
+    std::optional<T> poll(size_t index) override {
+
+        if (index > buffer.size() - 1)
+            throw std::runtime_error("PacketRefBuffer get_ref(): Access out of bounds on index " + std::to_string(index) + "\n");
+
+        return buffer[index];
+
+    }
+
+    T get(size_t key) override {
+
+        if (index > buffer.size() - 1)
+            throw std::runtime_error("PacketRefBuffer get_ref(): Access out of bounds on index " + std::to_string(index) + "\n");
+
+        if (buffer[index] == std::nullopt) {
+            throw std::runtime_error("PacketRefBuffer get_ref(): nullopt");
+        }
+
+        return buffer[index].value();
+
+    }
+
+    bool exists(size_t index) const override {
+
+        if (index > buffer.size() - 1) {
+            return false;
+        }
+
+        if (buffer[index] == std::nullopt)
+            return false;
+
+        return true;
+
+    }
+
+    size_t size() const override {
+        return buffer.size();
+    }
 
 private:
 
     size_t m_capacity;
-    std::deque<std::optional<packet_ref>> buffer;
+    std::deque<std::optional<T>> buffer;
     std::mutex m_lock;
 
 };
 
-#endif //PACKETREFBUFFER_H
+#endif //PACKETBUFFER_H
