@@ -19,7 +19,8 @@ public:
     int packet_count,
     size_t layer_flags,
     const std::shared_ptr<PcapFile> &file,
-    const std::shared_ptr<ThreadPool> &pool
+    const std::shared_ptr<ThreadPool> &pool,
+    raw_pkt_queue& queue
     );
 
   ~Online() override;
@@ -35,6 +36,7 @@ private:
   struct capture_objects {
     std::shared_ptr<ThreadPool> tpool;
     std::shared_ptr<PcapFile> file;
+    raw_pkt_queue& queue;
   };
 
   int m_packets_to_capture;

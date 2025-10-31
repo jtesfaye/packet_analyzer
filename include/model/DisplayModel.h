@@ -7,14 +7,14 @@
 
 #include <QAbstractTableModel>
 #include <vector>
-#include <util/PacketRefBuffer.h>
+#include <util/PacketBuffer.h>
 
 class DisplayModel : public QAbstractTableModel {
 
     Q_OBJECT
 
 public:
-    explicit DisplayModel(const std::shared_ptr<PacketRefBuffer>& buffer, QObject* parent = nullptr);
+    explicit DisplayModel(const std::shared_ptr<IContainerType<packet_ref>>& buffer, QObject* parent = nullptr);
 
     ~DisplayModel() override = default;
 
@@ -30,7 +30,7 @@ public:
 
 private:
 
-    std::shared_ptr<PacketRefBuffer> buffer;
+    std::shared_ptr<IContainerType<packet_ref>> buffer;
 
     int m_row_count;
 

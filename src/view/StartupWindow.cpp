@@ -19,7 +19,8 @@ StartupWindow::StartupWindow(QWidget* parent)
 , m_start_session_btn(new QPushButton( this))
 , m_stop_session_btn(new QPushButton(this))
 , m_save_capture_btn(new QPushButton(this))
-, m_filter_box(new QLineEdit(this)){
+, m_filter_box(new QLineEdit(this))
+, m_tree_view(new QTreeView(this)) {
 
     configure_table_view();
     setCentralWidget(setup_central_view());
@@ -43,8 +44,8 @@ QWidget *StartupWindow::setup_central_view() {
     m_table_view->setSelectionMode(QTableView::SingleSelection);
 
     splitter->addWidget(m_table_view);
+    splitter->addWidget(m_tree_view);
 
-    splitter->addWidget(m_sidebar);
     main_layout->addWidget(splitter);
 
     main_widget->setLayout(main_layout);

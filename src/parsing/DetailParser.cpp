@@ -5,43 +5,85 @@
 #include <parsing/DetailParser.h>
 #include <layerx/Layer.h>
 
-DetailParser::DetailParser(
-    const std::shared_ptr<IContainerType<packet_ref>> &buffer,
-    const std::shared_ptr<IContainerType<ProtocolDetails> >&cache,
-    const std::shared_ptr<PacketObserver>& observer)
+DetailParser::DetailParser()
 : parser(Layer::get_detail_parse_functions())
-, cache(cache)
-, buffer(buffer)
 {
-    //When the observer sends a signal, we then start parsing for details and caching result
-    connect(
-        observer.get(),
-        &PacketObserver::emit_packets_ready,
-        this,
-        &DetailParser::process_packets,
-        Qt::QueuedConnection
-        );
 }
 
-std::vector<ProtocolDetails> DetailParser::process_packets(size_t start, size_t end) {
 
-    std::vector<ProtocolDetails> details;
-    details.reserve(end - start);
+std::vector<ProtocolDetails> DetailParser::detail_parse(
+  const std::span<std::byte> &raw_data,
+  const layer_offsets &offsets) {
 
-    for (size_t i = start; i <= end; i++) {
-        packet_ref ref = buffer->get(i);
-        details.emplace_back(parser.detail_parse(ref.))
+    std::vector<ProtocolDetails> details_arr;
+    const std::vector<LayerJob> jobs = create_detail_parse_jobs();
+    parse_context cxt{};
 
+    for (const auto& job : jobs) {
+
+        ProtocolDetails details{std::move(job.detail_func(raw_data, cxt, offsets))};
+
+        if (details.name == "N/A") {
+            break;
+        }
+
+        details_arr.push_back(details);
     }
 
-
+    return details_arr;
 }
 
-void DetailParser::cache_result(size_t key, ProtocolDetails item) {
+std::vector<DetailParser::LayerJob> DetailParser::create_detail_parse_jobs() {
 
+    auto layer2 = [&] (
+      const std::span<std::byte>& raw_data,
+      parse_context& cxt,
+      const layer_offsets& offsets) {
 
+        cxt.offset = offsets.l2.offset;
+
+        if (cxt.offset == -1) {
+            return ProtocolDetails{"N/A", {}};
+        }
+
+        return parser(offsets.l2.protocol_type, {raw_data.begin(), raw_data.end()}, cxt);
+    };
+
+    auto layer3 = [&] (
+      const std::span<std::byte>& raw_data,
+      parse_context& cxt,
+      const layer_offsets& offsets) {
+
+        cxt.offset = offsets.l3.offset;
+
+        if (cxt.offset == -1) {
+            return ProtocolDetails{"N/A", {}};
+        }
+
+        return parser(offsets.l3.protocol_type, {raw_data.begin(), raw_data.end()}, cxt);
+
+    };
+
+    auto layer4 = [&] (
+      const std::span<std::byte>& raw_data,
+      parse_context& cxt,
+      const layer_offsets& offsets) {
+
+        cxt.offset = offsets.l4.offset;
+
+        if (cxt.offset == -1) {
+            return ProtocolDetails{"N/A", {}};
+        }
+
+        return parser(offsets.l4.protocol_type, {raw_data.begin(), raw_data.end()}, cxt);
+
+    };
+
+    return {
+        {layer2},
+        {layer3},
+        {layer4}
+    };
 }
-
-
 
 

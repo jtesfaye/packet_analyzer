@@ -108,7 +108,7 @@ void CaptureController::connect_observer_to_model(const CaptureSession& session)
         delete m->model();
     }
 
-    const std::shared_ptr<PacketRefBuffer> buffer_ref = session.get_buffer();
+    const std::shared_ptr<IContainerType<packet_ref>> buffer_ref = session.get_buffer();
     const std::shared_ptr<PacketObserver> observer = session.get_observer();
 
     DisplayModel* model = new DisplayModel{buffer_ref, this};

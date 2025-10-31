@@ -6,11 +6,18 @@
 #include <packet/PcapFile.h>
 
 
-PacketCapture::PacketCapture(pcap_t *h, int dlt, const std::shared_ptr<PcapFile> &file, const std::shared_ptr<ThreadPool> &pool)
+PacketCapture::PacketCapture(
+  pcap_t *h,
+  int dlt,
+  const std::shared_ptr<PcapFile> &file,
+  const std::shared_ptr<ThreadPool> &pool,
+  raw_pkt_queue& queue
+  )
 : _handle(h)
 , m_data_link(dlt)
 , file(file)
 , pool(pool)
+, queue(queue)
 {
 }
 
@@ -21,9 +28,10 @@ PacketCapture::createOnlineCapture(
   int packet_count,
   size_t layer_flags,
   const std::shared_ptr<PcapFile>& file,
-  const std::shared_ptr<ThreadPool> &pool) {
+  const std::shared_ptr<ThreadPool> &pool,
+  raw_pkt_queue& queue) {
 
-  auto cap = std::make_unique<Online>(handle, dlt, packet_count, layer_flags, file, pool);
+  auto cap = std::make_unique<Online>(handle, dlt, packet_count, layer_flags, file, pool, queue);
 
   return cap;
 
@@ -34,9 +42,10 @@ PacketCapture::createOfflineCapture(
   pcap_t* handle,
   int dlt,
   const std::shared_ptr<PcapFile>& file,
-  const std::shared_ptr<ThreadPool> &pool) {
+  const std::shared_ptr<ThreadPool> &pool,
+  raw_pkt_queue& queue) {
 
-  auto cap = std::make_unique<Offline>(handle, dlt, file, pool);
+  auto cap = std::make_unique<Offline>(handle, dlt, file, pool, queue);
 
   return cap;
 

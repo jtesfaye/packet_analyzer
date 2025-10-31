@@ -2,7 +2,8 @@
 // Created by jeremiah tesfaye on 10/30/25.
 //
 
-#include <LRUCache.h>
+#pragma once
+
 template<typename CacheType>
 LRUCache<CacheType>::LRUCache(size_t max_limit)
 : max_limit(max_limit) {
@@ -26,7 +27,7 @@ void LRUCache<CacheType>::add(size_t index, CacheType item) {
 }
 
 template<typename CacheType>
-std::optional<std::reference_wrapper<CacheType> > LRUCache<CacheType>::get(size_t key) {
+std::optional<std::reference_wrapper<const CacheType> > LRUCache<CacheType>::get(size_t key) {
 
     auto it = cache.find(key);
 

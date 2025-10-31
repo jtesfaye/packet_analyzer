@@ -6,6 +6,7 @@
 #include <layerx/layer4/Layer4.h>
 #include <layerx/layer3/Layer3.h>
 #include <layerx/layer2/Layer2.h>
+#include <iostream>
 
 bool Layer::registered = false;
 
@@ -13,9 +14,22 @@ std::vector<std::pair<int, Layer::function>> Layer::first_parse_funcs;
 
 std::vector<std::pair<int, Layer::detail_function>> Layer::detail_parse_funcs;
 
+std::unique_ptr<ProtocolDataUnit> Layer::unregistered_type(const std::vector<std::byte> &, parse_context &) {
+    return nullptr;
+}
+
+ProtocolDetails Layer::unregistered_type_details(const std::vector<std::byte> &, parse_context &) {
+    return {};
+}
+
+
+
 void Layer::register_parse_functions() {
 
     if (registered) return;
+
+    first_parse_funcs.push_back({-1, function(unregistered_type)});
+    detail_parse_funcs.push_back({-1, detail_function(unregistered_type_details)});
 
     Layer4::register_all_functions();
     append_func_vec(first_parse_funcs, Layer4::get_first_parse_registry());
@@ -34,10 +48,17 @@ void Layer::register_parse_functions() {
 }
 
 std::vector<std::pair<int, Layer::function> > Layer::get_first_parse_functions() {
+    if (!registered)
+        register_parse_functions();
+
     return first_parse_funcs;
 }
 
 std::vector<std::pair<int, Layer::detail_function> > Layer::get_detail_parse_functions() {
+
+    if (!registered)
+        register_parse_functions();
+
     return detail_parse_funcs;
 }
 

@@ -8,12 +8,18 @@
 class Offline final : public PacketCapture {
 public:
 
-  Offline(pcap_t* handle, int dlt, const std::shared_ptr<PcapFile>&, const std::shared_ptr<ThreadPool>&);
+  Offline(
+    pcap_t* handle,
+    int dlt,
+    const std::shared_ptr<PcapFile>&,
+    const std::shared_ptr<ThreadPool>&,
+    raw_pkt_queue&);
+
   Offline() = delete;
   Offline(const Offline&) = delete;
   Offline& operator= (const Offline&) = delete;
 
-  ~Offline() = default;
+  ~Offline() override = default;
 
 private:
 

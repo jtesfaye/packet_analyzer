@@ -13,71 +13,26 @@ template<typename CacheType>
 class LRUCache : public IContainerType<CacheType> {
 public:
 
-    explicit LRUCache(size_t max_limit)
-    : max_limit(max_limit) {
-
-        if (max_limit == 0) {
-            throw std::runtime_error("LRUCache: Can't have zero for max_limit");
-        }
-    }
+    explicit LRUCache(size_t max_limit);
 
     ~LRUCache() override = default;
 
-    void add(size_t index, CacheType item) override  {
+    void add(size_t index, CacheType item) override;
 
-        if (recency_list.size() == max_limit) {
-            evict();
-        }
+    std::optional<std::reference_wrapper<const CacheType>> get(size_t key) override;
 
-        recency_list.push_back(index);
+    size_t size() const override;
 
-        cache[index] = Data{item, std::prev(recency_list.end())};
-
-    }
-
-    std::optional<CacheType> get(size_t key) override {
-
-        if (!cache.contains(key)) {
-            return std::nullopt;
-        }
-
-        cache[key].position = move_to_front(cache[key].position);
-
-        return cache[key].item;
-    }
-
-    size_t size() const override {
-        return recency_list.size();
-    }
-
-    bool exists(size_t key) const override {
-        return cache.contains(key);
-    }
+    bool exists(size_t key) const override;
 
 
 private:
 
-    std::optional<CacheType> poll(size_t key) override {
-        return std::nullopt;
-    }
+    std::optional<std::reference_wrapper<CacheType>> poll(size_t key) override;
 
-    std::list<size_t>::iterator move_to_front(const std::list<size_t>::iterator iter) {
+    std::list<size_t>::iterator move_to_front(std::list<size_t>::iterator iter);
 
-        size_t key = *iter;
-
-        recency_list.erase(iter);
-        recency_list.push_back(key);
-        return std::prev(recency_list.end());
-
-    }
-
-    void evict() {
-
-        size_t key_to_remove = recency_list.front();
-        cache.erase(key_to_remove);
-        recency_list.pop_front();
-
-    }
+    void evict();
 
     struct Data {
 
@@ -92,5 +47,7 @@ private:
     std::list<size_t> recency_list;
 
 };
+
+#include "LRUCache.tpp"
 
 #endif //LRUCACHE_H

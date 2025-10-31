@@ -26,9 +26,15 @@ public:
 
     static bool registered;
 
-    static std::vector<std::pair<int, Layer::function>> first_parse_funcs;
+    static std::unique_ptr<ProtocolDataUnit>
+    unregistered_type(const std::vector<std::byte> &, parse_context &);
 
-    static std::vector<std::pair<int, Layer::detail_function>> detail_parse_funcs;
+    static ProtocolDetails
+    unregistered_type_details(const std::vector<std::byte> &, parse_context &);
+
+    static std::vector<std::pair<int, function>> first_parse_funcs;
+
+    static std::vector<std::pair<int, detail_function>> detail_parse_funcs;
 
     static void register_parse_functions();
 
@@ -44,17 +50,11 @@ public:
 
 private:
 
-
-
     template<typename T>
     static void append_func_vec(T& dest, const T& src) {
 
         dest.insert(dest.end(), src.begin(), src.end());
-
     }
-
-
-
 };
 
 #endif //LAYER_H

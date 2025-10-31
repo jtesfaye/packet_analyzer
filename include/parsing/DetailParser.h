@@ -5,33 +5,32 @@
 #ifndef DETAILPARSER_H
 #define DETAILPARSER_H
 
-#include <QObject>
-#include <util/IContainerType.h>
-#include <util/PacketObserver.h>
 #include <parsing/ParseDispatcher.h>
+#include <span>
 
-class DetailParser : QObject {
-
-    Q_OBJECT
-
+class DetailParser {
 public:
 
-    DetailParser(
-        const std::shared_ptr<IContainerType<packet_ref>>& buffer,
-        const std::shared_ptr<IContainerType<ProtocolDetails>>& cache,
-        const std::shared_ptr<PacketObserver>& observer);
+    DetailParser();
 
-public slots:
-
-    std::vector<ProtocolDetails> process_packets(size_t start, size_t end);
+    std::vector<ProtocolDetails> detail_parse(
+        const std::span<std::byte> &raw_data,
+        const layer_offsets &offsets);
 
 private:
 
-    void cache_result(size_t key, ProtocolDetails item);
+    struct LayerJob {
+
+        std::function<ProtocolDetails(
+          const std::span<std::byte>&,
+          parse_context&,
+          const layer_offsets&)> detail_func;
+
+    };
+
+    std::vector<LayerJob> create_detail_parse_jobs();
 
     ParseDispatcher<ProtocolDetails> parser;
-    std::shared_ptr<IContainerType<ProtocolDetails>> cache;
-    std::shared_ptr<IContainerType<packet_ref>> buffer;
 
 };
 

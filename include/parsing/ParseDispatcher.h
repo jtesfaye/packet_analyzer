@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <packet/PacketUtil.h>
+#include <iostream>
 
 using namespace packet;
 
@@ -23,8 +24,8 @@ public:
 
     RefType operator() (int key, const std::vector<std::byte> &raw_data, parse_context& context) {
 
-        if (auto k = !func_table.contains(key)) {
 
+        if (!func_table.contains(key)) {
             return func_table.at(-1)(raw_data, context);
 
         }

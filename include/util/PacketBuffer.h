@@ -9,13 +9,13 @@
 #include <packet/PacketUtil.h>
 #include <util/IContainerType.h>
 #include <optional>
+#include <iostream>
 #include <deque>
 
 using namespace packet;
 
 template<typename T>
 class PacketBuffer : public IContainerType<T> {
-
 public:
 
     explicit PacketBuffer(size_t capacity) :
@@ -33,28 +33,22 @@ public:
             buffer.resize(m_capacity);
         }
 
+        std::cout << "Buffer: Adding to index: " << std::to_string(index) << "\n";
         buffer[index] = std::move(ref);
     }
 
-    std::optional<T> poll(size_t index) override {
+    std::optional<std::reference_wrapper<T>> poll(size_t index) override {
 
         if (index > buffer.size() - 1)
             throw std::runtime_error("PacketRefBuffer get_ref(): Access out of bounds on index " + std::to_string(index) + "\n");
 
-        return buffer[index];
+        return std::ref(buffer[index].value());
 
     }
 
-    T get(size_t key) override {
+    std::optional<std::reference_wrapper<const T>> get(size_t key) override {
 
-        if (index > buffer.size() - 1)
-            throw std::runtime_error("PacketRefBuffer get_ref(): Access out of bounds on index " + std::to_string(index) + "\n");
-
-        if (buffer[index] == std::nullopt) {
-            throw std::runtime_error("PacketRefBuffer get_ref(): nullopt");
-        }
-
-        return buffer[index].value();
+        return std::ref(buffer[key].value());
 
     }
 

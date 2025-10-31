@@ -18,6 +18,11 @@ struct TransportPDU;
 
 namespace packet {
 
+  struct RawPacket {
+    size_t index;
+    std::byte packet[1500];
+  };
+
   struct parse_time {
     uint32_t ts_sec;
     uint32_t ts_usec;
@@ -78,8 +83,8 @@ namespace packet {
   };
 
   struct ProtocolDetails {
-    const std::string name;
-    const std::vector<std::string> fields;
+    std::string name;
+    std::vector<std::string> fields;
   };
 
 }

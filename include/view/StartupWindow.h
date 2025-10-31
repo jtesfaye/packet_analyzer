@@ -10,6 +10,7 @@
 #include <QTableView>
 #include <view/Sidebar.h>
 #include <view/SessionForm.h>
+#include <QTreeView>
 #include <QPushButton>
 
 
@@ -23,16 +24,14 @@ public:
 
     SessionForm* get_form();
 
-
 private:
 
     QWidget* setup_buttons();
     QWidget* setup_central_view();
     void configure_table_view();
 
-
-
     QTableView *m_table_view;
+    QTreeView* m_tree_view;
     Sidebar* m_sidebar;
     QLineEdit* m_filter_box;
     QPushButton* m_start_session_btn;
@@ -42,15 +41,16 @@ private:
 public:
 
     SessionForm* session_form;
+
     QTableView* get_table_view() {return m_table_view;}
+
+    QTreeView* get_tree_view() {return m_tree_view;}
+
     Sidebar* get_sidebar() {return m_sidebar;}
 
     QPushButton* get_start_session_btn() {return m_start_session_btn;}
+
     QPushButton* get_stop_session_btn() {return m_stop_session_btn;}
-
-
-
-
 
 };
 

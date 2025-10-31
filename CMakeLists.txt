@@ -10,8 +10,6 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-
-
 find_package(Boost)
 find_package(GTest REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui)
@@ -37,6 +35,6 @@ target_link_libraries(main_src
         view
 )
 
-target_include_directories(main_src PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories(main_src PRIVATE ${Boost_INCLUDE_DIRS} ${concurrentqueue_SOURCE_DIR})
 add_subdirectory(tests)
 target_include_directories(main_src PUBLIC ${CMAKE_SOURCE_DIR}/include)

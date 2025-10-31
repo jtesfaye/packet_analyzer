@@ -30,10 +30,6 @@ public:
     const std::vector<std::byte> &raw_data,
     size_t index);
 
-  std::vector<ProtocolDetails> detail_parse(
-    const std::vector<std::byte> &raw_data,
-    const layer_offsets &data);
-
 private:
 
   struct LayerJob {
@@ -44,15 +40,9 @@ private:
       parse_context&,
       layer_offsets&)> func;
 
-    std::function<ProtocolDetails(
-      const std::vector<std::byte>&,
-      parse_context&,
-      const layer_offsets&)> detail_func;
     };
 
   std::vector<LayerJob> create_first_parse_jobs();
-
-  std::vector<LayerJob> create_detail_parse_jobs();
 
   void set_initial_time(const parse_time& time);
 
@@ -67,8 +57,6 @@ private:
   std::once_flag time_init_flag;
 
   ParseDispatcher<std::unique_ptr<ProtocolDataUnit>> first_parse_dispatcher;
-
-  ParseDispatcher<ProtocolDetails> detail_parse_dispatcher;
 
 };
 

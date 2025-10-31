@@ -6,6 +6,7 @@
 #define LAYER4REGISTRY_H
 
 #include <functional>
+#include <iostream>
 #include <vector>
 #include <layerx/Layer.h>
 

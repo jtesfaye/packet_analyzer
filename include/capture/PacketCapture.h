@@ -36,7 +36,6 @@ class PacketCapture {
 public:
 
   void start_capture();
-
   void stop_capture();
 
   static std::unique_ptr<PacketCapture> createOnlineCapture(
@@ -45,14 +44,16 @@ public:
     int packet_count,
     size_t layer_flags,
     const std::shared_ptr<PcapFile>& file,
-    const std::shared_ptr<ThreadPool> &pool
+    const std::shared_ptr<ThreadPool> &pool,
+    raw_pkt_queue& queue
     );
 
   static std::unique_ptr<PacketCapture> createOfflineCapture(
     pcap_t* handle,
     int data_link_type,
     const std::shared_ptr<PcapFile>& file,
-    const std::shared_ptr<ThreadPool> &pool
+    const std::shared_ptr<ThreadPool> &pool,
+    raw_pkt_queue& queue
     );
 
   static std::vector<std::string> get_devices();
@@ -69,7 +70,8 @@ protected:
     pcap_t* h,
     int data_link_type,
     const std::shared_ptr<PcapFile>& file,
-    const std::shared_ptr<ThreadPool> &pool
+    const std::shared_ptr<ThreadPool> &pool,
+    raw_pkt_queue& queue
     );
 
   virtual void capture_func() = 0;
@@ -86,6 +88,7 @@ protected:
 
   std::shared_ptr<PcapFile> file;
   std::shared_ptr<ThreadPool> pool;
+  raw_pkt_queue& queue;
 
 };
 
