@@ -3,74 +3,53 @@
 //
 
 #include <gtest/gtest.h>
-#include <util/ThreadPool.h>
-#include <parsing/PacketParse.h>
+#include <parsing/ThreadPool.h>
+#include <util/IContainerType.h>
+#include <memory>
+#include <thread>
+#include <chrono>
+#include <queue>
+#include <util/PacketBuffer.h>
 #include <packet/PcapFile.h>
-#include <util/PacketRefBuffer.h>
-#include <util/RowFactory.h>
-#include <util/PacketObserver.h>
-#include <print>
 
 class ThreadPoolTest : public ::testing::Test {
 protected:
 
     ThreadPoolTest()
-    : file(file_name.c_str()),
-    parser(dlt, flags),
-    buffer(file.get_packet_count()),
-    observer(buffer),
-    observer_thread([&]{observer.wait_for_next();})
-    {}
+        : init_parser(std::make_shared<InitialParser>(DLT_EN10MB, 0xff))
+        , detail_parser(std::make_shared<DetailParser>())
+        , buffer(std::make_shared<PacketBuffer<packet_ref>>(10))
+        , detail_buffer(std::make_shared<LRUCache<std::vector<ProtocolDetails>>>(10))
+        {}
 
-    const int dlt = DLT_EN10MB;
-    const u_int8_t flags = 0 | parse::DO_LAYER3 | parse::DO_LAYER4;
+    std::shared_ptr<InitialParser> init_parser;
+    std::shared_ptr<DetailParser> detail_parser;
+    std::shared_ptr<IContainerType<packet_ref>> buffer;
+    std::shared_ptr<IContainerType<std::vector<ProtocolDetails>>> detail_buffer;
+    raw_pkt_queue queue;
 
-    std::string file_name {"/Users/jt/Desktop/pcap_files/mycap.pcap"};
-    PcapFile file;
-    PacketParse parser;
-    ThreadPool pool;
-    PacketRefBuffer buffer;
-    PacketObserver observer;
-    std::thread observer_thread;
-
-    void print_arr(const std::array<const std::string*, 7> row) {
-
-        std::print("{}, {}, {}, {}, {}, {}, {} \n",
-            *row[0], *row[1], *row[2], *row[3], *row[4], *row[5], *row[6]);
-    }
 };
 
+TEST_F(ThreadPoolTest, ProcessesPacketsCorrectly) {
 
-TEST_F(ThreadPoolTest, DoesItInsertIntoBufferCorrectly) {
+    std::string file_name = "/Users/jt/Desktop/pcap_files/mycap.pcap";
+    PcapFile file(file_name);
 
-    for (int i = 0; i < file.get_packet_count(); i++) {
+    PoolInit init {init_parser, detail_parser, buffer, detail_buffer , queue ,5};
+    ThreadPool pool(init);
 
-        pool.submit([this, i] {
+    // prepare packets
+    for (int i = 0; i < 5; ++i) {
+        auto data = file.read(i);
 
-            const std::vector<std::byte> data = file.read(i);
-            auto ref = parser.start_extract(data, i);
-            buffer.add(i, std::move(ref));
-            observer.notify_if_next(i);
-
-        });
+        RawPacket pkt{};
+        std::memcpy(pkt.packet,data.data(), data.size());
+        pkt.index = i;
+        queue.push(pkt);
     }
 
     pool.shutdown();
-
-    observer.set_done();
-    observer.notify_all();
-
-    EXPECT_EQ(buffer.size(), 75);
-
-    //visual test
-    for (int i = 0; i < buffer.size(); i++) {
-        auto ref = RowFactory::create_row(buffer.get_ref(i));
-        print_arr(ref.to_array());
-
-    }
-
-    if (observer_thread.joinable()) {
-        observer_thread.join();
-    }
-
 }
+
+
+

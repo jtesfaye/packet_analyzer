@@ -7,6 +7,7 @@
 #include <packet/PcapFile.h>
 #include <layerx/layer3/Layer3.h>
 #include <layerx/iana_numbers.h>
+#include <parsing/InitialParser.h>
 
 class Layer3Test : public ::testing::Test {
 protected:
@@ -24,19 +25,17 @@ protected:
 
 };
 
-
 TEST_F(Layer3Test, IPv4ParseTest) {
 
     int key = iana::IPV4;
 
-    ParseDispatcher<std::unique_ptr<ProtocolDataUnit>, false> net_parse(
-        Layer3::get_all_functions());
+    ParseDispatcher parser(Layer::get_first_parse_functions());
 
     auto raw_data = file.read(0);
 
     context.offset = 30;
 
-    auto ip = net_parse(key, raw_data, context);
+    auto ip = parser(key, raw_data, context);
 
     ASSERT_NE(ip, nullptr);
 
@@ -50,14 +49,13 @@ TEST_F(Layer3Test, IPv6ParseTest) {
 
     int key = iana::IPV6;
 
-    ParseDispatcher<std::unique_ptr<ProtocolDataUnit>, false> net_parse(
-        Layer3::get_all_functions());
+    ParseDispatcher parser(Layer::get_first_parse_functions());
 
     context.offset = 30;
 
     auto raw_data = file2.read(2);
 
-    auto ip = net_parse(key, raw_data, context);
+    auto ip = parser(key, raw_data, context);
 
     ASSERT_NE(ip, nullptr);
     EXPECT_EQ(ip->src, "2605:a601:ac61:f600:145:4c82:701d:1168");

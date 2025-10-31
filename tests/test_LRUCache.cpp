@@ -8,7 +8,7 @@
 TEST(LRUCacheTest, InsertAndRetrieveSingleItem) {
     LRUCache<int> cache(2);
 
-    cache.push(1, 100);
+    cache.add(1, 100);
     auto value = cache.get(1);
 
     ASSERT_TRUE(value.has_value());
@@ -18,7 +18,7 @@ TEST(LRUCacheTest, InsertAndRetrieveSingleItem) {
 TEST(LRUCacheTest, GetNonexistentItemReturnsNullopt) {
     LRUCache<int> cache(2);
 
-    cache.push(1, 100);
+    cache.add(1, 100);
     auto value = cache.get(2);
 
     EXPECT_FALSE(value.has_value());
@@ -27,9 +27,9 @@ TEST(LRUCacheTest, GetNonexistentItemReturnsNullopt) {
 TEST(LRUCacheTest, EvictsLeastRecentlyUsedItem) {
     LRUCache<int> cache(2);
 
-    cache.push(1, 100);
-    cache.push(2, 200);
-    cache.push(3, 300);
+    cache.add(1, 100);
+    cache.add(2, 200);
+    cache.add(3, 300);
 
     EXPECT_FALSE(cache.get(1).has_value());
     EXPECT_TRUE(cache.get(2).has_value());
@@ -39,14 +39,14 @@ TEST(LRUCacheTest, EvictsLeastRecentlyUsedItem) {
 TEST(LRUCacheTest, AccessUpdatesRecency) {
     LRUCache<int> cache(2);
 
-    cache.push(1, 100);
-    cache.push(2, 200);
+    cache.add(1, 100);
+    cache.add(2, 200);
 
     auto val = cache.get(1);
     EXPECT_TRUE(val.has_value());
     EXPECT_EQ(val.value(), 100);
 
-    cache.push(3, 300);
+    cache.add(3, 300);
 
     EXPECT_TRUE(cache.get(1).has_value());
     EXPECT_FALSE(cache.get(2).has_value());
@@ -56,8 +56,8 @@ TEST(LRUCacheTest, AccessUpdatesRecency) {
 TEST(LRUCacheTest, ReplaceExistingKeyUpdatesValue) {
     LRUCache<int> cache(2);
 
-    cache.push(1, 100);
-    cache.push(1, 200);
+    cache.add(1, 100);
+    cache.add(1, 200);
 
     auto value = cache.get(1);
     ASSERT_TRUE(value.has_value());
@@ -68,10 +68,10 @@ TEST(LRUCacheTest, MaintainsMaxLimit) {
     constexpr size_t MAX_SIZE = 3;
     LRUCache<int> cache(MAX_SIZE);
 
-    cache.push(1, 10);
-    cache.push(2, 20);
-    cache.push(3, 30);
-    cache.push(4, 40);
+    cache.add(1, 10);
+    cache.add(2, 20);
+    cache.add(3, 30);
+    cache.add(4, 40);
 
     EXPECT_FALSE(cache.get(1).has_value());
     EXPECT_TRUE(cache.get(2).has_value());

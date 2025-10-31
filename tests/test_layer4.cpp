@@ -11,6 +11,7 @@
 
 class Layer4Test : public ::testing::Test {
 protected:
+
     Layer4Test() :
     file(file_name.c_str())
     {}
@@ -41,9 +42,6 @@ TEST_F(Layer4Test, DispatchTest) {
     EXPECT_TRUE(found_tcp) << "TCP parse function not registered!";
 
 }
-
-
-
 
 TEST_F(Layer4Test, TCPParseSuccess) {
 
