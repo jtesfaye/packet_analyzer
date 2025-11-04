@@ -4,6 +4,7 @@
 
 #include <util/PacketObserver.h>
 #include <print>
+#include <QtConcurrent>
 
 void PacketObserver::notify_if_next(size_t index) {
 
@@ -13,6 +14,17 @@ void PacketObserver::notify_if_next(size_t index) {
         m_cv.notify_one();
 
 }
+
+void PacketObserver::start_observer() {
+
+    m_wait_for_next_worker = std::thread([this] () {
+        wait_for_next();
+    });
+
+    m_wait_for_next_worker.detach();
+
+}
+
 
 /*
  * wait_for_next()
@@ -34,11 +46,13 @@ void PacketObserver::notify_if_next(size_t index) {
  */
 void PacketObserver::wait_for_next() {
 
+    std::cout << "Observer intitialized\n";
+
     while (true) {
 
         std::unique_lock lock(m_lock);
 
-        m_cv.wait(lock, [&] {
+        m_cv.wait(lock, [&]() {
             return m_buffer.exists(m_next_expected) || m_done;
         });
 
@@ -57,7 +71,36 @@ void PacketObserver::wait_for_next() {
             }
         }
 
-        emit emit_packets_ready(m_start_index, m_next_expected - 1);
+        std::cout << "About to emit packets...\n";
+
+        emit emit_packets_ready(m_buffer.begin_at(m_start_index), m_buffer.begin_at(m_next_expected));
+    }
+
+    std::cout << "Should not be here\n";
+}
+
+void PacketObserver::receive_detail_request(size_t index) {
+
+    std::cout << "Observer got request\n";
+
+    if (!m_cache.exists(index)) {
+        emit_pkt_details({{"N/A", {}}});
+    }
+
+    const std::vector<ProtocolDetails> vec = *m_cache.safe_get(index);
+    emit_pkt_details(vec);
+
+}
+
+
+PacketObserver::~PacketObserver() {
+
+    set_done();
+    m_cv.notify_all();
+
+    if (m_wait_for_next_worker.joinable()) {
+        m_wait_for_next_worker.join();
     }
 }
+
 

@@ -29,7 +29,7 @@ struct row_entry {
 class RowFactory {
 public:
 
-    static row_entry create_row(packet::packet_ref& ref);
+    static row_entry create_row(const packet::packet_ref& ref);
 
     RowFactory() = delete;
 

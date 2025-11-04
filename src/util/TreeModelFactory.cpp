@@ -5,32 +5,31 @@
 #include <util/TreeModelFactory.h>
 #include <QList>
 
-QStandardItem *TreeModelFactory::make_level(
-    std::string& name,
-    std::vector<std::string> &&data) {
+using namespace packet;
 
-    QStandardItem* top_level = new QStandardItem(name.data());
 
-    for (const std::string& d : data) {
-        top_level->appendRow(new QStandardItem(d.data()));
+QStandardItem* TreeModelFactory::make_protocol_item(const ProtocolDetails& protocol) {
+    // Create a top-level item with the protocol name
+    QStandardItem* protocolItem = new QStandardItem(QString::fromStdString(protocol.name));
+
+    // Add each field as a child row
+    for (const auto& field : protocol.fields) {
+        QStandardItem* fieldItem = new QStandardItem(QString::fromStdString(field));
+        protocolItem->appendRow(fieldItem);
     }
 
-    return top_level;
-
+    return protocolItem;
 }
 
-QStandardItemModel* TreeModelFactory::make_model(
-    std::vector<QStandardItem *> &items) {
+QStandardItemModel* TreeModelFactory::make_model(const std::vector<ProtocolDetails>& details, QObject* parent) {
+    auto* model = new QStandardItemModel(parent);
+    model->setHorizontalHeaderLabels(QStringList() << "Protocol Details");
 
-    auto* model = new QStandardItemModel;
-
-    for (auto i : items) {
-        model->appendRow(i);
+    for (const auto& proto : details) {
+        model->appendRow(make_protocol_item(proto));
     }
 
     return model;
 }
-
-
 
 

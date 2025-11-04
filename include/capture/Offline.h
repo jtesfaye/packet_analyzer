@@ -10,7 +10,6 @@ public:
 
   Offline(
     pcap_t* handle,
-    int dlt,
     const std::shared_ptr<PcapFile>&,
     const std::shared_ptr<ThreadPool>&,
     raw_pkt_queue&);

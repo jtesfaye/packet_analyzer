@@ -1,22 +1,18 @@
 
 #include <capture/Online.h>
-#include <iostream>
-#include <stdexcept>
-#include <utility>
 #include <print>
-#include <filesystem>
+#include <algorithm>
 
 Online::Online
 (
   pcap_t* handle,
-  int dlt,
   int packet_count,
   size_t layer_flags,
   const std::shared_ptr<PcapFile> &file,
   const std::shared_ptr<ThreadPool> &pool,
   raw_pkt_queue& queue
 )
-: PacketCapture(handle, dlt, file, pool, queue)
+: PacketCapture(handle, file, pool, queue)
 , m_flags(layer_flags)
 {
   m_packets_to_capture = packet_count;
@@ -45,13 +41,21 @@ void Online::pcap_loop_callback(
 
   RawPacket pkt{};
 
-  size_t index = obj->file->write(header, packet);
-  pkt.index = index;
+  pkt.index = obj->file->write(header, packet);
 
-  std::memcpy(pkt.packet, header, sizeof(pcaprec_hdr_t));
+  pcaprec_hdr_t rec_header{};
+  rec_header.ts_sec  = header->ts.tv_sec;
+  rec_header.ts_usec = header->ts.tv_usec;
+  rec_header.incl_len = header->caplen;
+  rec_header.orig_len = header->len;
 
-  size_t len = header->caplen + sizeof(pcaprec_hdr_t) > 1500 ? 1500 - 16 : header->caplen;
-  std::memcpy(pkt.packet + sizeof(pcaprec_hdr_t), packet, len);
+  std::memcpy(pkt.packet, &rec_header, sizeof(rec_header));
+
+  constexpr size_t header_size = sizeof(rec_header);
+  constexpr size_t max_payload = sizeof(pkt.packet) - header_size;
+  const size_t payload_len = std::min(static_cast<size_t>(header->caplen), max_payload);
+
+  std::memcpy(pkt.packet + header_size, packet, payload_len);
 
   obj->queue.push(pkt);
   obj->tpool->notify_all();

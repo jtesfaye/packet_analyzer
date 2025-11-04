@@ -7,9 +7,10 @@
 
 //black sherif iron boy
 
+#include <QObject>
 #include <packet/PcapFile.h>
 #include <packet/PacketUtil.h>
-#include <util/PacketBuffer.h>
+#include <util/SparsePacketBuffer.h>
 #include <util/LRUCache.h>
 #include <capture/PacketCapture.h>
 #include <capture/CaptureConfig.h>
@@ -19,7 +20,6 @@ enum class CommandType {
   Start,
   Stop,
   Save,
-  GetDetails,
   End
 };
 
@@ -31,20 +31,19 @@ struct SessionCommand {
   static SessionCommand start() { return { CommandType::Start, {} }; }
   static SessionCommand stop() { return { CommandType::Stop,{} }; }
   static SessionCommand save(const std::string& path) { return { CommandType::Save, {path} }; }
-  static SessionCommand get_details(int index) {return { CommandType::GetDetails, {index}}; }
   static SessionCommand end() { return { CommandType::End, {}}; }
 
 };
 
+using InitialParseBuffer = SparsePacketBuffer<packet_ref>;
+using DetailParseCache = LRUCache<std::vector<ProtocolDetails>>;
 
 class CaptureSession {
 public:
 
-  using InitialParseBuffer = PacketBuffer<packet_ref>;
-  using DetailParseCache = LRUCache<std::vector<ProtocolDetails>>;
-
   explicit CaptureSession(const CaptureConfig& config);
-  ~CaptureSession();
+
+  virtual ~CaptureSession();
 
   void send_command(const SessionCommand& cmd);
 
@@ -61,7 +60,6 @@ private:
   void start_capture();
   void stop_capture() const;
   bool save_capture(const std::string& path) const;
-  void get_details(int index);
 
   void initialize_online_handle(
     const std::string& device_name,

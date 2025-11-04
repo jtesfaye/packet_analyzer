@@ -24,31 +24,28 @@ public:
 
     using key_pair = std::pair<int, function>;
 
-    static bool registered;
-
-    static std::unique_ptr<ProtocolDataUnit>
-    unregistered_type(const std::vector<std::byte> &, parse_context &);
-
-    static ProtocolDetails
-    unregistered_type_details(const std::vector<std::byte> &, parse_context &);
-
-    static std::vector<std::pair<int, function>> first_parse_funcs;
-
-    static std::vector<std::pair<int, detail_function>> detail_parse_funcs;
-
-    static void register_parse_functions();
-
-    Layer() = delete;
-    Layer(const Layer&) = delete;
-    Layer& operator= (const Layer&) = delete;
-
-    virtual ~Layer() = default;
-
     static std::vector<std::pair<int, function>> get_first_parse_functions();
 
     static std::vector<std::pair<int, detail_function>> get_detail_parse_functions();
 
+    Layer() = delete;
+    Layer(const Layer&) = delete;
+    Layer& operator= (const Layer&) = delete;
+    virtual ~Layer() = default;
+
 private:
+
+    static std::unique_ptr<ProtocolDataUnit> unregistered_type(const std::vector<std::byte> &, parse_context &);
+
+    static ProtocolDetails unregistered_type_details(const std::vector<std::byte> &, parse_context &);
+
+    static void register_parse_functions();
+
+    static bool registered;
+
+    static std::vector<std::pair<int, function>> first_parse_funcs;
+
+    static std::vector<std::pair<int, detail_function>> detail_parse_funcs;
 
     template<typename T>
     static void append_func_vec(T& dest, const T& src) {

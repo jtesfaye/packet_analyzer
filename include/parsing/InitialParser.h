@@ -7,6 +7,7 @@
 #include <layerx/ProtocolTypes.h>
 #include <functional>
 #include <mutex>
+#include <span>
 
 namespace parse {
   constexpr u_int8_t DO_LAYER3 = 0x40;
@@ -18,7 +19,7 @@ using namespace packet;
 class InitialParser {
 public:
 
-  InitialParser(int dlt, u_int8_t flags);
+  InitialParser(int layer2_type, u_int8_t flags);
 
   InitialParser(const InitialParser&) = delete;
   InitialParser operator=(const InitialParser&) = delete;

@@ -2,8 +2,8 @@
 // Created by jeremiah tesfaye on 8/14/25.
 //
 
-#ifndef PACKETBUFFER_H
-#define PACKETBUFFER_H
+#ifndef SPARSEPACKETBUFFER_H
+#define SPARSEPACKETBUFFER_H
 
 #include <deque>
 #include <packet/PacketUtil.h>
@@ -15,17 +15,17 @@
 using namespace packet;
 
 template<typename T>
-class PacketBuffer : public IContainerType<T> {
+class SparsePacketBuffer : public IContainerType<T> {
 public:
 
-    explicit PacketBuffer(size_t capacity) :
+    explicit SparsePacketBuffer(size_t capacity) :
     m_capacity(capacity) {
 
         buffer.resize(m_capacity);
         m_is_present.resize(m_capacity);
     }
 
-    ~PacketBuffer() override = default;
+    ~SparsePacketBuffer() override = default;
 
     void add(size_t index, T ref) override {
 
@@ -57,13 +57,14 @@ public:
         if (!m_is_present[key]) {
             throw std::runtime_error("PacketBuffer: unavailable index accessed");
         }
-        
+
         return buffer[key];
     }
 
     bool exists(size_t index) const override {
 
         if (index > buffer.size() - 1) {
+
             return false;
         }
 
@@ -95,4 +96,4 @@ private:
 
 };
 
-#endif //PACKETBUFFER_H
+#endif //SPARSEPACKETBUFFER_H

@@ -5,7 +5,7 @@
 #include <pcap/pcap.h>
 #include <string>
 #include <packet/PcapFile.h>
-#include <util/PacketBuffer.h>
+#include <util/SparsePacketBuffer.h>
 #include <parsing/ThreadPool.h>
 #include <util/PacketObserver.h>
 #include <parsing/InitialParser.h>
@@ -40,7 +40,6 @@ public:
 
   static std::unique_ptr<PacketCapture> createOnlineCapture(
     pcap_t* handle,
-    int data_link_type,
     int packet_count,
     size_t layer_flags,
     const std::shared_ptr<PcapFile>& file,
@@ -50,15 +49,12 @@ public:
 
   static std::unique_ptr<PacketCapture> createOfflineCapture(
     pcap_t* handle,
-    int data_link_type,
     const std::shared_ptr<PcapFile>& file,
     const std::shared_ptr<ThreadPool> &pool,
     raw_pkt_queue& queue
     );
 
   static std::vector<std::string> get_devices();
-
-  int get_datalink() const;
 
   PacketCapture(const PacketCapture&) = delete;
   PacketCapture& operator=(const PacketCapture&) = delete;
@@ -68,7 +64,6 @@ protected:
 
   PacketCapture(
     pcap_t* h,
-    int data_link_type,
     const std::shared_ptr<PcapFile>& file,
     const std::shared_ptr<ThreadPool> &pool,
     raw_pkt_queue& queue
@@ -81,8 +76,6 @@ protected:
   pcap_t* handle() const;
 
   pcap_t* _handle;
-
-  int m_data_link;
 
   char errbuf[PCAP_ERRBUF_SIZE]{};
 

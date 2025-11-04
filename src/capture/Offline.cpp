@@ -6,12 +6,11 @@
 Offline::Offline
 (
   pcap_t* handle,
-  const int dlt,
   const std::shared_ptr<PcapFile>& file,
   const std::shared_ptr<ThreadPool>& pool,
   raw_pkt_queue& queue
 )
-: PacketCapture(handle, dlt ,file, pool, queue)
+: PacketCapture(handle,file, pool, queue)
 {
 }
 

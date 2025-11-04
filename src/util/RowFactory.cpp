@@ -57,7 +57,7 @@ row_entry RowFactory::layerx_error_row(size_t index,
 
 }
 
-row_entry RowFactory::create_row(packet_ref &ref) {
+row_entry RowFactory::create_row(const packet_ref &ref) {
 
     //if layer4 is defined, info and protocol field will be in place for that layer
     if (ref.layer4) {

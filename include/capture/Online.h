@@ -15,7 +15,6 @@ public:
 
   Online(
     pcap_t* handle,
-    int dlt,
     int packet_count,
     size_t layer_flags,
     const std::shared_ptr<PcapFile> &file,

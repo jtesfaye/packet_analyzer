@@ -6,18 +6,31 @@
 #define PACKETOBSERVER_H
 
 #include <QObject>
-#include <util/PacketBuffer.h>
+#include <packet/PacketUtil.h>
+#include <util/IContainerType.h>
 #include <condition_variable>
+#include <span>
+#include <util/SparsePacketBuffer.h>
+#include <util/LRUCache.h>
+#include <thread>
+
 
 class PacketObserver : public QObject {
 
     Q_OBJECT
+
 public:
 
-    explicit PacketObserver(IContainerType<packet_ref>& buffer)
-        : m_buffer(buffer) {}
+    using InitialParseBuffer = SparsePacketBuffer<packet_ref>;
+    using DetailParseCache = LRUCache<std::vector<ProtocolDetails>>;
 
-    ~PacketObserver() override = default;
+    explicit PacketObserver(InitialParseBuffer& buffer, DetailParseCache& detail_cache)
+        : m_buffer(buffer)
+        , m_cache(detail_cache) {}
+
+    ~PacketObserver() override;
+
+    void start_observer();
 
     void notify_if_next(size_t index);
 
@@ -27,9 +40,16 @@ public:
 
     void set_done() {m_done = true;}
 
+public slots:
+
+    void receive_detail_request(size_t index);
+
 private:
 
-    IContainerType<packet_ref>& m_buffer;
+    InitialParseBuffer& m_buffer;
+    DetailParseCache& m_cache;
+
+    std::thread m_wait_for_next_worker;
     std::mutex m_lock;
     std::condition_variable m_cv;
     size_t m_next_expected {0};
@@ -38,7 +58,8 @@ private:
 
 signals:
 
-    void emit_packets_ready(size_t start, size_t end);
+    void emit_packets_ready(std::deque<packet_ref>::iterator first, std::deque<packet_ref>::iterator last);
+    void emit_pkt_details(std::vector<ProtocolDetails>);
 
 };
 

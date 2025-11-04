@@ -7,14 +7,17 @@
 
 #include <QAbstractTableModel>
 #include <vector>
-#include <util/PacketBuffer.h>
+#include <deque>
+#include <packet/PacketUtil.h>
+#include <span>
+#include <util/RowFactory.h>
 
 class DisplayModel : public QAbstractTableModel {
 
     Q_OBJECT
 
 public:
-    explicit DisplayModel(const std::shared_ptr<IContainerType<packet_ref>>& buffer, QObject* parent = nullptr);
+    explicit DisplayModel(QObject* parent = nullptr);
 
     ~DisplayModel() override = default;
 
@@ -26,11 +29,13 @@ public:
 
     QVariant data(const QModelIndex &index, int role) const override;
 
-    void add_data(size_t start, size_t end);
+    size_t row_entires_size();
+
+public slots:
+    void add_data(std::deque<packet::packet_ref>::iterator first, std::deque<packet::packet_ref>::iterator last);
+
 
 private:
-
-    std::shared_ptr<IContainerType<packet_ref>> buffer;
 
     int m_row_count;
 

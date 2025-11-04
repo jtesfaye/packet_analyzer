@@ -8,13 +8,11 @@
 
 PacketCapture::PacketCapture(
   pcap_t *h,
-  int dlt,
   const std::shared_ptr<PcapFile> &file,
   const std::shared_ptr<ThreadPool> &pool,
   raw_pkt_queue& queue
   )
 : _handle(h)
-, m_data_link(dlt)
 , file(file)
 , pool(pool)
 , queue(queue)
@@ -24,14 +22,13 @@ PacketCapture::PacketCapture(
 std::unique_ptr<PacketCapture>
 PacketCapture::createOnlineCapture(
   pcap_t* handle,
-  int dlt,
   int packet_count,
   size_t layer_flags,
   const std::shared_ptr<PcapFile>& file,
   const std::shared_ptr<ThreadPool> &pool,
   raw_pkt_queue& queue) {
 
-  auto cap = std::make_unique<Online>(handle, dlt, packet_count, layer_flags, file, pool, queue);
+  auto cap = std::make_unique<Online>(handle, packet_count, layer_flags, file, pool, queue);
 
   return cap;
 
@@ -40,12 +37,11 @@ PacketCapture::createOnlineCapture(
 std::unique_ptr<PacketCapture>
 PacketCapture::createOfflineCapture(
   pcap_t* handle,
-  int dlt,
   const std::shared_ptr<PcapFile>& file,
   const std::shared_ptr<ThreadPool> &pool,
   raw_pkt_queue& queue) {
 
-  auto cap = std::make_unique<Offline>(handle, dlt, file, pool, queue);
+  auto cap = std::make_unique<Offline>(handle, file, pool, queue);
 
   return cap;
 
@@ -88,12 +84,6 @@ std::vector<std::string> PacketCapture::get_devices() {
 pcap_t* PacketCapture::handle() const {
 
   return _handle;
-}
-
-int PacketCapture::get_datalink() const {
-
-  return m_data_link;
-
 }
 
 PacketCapture::~PacketCapture() = default;

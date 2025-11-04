@@ -12,7 +12,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Boost)
 find_package(GTest REQUIRED)
-find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 include_directories("/opt/homebrew/opt/libpcap/include")
 
 add_subdirectory(src)
@@ -25,6 +25,7 @@ target_link_libraries(main_src
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets
+        Qt6::Concurrent
         capture
         controller
         layerx

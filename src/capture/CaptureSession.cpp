@@ -4,20 +4,22 @@
 
 
 #include <capture/CaptureSession.h>
+#include <util/PacketObserver.h>
+#include <capture/PacketCapture.h>
 #include <iostream>
 #include <filesystem>
+#include <layerx/iana_numbers.h>
 
 
 CaptureSession::CaptureSession(const CaptureConfig &config)
-: m_handle(nullptr, close_handle)
-, m_bpf_program(nullptr, free_bpf_program)
-, running(true)
-, m_pkt_ref_buffer(std::make_shared<InitialParseBuffer>(config.packet_count > 0 ? config.packet_count : 100))
-, m_observer(std::make_shared<PacketObserver>(*m_pkt_ref_buffer))
+: running(true)
 , capture_on(false)
+, m_details_cache(std::make_shared<DetailParseCache>(config.packet_count > 0 ? config.packet_count : 100))
+, m_pkt_ref_buffer(std::make_shared<InitialParseBuffer>(config.packet_count > 0 ? config.packet_count : 100))
+, m_observer(std::make_shared<PacketObserver>(*m_pkt_ref_buffer, *m_details_cache))
+, m_handle(nullptr, close_handle)
+, m_bpf_program(nullptr, free_bpf_program)
 {
-
-    m_details_cache = std::make_shared<DetailParseCache>(config.packet_count > 0 ? config.packet_count : 100);
 
     if (config.mode == CaptureMode::Online) {
 
@@ -28,24 +30,24 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
             config.filter
             );
 
-        int data_link_type = pcap_datalink(m_handle.get());
+        int l2 = pcap_dlt_to_ieee.at(pcap_datalink(m_handle.get()));
 
         std::string temp_file = std::filesystem::temp_directory_path().generic_string() + "foobar.pcap";
 
-        m_initial_parser = std::make_shared<InitialParser>(data_link_type, config.flags);
+        m_initial_parser = std::make_shared<InitialParser>(l2, config.flags);
         m_detail_parser = std::make_shared<DetailParser>();
+
+        PoolInit init {m_initial_parser, m_detail_parser, m_pkt_ref_buffer, m_details_cache, m_observer ,m_raw_pkt_queue};
+        m_pool = std::make_shared<ThreadPool>(init);
 
         m_pcap_file = std::make_shared<PcapFile> (
             temp_file,
             m_handle.get()
             );
 
-        PoolInit init {m_initial_parser, m_detail_parser, m_pkt_ref_buffer, m_details_cache,m_raw_pkt_queue};
-        m_pool = std::make_shared<ThreadPool>(init);
 
         capture = PacketCapture::createOnlineCapture(
             m_handle.get(),
-            data_link_type,
             config.packet_count,
             config.flags,
             m_pcap_file,
@@ -66,12 +68,11 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
         m_initial_parser = std::make_shared<InitialParser>(data_link_type, config.flags);
         m_detail_parser = std::make_shared<DetailParser>();
 
-        PoolInit init {m_initial_parser, m_detail_parser, m_pkt_ref_buffer, m_details_cache,m_raw_pkt_queue,1};
+        PoolInit init {m_initial_parser, m_detail_parser, m_pkt_ref_buffer, m_details_cache, m_observer ,m_raw_pkt_queue};
         m_pool = std::make_shared<ThreadPool>(init);
 
         capture = PacketCapture::createOfflineCapture(
             m_handle.get(),
-            data_link_type,
             m_pcap_file,
             m_pool,
             m_raw_pkt_queue
@@ -86,6 +87,7 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
 
 CaptureSession::~CaptureSession() {
     m_pool->shutdown();
+    m_observer->set_done();
 }
 
 
@@ -115,18 +117,15 @@ void CaptureSession::start_session() {
     }
 }
 
-
 void CaptureSession::process_cmd(const SessionCommand &cmd) {
 
     switch (cmd.type) {
 
         case CommandType::Start:
-            std::cout << "Start\n";
             start_capture();
             break;
 
         case CommandType::Stop:
-            std::cout << "Stop\n";
             stop_capture();
             break;
 
@@ -134,30 +133,11 @@ void CaptureSession::process_cmd(const SessionCommand &cmd) {
             save_capture(std::get<std::string>(cmd.cmd_data));
             break;
 
-        case CommandType::GetDetails:
-            get_details(std::get<int>(cmd.cmd_data));
-            break;
-
         case CommandType::End:
-            std::cout << "Done\n";
             running = false;
             break;
     }
 }
-
-void CaptureSession::get_details(int index) {
-
-    auto res =m_details_cache->get(index);
-
-    if (res.has_value()) {
-        //send signal to controller
-        std::cout << "Have details\n";
-    } else {
-        //no value
-        std::cout << "No details\n";
-    }
-}
-
 
 void CaptureSession::start_capture() {
 
@@ -242,9 +222,7 @@ void CaptureSession::initialize_online_handle(
         pcap_set_tstamp_type(m_handle.get(), PCAP_TSTAMP_HOST_HIPREC);
 
     } else {
-
         pcap_set_tstamp_type(m_handle.get(), PCAP_TSTAMP_HOST);
-
     }
 
     pcap_set_immediate_mode(m_handle.get(),1);
@@ -272,9 +250,7 @@ void CaptureSession::initialize_offline_handle(const std::string& path) {
     } else {
 
         throw std::runtime_error(errbuf);
-
     }
-
 }
 
 void CaptureSession::free_bpf_program(bpf_program *program) {
@@ -303,18 +279,16 @@ void CaptureSession::apply_filter(const std::string& device_name, const std::str
 
 }
 
-CaptureSession::InitialParseBuffer& CaptureSession::get_buffer() const {
-
+InitialParseBuffer& CaptureSession::get_buffer() const {
     return *m_pkt_ref_buffer;
 }
 
-CaptureSession::DetailParseCache &CaptureSession::get_cache() const {
+DetailParseCache &CaptureSession::get_cache() const {
     return *m_details_cache;
 }
 
 
 std::shared_ptr<PacketObserver> CaptureSession::get_observer() const {
-
     return m_observer;
 }
 

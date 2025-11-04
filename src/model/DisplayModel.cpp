@@ -5,11 +5,10 @@
 #include <iostream>
 #include <print>
 #include <model/DisplayModel.h>
-#include <util/RowFactory.h>
+#include <span>
 
-DisplayModel::DisplayModel(const std::shared_ptr<IContainerType<packet_ref>>& buffer, QObject* parent)
+DisplayModel::DisplayModel(QObject* parent)
 : QAbstractTableModel(parent)
-, buffer(buffer)
 , m_row_count(0)
 {
 }
@@ -71,24 +70,25 @@ QVariant DisplayModel::data(const QModelIndex &index, int role) const
     return m_row_entries[row][column];
 }
 
-void DisplayModel::add_data(size_t start, size_t end) {
+size_t DisplayModel::row_entires_size() {
+    return m_row_entries.size();
+}
 
-    int length = end - start;
-    int row = static_cast<int>(m_row_entries.size());
+void DisplayModel::add_data(std::deque<packet::packet_ref>::iterator first, std::deque<packet::packet_ref>::iterator last) {
 
-    std::println("Adding to model: {} to {}", start, end);
 
-    beginInsertRows(QModelIndex(), row, row + length);
+    int start_index = static_cast<int>(m_row_entries.size());
+    int length = static_cast<int>(std::distance(first, last));
 
-    for (size_t i = start; i <= end; i++) {
+    beginInsertRows(QModelIndex(), start_index, start_index + length - 1);
 
-        auto ref = buffer->get(i);
+    for (auto it = first; it != last; ++it) {
 
-        auto pkt_row_entry = RowFactory::create_row(*ref);
+        const auto& ref = *it;
+        auto pkt_row_entry = RowFactory::create_row(ref);
         auto row_array = pkt_row_entry.to_array();
 
         std::vector<QString> row_vector(row_array.size());
-
         std::ranges::transform(row_array, row_vector.begin(),
         [](const QString* ptr) {
             return *ptr;
@@ -98,7 +98,10 @@ void DisplayModel::add_data(size_t start, size_t end) {
     }
 
     endInsertRows();
+
 }
+
+
 
 
 

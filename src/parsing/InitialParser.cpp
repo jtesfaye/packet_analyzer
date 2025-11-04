@@ -4,11 +4,12 @@
 
 
 
-InitialParser::InitialParser(int dlt, u_int8_t flags)
-: m_dlt{dlt}
+InitialParser::InitialParser(int layer2_type, u_int8_t flags)
+: m_dlt{layer2_type}
 , m_flags{flags}
 , m_inital_time()
 , first_parse_dispatcher(Layer::get_first_parse_functions())
+
 {}
 
 packet_ref InitialParser::start_extract(
@@ -49,7 +50,7 @@ std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
 
   auto layer2_job = [&](
     packet_ref& pkt,
-    const std::vector<std::byte>& data,
+    const std::vector<std::byte> data,
     parse_context& context,
     layer_offsets& offsets) {
 

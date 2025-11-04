@@ -7,12 +7,14 @@
 
 #include <QStandardItem>
 #include <QStandardItemModel>
+#include <packet/PacketUtil.h>
 
 class TreeModelFactory {
 public:
 
-    static QStandardItemModel* make_model(std::vector<QStandardItem*>& items);
-    static QStandardItem* make_level(std::string& name, std::vector<std::string>&& data);
+    static QStandardItemModel* make_model(const std::vector<packet::ProtocolDetails>& items, QObject* parent);
+    static QStandardItem* make_protocol_item(const packet::ProtocolDetails &details);
+
 
 };
 

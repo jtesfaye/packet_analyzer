@@ -10,9 +10,8 @@
 #include <parsing/InitialParser.h>
 #include <parsing/DetailParser.h>
 #include <util/IContainerType.h>
-#include <util/LRUCache.h>
+#include <util/PacketObserver.h>
 #include <atomic>
-#include <queue>
 #include <boost/lockfree/spsc_queue.hpp>
 
 using namespace boost::lockfree;
@@ -23,6 +22,7 @@ struct PoolInit {
     const std::shared_ptr<DetailParser> detail_parser;
     const std::shared_ptr<IContainerType<packet_ref>> pkt_buffer;
     const std::shared_ptr<IContainerType<std::vector<ProtocolDetails>>> detail_buffer;
+    const std::shared_ptr<PacketObserver> observer;
     raw_pkt_queue& raw_pkt_queue;
     size_t thread_count = std::thread::hardware_concurrency();
 };
@@ -49,6 +49,7 @@ private:
 
     std::shared_ptr<IContainerType<packet_ref>> m_initial_buffer;
     std::shared_ptr<IContainerType<std::vector<ProtocolDetails>>> m_details_cache;
+    std::shared_ptr<PacketObserver> m_observer;
     raw_pkt_queue& m_pkt_queue;
 
     std::vector<std::thread> m_workers;
@@ -57,8 +58,5 @@ private:
     std::atomic<bool> m_stop{false};
 
 };
-
-#include "ThreadPool.tpp"
-
 
 #endif //THREADPOOL_H
