@@ -2,25 +2,26 @@
 // Created by jeremiah tesfaye on 8/18/25.
 //
 
-#pragma once
+#include <../../include/parsing/ThreadPool.h>
 
-inline ThreadPool::ThreadPool(const PoolInit &init)
+ThreadPool::ThreadPool(const PoolInit &init)
 : m_initial_parser(init.init_parser)
 , m_detail_parser(init.detail_parser)
 , m_initial_buffer(init.pkt_buffer)
 , m_pkt_queue(init.raw_pkt_queue)
 , m_details_cache(init.detail_buffer)
+, m_observer(init.observer)
 {
     for (size_t i = 0; i < init.thread_count; ++i) {
         m_workers.emplace_back([this] {do_work();});
     }
 }
 
-inline void ThreadPool::notify_all() {
+void ThreadPool::notify_all() {
     m_work_to_do.notify_all();
 }
 
-inline void ThreadPool::do_work() {
+void ThreadPool::do_work() {
 
     while (true) {
 
@@ -41,22 +42,26 @@ inline void ThreadPool::do_work() {
     }
 }
 
-inline void ThreadPool::parse_packet(RawPacket pkt) {
+void ThreadPool::parse_packet(RawPacket pkt) {
 
     const auto pkt_span = std::span<std::byte>(pkt.packet);
+    const std::vector<std::byte> data {pkt_span.begin(), pkt_span.end()};
+    size_t index = pkt.index;
 
-    packet_ref ref = m_initial_parser->start_extract({pkt_span.begin(), pkt_span.end()}, pkt.index);
+    packet_ref ref = m_initial_parser->start_extract(data, index);
 
     std::vector<ProtocolDetails> details = m_detail_parser->detail_parse(
         {pkt_span.begin(), pkt_span.end()},
                ref.data);
 
-    m_initial_buffer->add(pkt.index, std::move(ref));
+    m_initial_buffer->add(index, std::move(ref));
 
-    m_details_cache->add(pkt.index, details);
+    m_details_cache->add(index, details);
+
+   m_observer->notify_if_next(index);
 }
 
-inline void ThreadPool::shutdown() {
+void ThreadPool::shutdown() {
 
     {
         std::unique_lock u_lock(lock);
