@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include <parsing/ThreadPool.h>
+#include <parsing/ParsingEngine.h>
 #include <util/IContainerType.h>
 #include <memory>
 #include <thread>
@@ -31,7 +31,7 @@ protected:
     std::shared_ptr<LRUCache<std::vector<ProtocolDetails>>> detail_buffer;
     std::shared_ptr<PacketObserver> observer;
     raw_pkt_queue queue;
-    PoolInit init;
+    EngineInit init;
 
 };
 
@@ -40,7 +40,7 @@ TEST_F(ThreadPoolTest, ProcessesPacketsCorrectly) {
     std::string file_name = "/Users/jt/Desktop/pcap_files/mycap.pcap";
     PcapFile file(file_name);
 
-    ThreadPool pool(init);
+    ParsingEngine pool(init);
 
     // prepare packets
     for (int i = 0; i < 5; ++i) {

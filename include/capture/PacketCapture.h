@@ -6,9 +6,8 @@
 #include <string>
 #include <packet/PcapFile.h>
 #include <util/SparsePacketBuffer.h>
-#include <parsing/ThreadPool.h>
+#include <parsing/ParsingEngine.h>
 #include <util/PacketObserver.h>
-#include <parsing/InitialParser.h>
 
 namespace capture {
 
@@ -43,14 +42,14 @@ public:
     int packet_count,
     size_t layer_flags,
     const std::shared_ptr<PcapFile>& file,
-    const std::shared_ptr<ThreadPool> &pool,
+    const std::shared_ptr<ParsingEngine> &pool,
     raw_pkt_queue& queue
     );
 
   static std::unique_ptr<PacketCapture> createOfflineCapture(
     pcap_t* handle,
     const std::shared_ptr<PcapFile>& file,
-    const std::shared_ptr<ThreadPool> &pool,
+    const std::shared_ptr<ParsingEngine> &pool,
     raw_pkt_queue& queue
     );
 
@@ -65,7 +64,7 @@ protected:
   PacketCapture(
     pcap_t* h,
     const std::shared_ptr<PcapFile>& file,
-    const std::shared_ptr<ThreadPool> &pool,
+    const std::shared_ptr<ParsingEngine> &pool,
     raw_pkt_queue& queue
     );
 
@@ -80,7 +79,7 @@ protected:
   char errbuf[PCAP_ERRBUF_SIZE]{};
 
   std::shared_ptr<PcapFile> file;
-  std::shared_ptr<ThreadPool> pool;
+  std::shared_ptr<ParsingEngine> pool;
   raw_pkt_queue& queue;
 
 };

@@ -21,8 +21,8 @@ QStandardItem* TreeModelFactory::make_protocol_item(const ProtocolDetails& proto
     return protocolItem;
 }
 
-QStandardItemModel* TreeModelFactory::make_model(const std::vector<ProtocolDetails>& details, QObject* parent) {
-    auto* model = new QStandardItemModel(parent);
+QStandardItemModel* TreeModelFactory::make_model(const std::vector<ProtocolDetails>& details) {
+    auto* model = new QStandardItemModel();
     model->setHorizontalHeaderLabels(QStringList() << "Protocol Details");
 
     for (const auto& proto : details) {

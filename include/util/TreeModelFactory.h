@@ -12,7 +12,7 @@
 class TreeModelFactory {
 public:
 
-    static QStandardItemModel* make_model(const std::vector<packet::ProtocolDetails>& items, QObject* parent);
+    static QStandardItemModel* make_model(const std::vector<packet::ProtocolDetails>& items);
     static QStandardItem* make_protocol_item(const packet::ProtocolDetails &details);
 
 

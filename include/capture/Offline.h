@@ -11,7 +11,7 @@ public:
   Offline(
     pcap_t* handle,
     const std::shared_ptr<PcapFile>&,
-    const std::shared_ptr<ThreadPool>&,
+    const std::shared_ptr<ParsingEngine>&,
     raw_pkt_queue&);
 
   Offline() = delete;

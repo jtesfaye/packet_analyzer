@@ -9,7 +9,7 @@ Online::Online
   int packet_count,
   size_t layer_flags,
   const std::shared_ptr<PcapFile> &file,
-  const std::shared_ptr<ThreadPool> &pool,
+  const std::shared_ptr<ParsingEngine> &pool,
   raw_pkt_queue& queue
 )
 : PacketCapture(handle, file, pool, queue)

@@ -2,8 +2,8 @@
 // Created by jeremiah tesfaye on 8/18/25.
 //
 
-#ifndef THREADPOOL_H
-#define THREADPOOL_H
+#ifndef PARSINGENGINE_H
+#define PARSINGENGINE_H
 
 #include <thread>
 #include <vector>
@@ -17,7 +17,7 @@
 using namespace boost::lockfree;
 using raw_pkt_queue = spsc_queue<RawPacket, capacity<255>> ;
 
-struct PoolInit {
+struct EngineInit {
     const std::shared_ptr<InitialParser>init_parser;
     const std::shared_ptr<DetailParser> detail_parser;
     const std::shared_ptr<IContainerType<packet_ref>> pkt_buffer;
@@ -27,12 +27,12 @@ struct PoolInit {
     size_t thread_count = std::thread::hardware_concurrency();
 };
 
-class ThreadPool {
+class ParsingEngine {
 public:
 
-    explicit ThreadPool(const PoolInit &init);
+    explicit ParsingEngine(const EngineInit &init);
 
-    ~ThreadPool() = default;
+    ~ParsingEngine() = default;
 
     void do_work();
 
@@ -59,4 +59,4 @@ private:
 
 };
 
-#endif //THREADPOOL_H
+#endif //PARSINGENGINE_H

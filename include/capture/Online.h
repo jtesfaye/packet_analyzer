@@ -18,7 +18,7 @@ public:
     int packet_count,
     size_t layer_flags,
     const std::shared_ptr<PcapFile> &file,
-    const std::shared_ptr<ThreadPool> &pool,
+    const std::shared_ptr<ParsingEngine> &pool,
     raw_pkt_queue& queue
     );
 
@@ -33,7 +33,7 @@ private:
   void stop_func() override;
 
   struct capture_objects {
-    std::shared_ptr<ThreadPool> tpool;
+    std::shared_ptr<ParsingEngine> tpool;
     std::shared_ptr<PcapFile> file;
     raw_pkt_queue& queue;
   };

@@ -156,7 +156,13 @@ void CaptureController::connect_observer_to_this(const CaptureSession& session) 
 
 void CaptureController::receive_details(const std::vector<ProtocolDetails>& details) {
 
-    m_window_view->get_tree_view()->setModel(TreeModelFactory::make_model(details, this));
+    //later cache the old models instead
+    if (const auto old_model = m_window_view->get_tree_view()->model()) {
+        delete old_model;
+    }
+
+    m_window_view->get_tree_view()->setModel(TreeModelFactory::make_model(details));
+
 }
 
 

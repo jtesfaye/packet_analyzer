@@ -7,7 +7,7 @@ Offline::Offline
 (
   pcap_t* handle,
   const std::shared_ptr<PcapFile>& file,
-  const std::shared_ptr<ThreadPool>& pool,
+  const std::shared_ptr<ParsingEngine>& pool,
   raw_pkt_queue& queue
 )
 : PacketCapture(handle,file, pool, queue)

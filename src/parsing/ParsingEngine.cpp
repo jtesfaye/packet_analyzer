@@ -2,9 +2,9 @@
 // Created by jeremiah tesfaye on 8/18/25.
 //
 
-#include <../../include/parsing/ThreadPool.h>
+#include <parsing/ParsingEngine.h>
 
-ThreadPool::ThreadPool(const PoolInit &init)
+ParsingEngine::ParsingEngine(const EngineInit &init)
 : m_initial_parser(init.init_parser)
 , m_detail_parser(init.detail_parser)
 , m_initial_buffer(init.pkt_buffer)
@@ -17,11 +17,11 @@ ThreadPool::ThreadPool(const PoolInit &init)
     }
 }
 
-void ThreadPool::notify_all() {
+void ParsingEngine::notify_all() {
     m_work_to_do.notify_all();
 }
 
-void ThreadPool::do_work() {
+void ParsingEngine::do_work() {
 
     while (true) {
 
@@ -42,7 +42,7 @@ void ThreadPool::do_work() {
     }
 }
 
-void ThreadPool::parse_packet(RawPacket pkt) {
+void ParsingEngine::parse_packet(RawPacket pkt) {
 
     const auto pkt_span = std::span<std::byte>(pkt.packet);
     const std::vector<std::byte> data {pkt_span.begin(), pkt_span.end()};
@@ -61,7 +61,7 @@ void ThreadPool::parse_packet(RawPacket pkt) {
    m_observer->notify_if_next(index);
 }
 
-void ThreadPool::shutdown() {
+void ParsingEngine::shutdown() {
 
     {
         std::unique_lock u_lock(lock);

@@ -9,7 +9,7 @@
 PacketCapture::PacketCapture(
   pcap_t *h,
   const std::shared_ptr<PcapFile> &file,
-  const std::shared_ptr<ThreadPool> &pool,
+  const std::shared_ptr<ParsingEngine> &pool,
   raw_pkt_queue& queue
   )
 : _handle(h)
@@ -25,7 +25,7 @@ PacketCapture::createOnlineCapture(
   int packet_count,
   size_t layer_flags,
   const std::shared_ptr<PcapFile>& file,
-  const std::shared_ptr<ThreadPool> &pool,
+  const std::shared_ptr<ParsingEngine> &pool,
   raw_pkt_queue& queue) {
 
   auto cap = std::make_unique<Online>(handle, packet_count, layer_flags, file, pool, queue);
@@ -38,7 +38,7 @@ std::unique_ptr<PacketCapture>
 PacketCapture::createOfflineCapture(
   pcap_t* handle,
   const std::shared_ptr<PcapFile>& file,
-  const std::shared_ptr<ThreadPool> &pool,
+  const std::shared_ptr<ParsingEngine> &pool,
   raw_pkt_queue& queue) {
 
   auto cap = std::make_unique<Offline>(handle, file, pool, queue);
