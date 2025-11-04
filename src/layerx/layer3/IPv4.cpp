@@ -27,22 +27,7 @@ std::string IPv4::make_info() const {
         info += "(Fragmented datagram) ";
     }
 
-    switch (protocol) {
-
-        case iana::ICMP:
-            info += "ICMP ";
-            break;
-
-        case iana::TCP:
-            info += "TCP ";
-            break;
-
-        case iana::UDP:
-            info += "UDP ";
-            break;
-
-        default:
-    }
+    info += iana::protocol_to_string(protocol);
 
     return info;
 }
@@ -51,11 +36,10 @@ std::string IPv4::name() const {
     return "IPv4";
 }
 
-Layer3Registry &IPv4_functions::get_ipv4_registry() {
+void IPv4_functions::register_ipv4() {
     static Layer3Registry ipv4_reg(layer::iana::IPV4, ipv4_parse);
-    return ipv4_reg;
+    static Layer3Registry ipv4_detail_reg(layer::iana::IPV4, ipv4_detailed_parse);
 }
-
 
 std::unique_ptr<NetworkPDU> IPv4_functions::ipv4_parse(
     const std::vector<std::byte> &raw_data,
@@ -99,3 +83,47 @@ std::unique_ptr<NetworkPDU> IPv4_functions::ipv4_parse(
         next_protocol);
 }
 
+ProtocolDetails IPv4_functions::ipv4_detailed_parse(
+    const std::vector<std::byte>& raw_data,
+    parse_context& context) {
+
+    using namespace layer;
+
+    const auto* hdr = reinterpret_cast<const ipv4_header*>(raw_data.data() + context.offset);
+
+    std::vector<std::string> details;
+    details.reserve(10);
+
+    uint8_t version = (hdr->version_ihl >> 4) & 0x0F;
+    uint8_t ihl = hdr->version_ihl & 0x0F;
+    uint8_t dscp = hdr->dscp_ecn >> 2;
+    u_int8_t ecn = hdr->dscp_ecn & 0x03;
+    uint16_t total_length = ntohs(hdr->length);
+    uint16_t identification = ntohs(hdr->id);
+    uint16_t frag_field = ntohs(hdr->flags_foffset);
+    uint8_t flags = (frag_field >> 13) & 0x07;
+    uint16_t frag_offset = frag_field & 0x1FFF;
+    uint8_t ttl = hdr->ttl;
+    uint8_t protocol = hdr->protocol;
+    uint16_t checksum = ntohs(hdr->chksum);
+
+    std::string src = PacketRead::format_ipv4_src_dst(hdr->src_addr);
+    std::string dst = PacketRead::format_ipv4_src_dst(hdr->dest_adr);
+
+    details.push_back(std::format("Version: {}", version));
+    details.push_back(std::format("Header Length: {} bytes", ihl * 4));
+    details.push_back(std::format("DSCP: 0x{:02X}", dscp));
+    details.push_back(std::format("ECN: 0x{:02X}", ecn));
+    details.push_back(std::format("Total Length: {}", total_length));
+    details.push_back(std::format("Identification: {}", identification));
+    details.push_back(std::format("Flags: 0b{:03b}", flags));
+    details.push_back(std::format("Fragment Offset: {}", frag_offset));
+    details.push_back(std::format("Time to Live (TTL): {}", ttl));
+    details.push_back(std::format("Protocol: {} ({})", protocol, iana::protocol_to_string(protocol)));
+    details.push_back(std::format("Header Checksum: 0x{:04X}", checksum));
+    details.push_back(std::format("Source Address: {}", src));
+    details.push_back(std::format("Destination Address: {}", dst));
+
+    return {full_protocol_name(),details};
+
+}

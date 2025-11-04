@@ -19,6 +19,32 @@ namespace layer {
         constexpr u_int8_t UDP = 17;
 
         constexpr u_int16_t UNSUPPORTED = 0x0000;
+
+        static std::string protocol_to_string(u_int16_t protocol) {
+
+            using namespace layer;
+
+            std::string info;
+
+            switch (protocol) {
+
+                case ICMP:
+                    info += "ICMP ";
+                break;
+
+                case TCP:
+                    info += "TCP ";
+                break;
+
+                case UDP:
+                    info += "UDP ";
+                break;
+
+                default:
+            }
+
+            return info;
+        }
     }
 
     constexpr u_int8_t IEEE_802_3 = 0x05DC;

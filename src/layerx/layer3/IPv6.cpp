@@ -17,26 +17,7 @@ std::string IPv6::make_info() const {
 
     using namespace layer;
 
-    std::string info;
-
-    switch (protocol) {
-
-        case iana::ICMP:
-            info += "ICMP ";
-        break;
-
-        case iana::TCP:
-            info += "TCP ";
-        break;
-
-        case iana::UDP:
-            info += "UDP ";
-        break;
-
-        default:
-    }
-
-    return info;
+    return iana::protocol_to_string(protocol);
 }
 
 std::string IPv6::name() const {

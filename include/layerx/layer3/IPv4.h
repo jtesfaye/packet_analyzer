@@ -28,8 +28,15 @@ struct IPv4 final : NetworkPDU {
 class IPv4_functions {
 public:
 
-    static std::unique_ptr<NetworkPDU> ipv4_parse(const std::vector<std::byte>&, packet::parse_context&);
-    static Layer3Registry& get_ipv4_registry();
+    static std::unique_ptr<NetworkPDU> ipv4_parse(const std::vector<std::byte>&, parse_context&);
+
+    static ProtocolDetails ipv4_detailed_parse(const std::vector<std::byte>&, parse_context&);
+
+    static void register_ipv4();
+
+    static std::string full_protocol_name() {
+        return "Internet protocol version 4";
+    }
 
 };
 #endif //IPV4_H
