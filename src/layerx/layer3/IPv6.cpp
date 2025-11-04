@@ -6,6 +6,7 @@
 #include <layerx/iana_numbers.h>
 #include <utility>
 #include <util/PacketRead.h>
+#include <__format/format_functions.h>
 
 IPv6::IPv6(size_t len, std::string src, std::string dest, u_int8_t protocol)
 : NetworkPDU(len, std::move(src), std::move(dest))
@@ -24,10 +25,11 @@ std::string IPv6::name() const {
     return "IPv6";
 }
 
-Layer3Registry &IPv6_functions::get_ipv6_registry() {
+void IPv6_functions::register_ipv6() {
     static Layer3Registry ipv6_reg(layer::iana::IPV6, ipv6_parse);
-    return ipv6_reg;
+    static Layer3Registry ipv6_detailed_reg(layer::iana::IPV6, ipv6_detailed_parse);
 }
+
 
 std::unique_ptr<NetworkPDU> IPv6_functions::ipv6_parse(
     const std::vector<std::byte>& raw_data,
@@ -55,6 +57,41 @@ std::unique_ptr<NetworkPDU> IPv6_functions::ipv6_parse(
         PacketRead::format_ipv6_src_dest(ipv6_hdr->dst_addr),
         next_protocol
     );
+}
+
+ProtocolDetails IPv6_functions::ipv6_detailed_parse(
+    const std::vector<std::byte> &raw_data,
+    packet::parse_context &context) {
+
+    using namespace std;
+    using namespace layer;
+
+    const auto* hdr = reinterpret_cast<const ipv6_header*>(raw_data.data() + context.offset);
+
+    vector<string> details;
+    details.reserve(8);
+
+    uint8_t version = ipv6_version(hdr);
+    uint8_t traffic_class = ipv6_traffic_class(hdr);
+    uint32_t flow_label = ipv6_flow_label(hdr);
+    uint16_t payload_length = ntohs(hdr->payload_length);
+    uint8_t next_header = hdr->next_header;
+    uint8_t hop_limit = hdr->hop_limit;
+
+    string src = PacketRead::format_ipv6_src_dest(hdr->src_addr);
+    string dst = PacketRead::format_ipv6_src_dest(hdr->dst_addr);
+
+    details.push_back(std::format("Version: {}", version));
+    details.push_back(std::format("Traffic Class: 0x{:02X}", traffic_class));
+    details.push_back(std::format("Flow Label: 0x{:05X}", flow_label));
+    details.push_back(std::format("Payload Length: {}", payload_length));
+    details.push_back(std::format("Next Header: {} ({})", next_header, iana::protocol_to_string(next_header)));
+    details.push_back(std::format("Hop Limit: {}", hop_limit));
+    details.push_back(std::format("Source Address: {}", src));
+    details.push_back(std::format("Destination Address: {}", dst));
+
+    return { full_protocol_name(), details };
+
 }
 
 

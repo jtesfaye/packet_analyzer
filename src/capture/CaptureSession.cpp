@@ -37,8 +37,8 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
         m_initial_parser = std::make_shared<InitialParser>(l2, config.flags);
         m_detail_parser = std::make_shared<DetailParser>();
 
-        PoolInit init {m_initial_parser, m_detail_parser, m_pkt_ref_buffer, m_details_cache, m_observer ,m_raw_pkt_queue};
-        m_pool = std::make_shared<ThreadPool>(init);
+        EngineInit init {m_initial_parser, m_detail_parser, m_pkt_ref_buffer, m_details_cache, m_observer ,m_raw_pkt_queue};
+        m_pool = std::make_shared<ParsingEngine>(init);
 
         m_pcap_file = std::make_shared<PcapFile> (
             temp_file,
@@ -68,8 +68,8 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
         m_initial_parser = std::make_shared<InitialParser>(data_link_type, config.flags);
         m_detail_parser = std::make_shared<DetailParser>();
 
-        PoolInit init {m_initial_parser, m_detail_parser, m_pkt_ref_buffer, m_details_cache, m_observer ,m_raw_pkt_queue};
-        m_pool = std::make_shared<ThreadPool>(init);
+        EngineInit init {m_initial_parser, m_detail_parser, m_pkt_ref_buffer, m_details_cache, m_observer ,m_raw_pkt_queue};
+        m_pool = std::make_shared<ParsingEngine>(init);
 
         capture = PacketCapture::createOfflineCapture(
             m_handle.get(),

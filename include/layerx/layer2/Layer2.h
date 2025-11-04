@@ -13,11 +13,8 @@ using namespace packet;
 class Layer2 : public Layer {
 public:
 
-    static std::unique_ptr<LinkPDU> unsupported_type(
-        const std::vector<std::byte>&,
-        parse_context&);
-
     static void register_all_functions();
+
     static const std::vector<std::pair<int, function>>& get_first_parse_registry();
 
     static const std::vector<std::pair<int, detail_function>>& get_detail_parse_registry();

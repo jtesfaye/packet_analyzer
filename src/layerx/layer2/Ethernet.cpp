@@ -39,18 +39,17 @@ std::string Ethernet::name() const {
 
 }
 
-Layer2Registry &ethernet_functions::get_ethernet_registry() {
-
-    static Layer2Registry ethernet_reg(layer::IEEE_802_3, ethernet_functions::ethernet_parse);
-    return ethernet_reg;
-
+void ethernet_functions::register_ethernet() {
+    static Layer2Registry eth_reg(layer::IEEE_802_3, ethernet_parse);
+    static Layer2Registry eth_detailed_reg(layer::IEEE_802_3, ethernet_detailed_parse);
 }
+
 
 std::unique_ptr<LinkPDU>
 ethernet_functions::ethernet_parse
 (const std::vector<std::byte> &raw_data, packet::parse_context& context) {
 
-    using namespace packet::frame;
+    using namespace layer::frame;
     using namespace packet;
 
     const auto valid_len = PacketRead::valid_length;
@@ -108,4 +107,86 @@ ethernet_functions::ethernet_parse
         ether_type
         );
 }
+
+ProtocolDetails ethernet_functions::ethernet_detailed_parse(
+    const std::vector<std::byte> &raw_data,
+    parse_context &context) {
+
+    std::vector<std::string> details;
+
+    using namespace layer::frame;
+
+    auto hdr = reinterpret_cast<const ethernet_hdr*> (raw_data.data() + context.offset);
+    u_int16_t ether_type = hdr->ether_type;
+
+    switch (ether_type) {
+
+        case 0x8100: {
+
+            auto vlan = reinterpret_cast<const ether_802_1_Q_hdr*> (raw_data.data() + context.offset);
+            uint16_t tci = ntohs(vlan->tci);
+            uint16_t vlan_id = tci & 0x0FFF;
+            uint8_t pcp = (tci >> 13) & 0x07;
+            bool dei = (tci >> 12) & 0x01;
+            details.push_back(std::format("802.1Q VLAN Tag Control Information: 0x{:04X}", tci));
+            details.push_back(std::format("  Priority Code Point (PCP): {}", pcp));
+            details.push_back(std::format("  Drop Eligible Indicator (DEI): {}", dei));
+            details.push_back(std::format("  VLAN ID: {}", vlan_id));
+            details.push_back(std::format("Encapsulated EtherType: 0x{:04X}", ntohs(vlan->ether_type)));
+            break;
+
+        }
+
+        case 0x88A8: {
+
+            auto ad = reinterpret_cast<const ether_802_1_ad_hdr*> (raw_data.data() + context.offset);
+            uint16_t outer_tpid = ntohs(ad->tpid);
+            uint16_t outer_tci  = ntohs(ad->tci);
+            uint16_t inner_tpid = ntohs(ad->tpid_2);
+            uint16_t inner_tci  = ntohs(ad->tci_2);
+            uint16_t ether_type = ntohs(ad->ether_type);
+
+            uint8_t outer_pcp = (outer_tci >> 13) & 0x07;
+            bool outer_dei = (outer_tci >> 12) & 0x01;
+            uint16_t outer_vlan_id = outer_tci & 0x0FFF;
+
+            uint8_t inner_pcp = (inner_tci >> 13) & 0x07;
+            bool inner_dei = (inner_tci >> 12) & 0x01;
+            uint16_t inner_vlan_id = inner_tci & 0x0FFF;
+
+            details.push_back(std::format("802.1ad (Q-in-Q) VLAN Tagging"));
+            details.push_back(std::format("  Outer TPID: 0x{:04X}", outer_tpid));
+            details.push_back(std::format("  Outer VLAN TCI: 0x{:04X}", outer_tci));
+            details.push_back(std::format("    Priority Code Point (PCP): {}", outer_pcp));
+            details.push_back(std::format("    Drop Eligible Indicator (DEI): {}", outer_dei));
+            details.push_back(std::format("    VLAN ID: {}", outer_vlan_id));
+
+            details.push_back(std::format("  Inner TPID: 0x{:04X}", inner_tpid));
+            details.push_back(std::format("  Inner VLAN TCI: 0x{:04X}", inner_tci));
+            details.push_back(std::format("    Priority Code Point (PCP): {}", inner_pcp));
+            details.push_back(std::format("    Drop Eligible Indicator (DEI): {}", inner_dei));
+            details.push_back(std::format("    VLAN ID: {}", inner_vlan_id));
+
+            details.push_back(std::format("Encapsulated EtherType: 0x{:04X}", ether_type));
+            break;
+
+        }
+
+        default: {
+
+            std::string src = PacketRead::format_mac(hdr->src_addr);
+            std::string dst = PacketRead::format_mac(hdr->dest_addr);
+
+            details.push_back(std::format("Destination MAC: {}", dst));
+            details.push_back(std::format("Source MAC: {}", src));
+            details.push_back(std::format("EtherType: 0x{:04X}", ether_type));
+            break;
+
+        }
+    }
+
+    return {full_protocol_name(), details};
+
+}
+
 

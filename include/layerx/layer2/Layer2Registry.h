@@ -10,6 +10,7 @@
 
 
 struct Layer2Registry {
+
     static std::vector<std::pair<int, Layer::function>>& get_registry() {
         static std::vector<std::pair<int, Layer::function>> registry;
         return registry;
@@ -28,7 +29,6 @@ struct Layer2Registry {
     Layer2Registry(int key, const Layer::detail_function& func) {
         get_detail_registry().push_back(std::pair{key, func});
     }
-
 
 };
 #endif //LAYER2REGISTRY_H

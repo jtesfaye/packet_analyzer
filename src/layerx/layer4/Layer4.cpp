@@ -7,18 +7,11 @@
 #include <layerx/layer4/ICMP.h>
 #include <layerx/layer4/UDP.h>
 
-std::unique_ptr<TransportPDU> Layer4::unsupported_type(
-    const std::vector<std::byte>&,
-    packet::parse_context&) {
-    return nullptr;
-}
-
 void Layer4::register_all_functions() {
 
     tcp_functions::register_tcp();
     icmp_functions::get_icmp_registry();
     udp_functions::get_udp_registry();
-    Layer4Registry(-1, unsupported_type);
 
 }
 

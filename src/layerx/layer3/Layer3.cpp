@@ -6,17 +6,10 @@
 #include <layerx/layer3/IPv4.h>
 #include <layerx/layer3/IPv6.h>
 
-std::unique_ptr<NetworkPDU> Layer3::unsupported_type(
-    const std::vector<std::byte>&,
-    packet::parse_context&) {
-    return nullptr;
-}
-
 void Layer3::register_all_functions() {
 
-    (void)IPv4_functions::get_ipv4_registry();
-    (void)IPv6_functions::get_ipv6_registry();
-    Layer3Registry(-1, unsupported_type);
+    IPv6_functions::register_ipv6();
+    IPv4_functions::register_ipv4();
 
 }
 

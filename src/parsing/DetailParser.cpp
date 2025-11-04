@@ -41,6 +41,7 @@ std::vector<DetailParser::LayerJob> DetailParser::create_detail_parse_jobs() {
       const layer_offsets& offsets) {
 
         cxt.offset = offsets.l2.offset;
+        cxt.curr_length = offsets.l2.length;
 
         if (cxt.offset == -1) {
             return ProtocolDetails{"N/A", {}};
@@ -55,6 +56,7 @@ std::vector<DetailParser::LayerJob> DetailParser::create_detail_parse_jobs() {
       const layer_offsets& offsets) {
 
         cxt.offset = offsets.l3.offset;
+        cxt.curr_length = offsets.l3.length;
 
         if (cxt.offset == -1) {
             return ProtocolDetails{"N/A", {}};
@@ -70,6 +72,7 @@ std::vector<DetailParser::LayerJob> DetailParser::create_detail_parse_jobs() {
       const layer_offsets& offsets) {
 
         cxt.offset = offsets.l4.offset;
+        cxt.curr_length = offsets.l4.length;
 
         if (cxt.offset == -1) {
             return ProtocolDetails{"N/A", {}};

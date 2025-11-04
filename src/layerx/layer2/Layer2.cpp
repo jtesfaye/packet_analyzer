@@ -5,15 +5,10 @@
 #include <layerx/layer2/Layer2.h>
 #include <layerx/layer2/Ethernet.h>
 
-std::unique_ptr<LinkPDU> Layer2::unsupported_type(const std::vector<std::byte> &, parse_context &) {
-    return nullptr;
-}
-
 
 void Layer2::register_all_functions() {
 
-    (void)ethernet_functions::get_ethernet_registry();
-    Layer2Registry(-1, unsupported_type);
+    ethernet_functions::register_ethernet();
 
 }
 

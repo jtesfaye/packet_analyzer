@@ -26,10 +26,16 @@ struct IPv6 final : NetworkPDU {
 
 class IPv6_functions {
 public:
+
     static std::unique_ptr<NetworkPDU> ipv6_parse(const std::vector<std::byte>&, packet::parse_context&);
-    static Layer3Registry& get_ipv6_registry();
+    static ProtocolDetails ipv6_detailed_parse(const std::vector<std::byte>&, packet::parse_context&);
+    static void register_ipv6();
 
 private:
+
+    static std::string full_protocol_name() {
+        return "Interet Protocol version 6";
+    }
 
     static uint8_t ipv6_version(const ipv6_header* hdr) {
         return (ntohl(hdr->ver_tc_fl) >> 28) & 0xF;

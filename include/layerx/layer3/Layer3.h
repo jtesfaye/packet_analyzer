@@ -12,10 +12,6 @@ using namespace layer;
 class Layer3 : public Layer {
 public:
 
-    static std::unique_ptr<NetworkPDU> unsupported_type(
-        const std::vector<std::byte>&,
-        packet::parse_context&);
-
     static void register_all_functions();
 
     static const std::vector<std::pair<int, function>>& get_first_parse_registry();

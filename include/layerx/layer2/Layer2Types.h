@@ -18,7 +18,7 @@ struct LinkPDU : ProtocolDataUnit {
 
 };
 
-namespace packet::frame {
+namespace layer::frame {
 
     struct ethernet_hdr {
 

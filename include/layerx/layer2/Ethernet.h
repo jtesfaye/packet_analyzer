@@ -26,9 +26,14 @@ struct Ethernet final : LinkPDU {
 class ethernet_functions {
 public:
 
+    static std::unique_ptr<LinkPDU> ethernet_parse(const std::vector<std::byte>&, parse_context&);
+    static ProtocolDetails ethernet_detailed_parse(const std::vector<std::byte>&, parse_context&);
+    static void register_ethernet();
 
-    static Layer2Registry& get_ethernet_registry();
-    static std::unique_ptr<LinkPDU> ethernet_parse(const std::vector<std::byte>&, packet::parse_context&);
+private:
+    static std::string full_protocol_name() {
+        return "802.3 Ethernet";
+    }
 
 };
 
