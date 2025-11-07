@@ -4,14 +4,13 @@ project(Sniffer)
 set(CMAKE_CXX_STANDARD 23)
 
 set(Qt6_DIR "/opt/homebrew/opt/qt")
-
-
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Boost)
 find_package(GTest REQUIRED)
+find_package(benchmark CONFIG REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 include_directories("/opt/homebrew/opt/libpcap/include")
 
@@ -26,6 +25,7 @@ target_link_libraries(main_src
         Qt6::Gui
         Qt6::Widgets
         Qt6::Concurrent
+        benchmark::benchmark
         capture
         controller
         layerx

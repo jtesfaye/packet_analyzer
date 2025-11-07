@@ -86,7 +86,6 @@ PcapFile::~PcapFile() {
         flush();
         close_dumper();
     }
-
 }
 
 size_t

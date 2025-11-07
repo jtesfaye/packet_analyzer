@@ -46,8 +46,6 @@ void PacketObserver::start_observer() {
  */
 void PacketObserver::wait_for_next() {
 
-    std::cout << "Observer intitialized\n";
-
     while (true) {
 
         std::unique_lock lock(m_lock);
@@ -71,17 +69,11 @@ void PacketObserver::wait_for_next() {
             }
         }
 
-        std::cout << "About to emit packets...\n";
-
         emit emit_packets_ready(m_buffer.begin_at(m_start_index), m_buffer.begin_at(m_next_expected));
     }
-
-    std::cout << "Should not be here\n";
 }
 
 void PacketObserver::receive_detail_request(size_t index) {
-
-    std::cout << "Observer got request\n";
 
     if (!m_cache.exists(index)) {
         emit_pkt_details({{"N/A", {}}});

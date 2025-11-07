@@ -77,8 +77,6 @@ void CaptureController::connect_session_to_table_view(const QTableView& table) {
 
 }
 
-
-
 void CaptureController::start_capture(const CaptureConfig& config) {
 
     using namespace capture;
@@ -173,7 +171,6 @@ void CaptureController::recieve_row(std::deque<packet_ref>::iterator first, std:
 
 void CaptureController::recieve_row_index(const QModelIndex& index) {
 
-    std::cout << "Got index\n";
     size_t row = index.row();
     emit forward_detail_request(row);
 
