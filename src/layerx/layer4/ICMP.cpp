@@ -30,7 +30,7 @@ Layer4Registry &icmp_functions::get_icmp_registry() {
 
 
 std::unique_ptr<TransportPDU> icmp_functions::icmp_parse(
-    const std::vector<std::byte> &raw_data,
+    std::span<std::byte> raw_data,
     packet::parse_context &context) {
 
     using namespace layer::transport;

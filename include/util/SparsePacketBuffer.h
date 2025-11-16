@@ -37,7 +37,6 @@ public:
 
         }
 
-        std::cout << "Buffer: Adding to index: " << std::to_string(index) << "\n";
         buffer[index] = std::move(ref);
         m_is_present[index] = true;
 
@@ -92,7 +91,6 @@ private:
     size_t m_capacity;
     std::vector<bool> m_is_present;
     std::deque<T> buffer;
-    std::mutex m_lock;
 
 };
 

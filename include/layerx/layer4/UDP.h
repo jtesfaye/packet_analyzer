@@ -27,11 +27,11 @@ class udp_functions {
 public:
 
     static std::unique_ptr<TransportPDU> udp_parse(
-        const std::vector<std::byte>& raw_data,
+        std::span<std::byte> raw_data,
         parse_context& context);
 
     static ProtocolDetails udp_detailed_parse(
-        const std::vector<std::byte>& raw_data,
+        std::span<std::byte> raw_data,
         parse_context& context);
 
     static Layer4Registry& get_udp_registry();

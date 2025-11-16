@@ -32,11 +32,11 @@ class tcp_functions {
 public:
 
     static std::unique_ptr<TransportPDU> tcp_parse(
-        const std::vector<std::byte>& raw_data,
+        std::span<std::byte> raw_data,
         parse_context& context);
 
     static ProtocolDetails tcp_detailed_parse(
-        const std::vector<std::byte>& raw_data,
+        std::span<std::byte> raw_data,
         parse_context& context);
 
     static void register_tcp();

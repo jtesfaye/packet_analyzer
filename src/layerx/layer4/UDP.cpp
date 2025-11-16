@@ -30,7 +30,7 @@ std::string UDP::name() const {
 }
 
 std::unique_ptr<TransportPDU> udp_functions::udp_parse(
-    const std::vector<std::byte> &raw_data,
+    std::span<std::byte> raw_data,
     parse_context &context) {
 
     using namespace layer::transport;
@@ -53,7 +53,7 @@ std::unique_ptr<TransportPDU> udp_functions::udp_parse(
 }
 
 ProtocolDetails udp_functions::udp_detailed_parse(
-    const std::vector<std::byte> &raw_data,
+    std::span<std::byte> raw_data,
     parse_context &context) {
 
     const auto hdr = reinterpret_cast<const udp_header*> (raw_data.data() + context.offset);

@@ -47,7 +47,7 @@ void ethernet_functions::register_ethernet() {
 
 std::unique_ptr<LinkPDU>
 ethernet_functions::ethernet_parse
-(const std::vector<std::byte> &raw_data, packet::parse_context& context) {
+(std::span<std::byte> raw_data, packet::parse_context& context) {
 
     using namespace layer::frame;
     using namespace packet;
@@ -109,7 +109,7 @@ ethernet_functions::ethernet_parse
 }
 
 ProtocolDetails ethernet_functions::ethernet_detailed_parse(
-    const std::vector<std::byte> &raw_data,
+    std::span<std::byte> raw_data,
     parse_context &context) {
 
     std::vector<std::string> details;

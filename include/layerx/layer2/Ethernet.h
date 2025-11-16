@@ -26,8 +26,8 @@ struct Ethernet final : LinkPDU {
 class ethernet_functions {
 public:
 
-    static std::unique_ptr<LinkPDU> ethernet_parse(const std::vector<std::byte>&, parse_context&);
-    static ProtocolDetails ethernet_detailed_parse(const std::vector<std::byte>&, parse_context&);
+    static std::unique_ptr<LinkPDU> ethernet_parse(std::span<std::byte>, parse_context&);
+    static ProtocolDetails ethernet_detailed_parse(std::span<std::byte>, parse_context&);
     static void register_ethernet();
 
 private:

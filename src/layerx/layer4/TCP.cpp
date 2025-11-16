@@ -36,7 +36,7 @@ std::string TCP::name() const {
 }
 
 std::unique_ptr<TransportPDU> tcp_functions::tcp_parse(
-    const std::vector<std::byte> &raw_data,
+    std::span<std::byte> raw_data,
     parse_context &context) {
 
     using namespace layer::transport;
@@ -60,7 +60,7 @@ std::unique_ptr<TransportPDU> tcp_functions::tcp_parse(
 }
 
 ProtocolDetails tcp_functions::tcp_detailed_parse(
-    const std::vector<std::byte> &raw_data,
+    std::span<std::byte> raw_data,
     parse_context& context) {
 
     const auto* hdr = reinterpret_cast<const tcp_header*>(raw_data.data() + context.offset);

@@ -32,7 +32,7 @@ void IPv6_functions::register_ipv6() {
 
 
 std::unique_ptr<NetworkPDU> IPv6_functions::ipv6_parse(
-    const std::vector<std::byte>& raw_data,
+    std::span<std::byte> raw_data,
     packet::parse_context& context) {
     size_t start = context.offset;
 
@@ -60,7 +60,7 @@ std::unique_ptr<NetworkPDU> IPv6_functions::ipv6_parse(
 }
 
 ProtocolDetails IPv6_functions::ipv6_detailed_parse(
-    const std::vector<std::byte> &raw_data,
+    std::span<std::byte> raw_data,
     packet::parse_context &context) {
 
     using namespace std;

@@ -3,7 +3,6 @@
 #include <parsing/InitialParser.h>
 
 
-
 InitialParser::InitialParser(int layer2_type, u_int8_t flags)
 : m_dlt{layer2_type}
 , m_flags{flags}
@@ -13,7 +12,7 @@ InitialParser::InitialParser(int layer2_type, u_int8_t flags)
 {}
 
 packet_ref InitialParser::start_extract(
-  const std::vector<std::byte> &raw_data,
+  std::span<std::byte> raw_data,
   const size_t index) {
 
   packet_ref pkt_ref{};
@@ -50,7 +49,7 @@ std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
 
   auto layer2_job = [&](
     packet_ref& pkt,
-    const std::vector<std::byte> data,
+    std::span<std::byte> data,
     parse_context& context,
     layer_offsets& offsets) {
 
@@ -85,7 +84,7 @@ std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
 
     auto layer3_job = [&](
     packet_ref& pkt,
-    const std::vector<std::byte>& data,
+    std::span<std::byte> data,
     parse_context& context,
     layer_offsets& offsets) {
 
@@ -126,7 +125,7 @@ std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
 
     auto layer4_job = [&](
     packet_ref& pkt,
-    const std::vector<std::byte>& data,
+    std::span<std::byte> data,
     parse_context& context,
     layer_offsets& offsets) {
 

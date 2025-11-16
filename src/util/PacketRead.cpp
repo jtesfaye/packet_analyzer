@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <vector>
 #include <format>
+#include <span>
 
 //We are working on making linkread generic, and now trying to implement into this func
 
@@ -90,7 +91,7 @@ std::string PacketRead::format_ipv6_src_dest(const u_int8_t *addr) {
 
 
 bool PacketRead::valid_length(
-    const std::vector<std::byte> &data,
+    std::span<std::byte> data,
     const size_t offset,
     const size_t needed) {
 

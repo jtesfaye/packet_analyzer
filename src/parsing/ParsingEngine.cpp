@@ -45,14 +45,13 @@ void ParsingEngine::do_work() {
 void ParsingEngine::parse_packet(RawPacket pkt) {
 
     const auto pkt_span = std::span<std::byte>(pkt.packet);
-    const std::vector<std::byte> data {pkt_span.begin(), pkt_span.end()};
     size_t index = pkt.index;
 
-    packet_ref ref = m_initial_parser->start_extract(data, index);
+    packet_ref ref = m_initial_parser->start_extract(pkt_span, index);
 
     std::vector<ProtocolDetails> details = m_detail_parser->detail_parse(
-        {pkt_span.begin(), pkt_span.end()},
-               ref.data);
+        pkt_span,
+        ref.data);
 
     m_initial_buffer->add(index, std::move(ref));
 

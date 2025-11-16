@@ -9,6 +9,7 @@
 #include <iostream>
 #include <filesystem>
 #include <layerx/iana_numbers.h>
+#include <benchmark/benchmark.h>
 
 
 CaptureSession::CaptureSession(const CaptureConfig &config)

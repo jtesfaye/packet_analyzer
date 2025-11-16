@@ -31,7 +31,7 @@ class icmp_functions {
 public:
 
     static std::unique_ptr<TransportPDU> icmp_parse(
-        const std::vector<std::byte>& raw_data,
+        std::span<std::byte> raw_data,
         packet::parse_context& context);
 
     static Layer4Registry& get_icmp_registry();

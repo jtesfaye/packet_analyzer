@@ -6,14 +6,14 @@
 #define PACKETREAD_H
 
 #include <string>
-
+#include <span>
 class PacketRead {
 public:
 
     PacketRead();
     ~PacketRead() = default;
 
-    static bool valid_length(const std::vector<std::byte>& data, size_t offset, size_t needed);
+    static bool valid_length(std::span<std::byte> data, size_t offset, size_t needed);
 
     static std::string format_mac(const u_int8_t* addr);
 

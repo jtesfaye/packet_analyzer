@@ -28,9 +28,9 @@ struct IPv4 final : NetworkPDU {
 class IPv4_functions {
 public:
 
-    static std::unique_ptr<NetworkPDU> ipv4_parse(const std::vector<std::byte>&, parse_context&);
+    static std::unique_ptr<NetworkPDU> ipv4_parse(std::span<std::byte>, parse_context&);
 
-    static ProtocolDetails ipv4_detailed_parse(const std::vector<std::byte>&, parse_context&);
+    static ProtocolDetails ipv4_detailed_parse(std::span<std::byte>, parse_context&);
 
     static void register_ipv4();
 

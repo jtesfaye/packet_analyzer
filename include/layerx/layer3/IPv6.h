@@ -27,8 +27,8 @@ struct IPv6 final : NetworkPDU {
 class IPv6_functions {
 public:
 
-    static std::unique_ptr<NetworkPDU> ipv6_parse(const std::vector<std::byte>&, packet::parse_context&);
-    static ProtocolDetails ipv6_detailed_parse(const std::vector<std::byte>&, packet::parse_context&);
+    static std::unique_ptr<NetworkPDU> ipv6_parse(std::span<std::byte>, packet::parse_context&);
+    static ProtocolDetails ipv6_detailed_parse(std::span<std::byte>, packet::parse_context&);
     static void register_ipv6();
 
 private:

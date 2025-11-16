@@ -28,7 +28,7 @@ public:
   ~InitialParser() = default;
 
   packet_ref start_extract(
-    const std::vector<std::byte> &raw_data,
+    std::span<std::byte> raw_data,
     size_t index);
 
 private:
@@ -37,7 +37,7 @@ private:
 
     std::function<bool(
       packet_ref&,
-      const std::vector<std::byte>&,
+      std::span<std::byte>,
       parse_context&,
       layer_offsets&)> func;
 

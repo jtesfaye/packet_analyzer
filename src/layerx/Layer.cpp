@@ -14,11 +14,11 @@ std::vector<std::pair<int, Layer::function>> Layer::first_parse_funcs;
 
 std::vector<std::pair<int, Layer::detail_function>> Layer::detail_parse_funcs;
 
-std::unique_ptr<ProtocolDataUnit> Layer::unregistered_type(const std::vector<std::byte> &, parse_context &) {
+std::unique_ptr<ProtocolDataUnit> Layer::unregistered_type(std::span<std::byte>, parse_context &) {
     return nullptr;
 }
 
-ProtocolDetails Layer::unregistered_type_details(const std::vector<std::byte> &, parse_context &) {
+ProtocolDetails Layer::unregistered_type_details(std::span<std::byte>, parse_context &) {
     return {};
 }
 
@@ -47,7 +47,7 @@ void Layer::register_parse_functions() {
 
 }
 
-std::vector<std::pair<int, Layer::function> > Layer::get_first_parse_functions() {
+std::vector<std::pair<int, Layer::function>> Layer::get_first_parse_functions() {
     if (!registered)
         register_parse_functions();
 

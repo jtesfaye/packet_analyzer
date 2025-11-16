@@ -8,6 +8,7 @@
 #include <functional>
 #include <layerx/ProtocolDataUnit.h>
 #include <concepts>
+#include <span>
 
 using namespace packet;
 
@@ -15,11 +16,11 @@ class Layer {
 public:
 
     using function = std::function<std::unique_ptr<ProtocolDataUnit>(
-        const std::vector<std::byte>&,
+        std::span<std::byte>,
         parse_context&)>;
 
     using detail_function = std::function<ProtocolDetails(
-        const std::vector<std::byte>&,
+        std::span<std::byte>,
         parse_context&)>;
 
     using key_pair = std::pair<int, function>;
@@ -35,9 +36,9 @@ public:
 
 private:
 
-    static std::unique_ptr<ProtocolDataUnit> unregistered_type(const std::vector<std::byte> &, parse_context &);
+    static std::unique_ptr<ProtocolDataUnit> unregistered_type(std::span<std::byte>, parse_context &);
 
-    static ProtocolDetails unregistered_type_details(const std::vector<std::byte> &, parse_context &);
+    static ProtocolDetails unregistered_type_details(std::span<std::byte>, parse_context &);
 
     static void register_parse_functions();
 

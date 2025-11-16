@@ -1,0 +1,10 @@
+set(CMAKE_AUTOMOC ON)
+function(add_benchmark name)
+    add_executable(${name} ${ARGN})
+    target_link_libraries(${name} PRIVATE Packet parsing layerx Qt6::Core capture util benchmark::benchmark benchmark::benchmark_main)
+    target_include_directories(${name} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+    target_include_directories(${name} PRIVATE ${Boost_INCLUDE_DIRS})
+endfunction()
+
+add_benchmark(basic ./bench_test.cpp)
+add_benchmark(parsing_bm ./parsing_benchmark.cpp)

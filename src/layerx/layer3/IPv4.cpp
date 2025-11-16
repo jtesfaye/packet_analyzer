@@ -42,7 +42,7 @@ void IPv4_functions::register_ipv4() {
 }
 
 std::unique_ptr<NetworkPDU> IPv4_functions::ipv4_parse(
-    const std::vector<std::byte> &raw_data,
+    std::span<std::byte> raw_data,
     packet::parse_context &context) {
 
     size_t start = context.offset;
@@ -84,7 +84,7 @@ std::unique_ptr<NetworkPDU> IPv4_functions::ipv4_parse(
 }
 
 ProtocolDetails IPv4_functions::ipv4_detailed_parse(
-    const std::vector<std::byte>& raw_data,
+    std::span<std::byte> raw_data,
     parse_context& context) {
 
     using namespace layer;
