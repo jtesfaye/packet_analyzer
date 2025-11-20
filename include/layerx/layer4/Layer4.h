@@ -22,5 +22,17 @@ public:
 
 };
 
+struct TransportPDU : ProtocolDataUnit {
+
+    TransportPDU(size_t len, u_int16_t src, u_int16_t dest)
+    : ProtocolDataUnit(len, src, dest)
+    {}
+
+    ~TransportPDU() override = default;
+
+    size_t stream_index = -1;
+
+};
+
 
 #endif //LAYER4_H

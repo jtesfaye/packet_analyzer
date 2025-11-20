@@ -6,38 +6,63 @@
 #define ICMP_H
 
 #include <packet/PacketUtil.h>
-#include <layerx/layer4/Layer4Types.h>
 #include <vector>
-#include <layerx/layer4/Layer4Registry.h>
+#include <layerx/layer4/Layer4.h>
 
-/**
- * Technically, ICMP is a layer 3 protocol, since it can be found after ip protocols, I placed it with
- * the layer 4 protocols.
- */
 struct ICMP final : TransportPDU {
 
     ICMP(size_t len, u_int8_t type, u_int8_t code);
     ~ICMP() override = default;
 
     std::string make_info() const override;
-    std::string name() const override;
+    std::string_view name() const override;
 
     u_int8_t type;
     u_int8_t code;
 
 };
 
-class icmp_functions {
-public:
+namespace protocol::icmp {
 
-    static std::unique_ptr<TransportPDU> icmp_parse(
+    std::unique_ptr<TransportPDU> icmp_parse(
         std::span<std::byte> raw_data,
-        packet::parse_context& context);
+        parse_context& context);
 
-    static Layer4Registry& get_icmp_registry();
+    void register_icmp();
 
-    static std::string type_code_to_string(u_int8_t type, u_int8_t code);
+    std::string type_code_to_string(u_int8_t type, u_int8_t code);
 
-};
+    inline constexpr std::string_view full_protocol_name = "Internet Control Message Protocol";
+    inline constexpr std::string_view name = "ICMP";
+
+    struct icmp_header {
+
+        u_int8_t type;
+        u_int8_t code;
+        u_int16_t checksum;
+        u_int32_t data;
+
+    };
+
+    namespace icmp_types {
+
+        constexpr u_int8_t ECHO_REPLY = 0;
+        constexpr u_int8_t DEST_UNREACHABLE = 3;
+        constexpr u_int8_t ECHO_REQUEST = 8;
+        constexpr u_int8_t SOURCE_QUENCH = 4;
+        constexpr u_int8_t REDIRECT = 5;
+        constexpr u_int8_t TIME_EXCEEDED = 11;
+        constexpr u_int8_t PARAMETER_PROBLEM = 12;
+        constexpr u_int8_t TIMESTAMP_REQUEST = 13;
+        constexpr u_int8_t TIMESTAMP_REPLY = 14;
+        constexpr u_int8_t INFORMATION_REQUEST = 15;
+        constexpr u_int8_t INFORMATION_REPLY = 16;
+        constexpr u_int8_t ADDRESS_MASK_REQUEST = 17;
+        constexpr u_int8_t ADDRESS_MASK_REPLY = 18;
+
+
+    }
+
+}
 
 #endif //ICMP_H

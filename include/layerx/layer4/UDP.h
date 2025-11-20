@@ -6,42 +6,45 @@
 #define UDP_H
 
 #include <packet/PacketUtil.h>
-#include <layerx/layer4/Layer4Types.h>
-#include <layerx/layer4/Layer4Registry.h>
+#include <layerx/layer4/Layer4.h>
 #include <vector>
 
-using namespace layer::transport;
 using namespace packet;
 
 struct UDP : TransportPDU {
 
-    UDP(size_t len, std::string src_port, std::string dest_port);
+    UDP(size_t len, u_int16_t src_port, u_int16_t dest_port);
     ~UDP() override;
 
     std::string make_info() const override;
-    std::string name() const override;
+    std::string_view name() const override;
 
 };
 
-class udp_functions {
-public:
+namespace protocol::udp {
 
-    static std::unique_ptr<TransportPDU> udp_parse(
+    std::unique_ptr<TransportPDU> udp_parse(
         std::span<std::byte> raw_data,
         parse_context& context);
 
-    static ProtocolDetails udp_detailed_parse(
+    ProtocolDetails udp_detailed_parse(
         std::span<std::byte> raw_data,
         parse_context& context);
 
-    static Layer4Registry& get_udp_registry();
+    void register_udp();
 
-private:
+    inline constexpr std::string_view full_protocol_name = "User Datagram Protocol";
+    inline constexpr std::string_view name = "UDP";
 
-    static std::string full_protocol_name() {
-        return "User Datagram Protocol";
-    }
+    struct udp_header {
 
-};
+        u_int16_t src;
+        u_int16_t dest;
+        u_int16_t len;
+        u_int16_t checksum;
+
+    };
+}
+
 
 #endif //UDP_H

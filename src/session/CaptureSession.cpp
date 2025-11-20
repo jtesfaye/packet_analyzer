@@ -3,7 +3,7 @@
 //
 
 
-#include <capture/CaptureSession.h>
+#include <session/CaptureSession.h>
 #include <util/PacketObserver.h>
 #include <capture/PacketCapture.h>
 #include <iostream>

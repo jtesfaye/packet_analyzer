@@ -6,49 +6,69 @@
 #define TCP_H
 
 #include <packet/PacketUtil.h>
-#include <layerx/layer4/Layer4Types.h>
-#include <layerx/layer4/Layer4Registry.h>
+#include <layerx/layer4/Layer4.h>
 #include <vector>
 
-using namespace layer::transport;
 using namespace packet;
 
 struct TCP final : TransportPDU {
 
-    TCP(size_t len, std::string src_port, std::string dest_port, u_int8_t flags);
+    TCP(size_t len, u_int16_t src_port, u_int16_t dest_port, u_int8_t flags);
     ~TCP() override;
 
     std::string make_info() const override;
-    std::string name() const override;
+    std::string_view name() const override;
 
     u_int8_t flags;
 
 };
 
-class tcp_functions {
+namespace protocol::tcp {
 
-    friend struct TCP;
-
-public:
-
-    static std::unique_ptr<TransportPDU> tcp_parse(
+    std::unique_ptr<TransportPDU> tcp_parse(
         std::span<std::byte> raw_data,
         parse_context& context);
 
-    static ProtocolDetails tcp_detailed_parse(
-        std::span<std::byte> raw_data,
-        parse_context& context);
+    ProtocolDetails tcp_detailed_parse(
+       std::span<std::byte> raw_data,
+       parse_context& context);
 
-    static void register_tcp();
+    void register_tcp();
 
-private:
+    std::string tcp_flags_to_string(u_int8_t flags);
 
-    static std::string tcp_flags_to_string(u_int8_t flags);
+    inline constexpr std::string_view name = "TCP";
+    inline constexpr std::string_view full_protocol_name = "Transmission Control Protocol";
+    inline constexpr int iana_number = 6;
 
-    static std::string full_protocol_name() {
-        return "Transmission Control Protocol";
+    namespace flags {
+
+        constexpr u_int8_t CWR = 0x80;
+        constexpr u_int8_t ECE = 0x40;
+        constexpr u_int8_t URG = 0x20;
+        constexpr u_int8_t ACK = 0x10;
+        constexpr u_int8_t PSH = 0x08;
+        constexpr u_int8_t RST = 0x04;
+        constexpr u_int8_t SYN = 0x02;
+        constexpr u_int8_t FIN = 0x01;
+
     }
-};
+
+    struct tcp_header {
+
+        u_int16_t src;
+        u_int16_t dest;
+        u_int32_t sequence;
+        u_int32_t ack;
+        u_int8_t offset;
+        u_int8_t flags;
+        u_int16_t window;
+        u_int16_t chksum;
+        u_int16_t urgent;
+
+    };
+
+}
 
 
 
