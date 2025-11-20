@@ -4,18 +4,16 @@
 
 #include <layerx/layer4/TCP.h>
 #include <format>
-#include <iostream>
-#include <util/PacketRead.h>
-#include <layerx/iana_numbers.h>
+#include <layerx/layer4/Layer4Registry.h>
 
-void tcp_functions::register_tcp() {
-    static Layer4Registry tcp_reg(layer::iana::TCP, tcp_parse);
-    static Layer4Registry detail_reg(layer::iana::TCP, tcp_detailed_parse);
+void protocol::tcp::register_tcp() {
+    static Layer4Registry tcp_reg(iana_number, tcp_parse);
+    static Layer4Registry detail_reg(iana_number, tcp_detailed_parse);
 }
 
 
-TCP::TCP(const size_t len, std::string src_port, std::string dest_port, const u_int8_t flags)
-: TransportPDU(len, std::move(src_port), std::move(dest_port))
+TCP::TCP(const size_t len, u_int16_t src_port, u_int16_t dest_port, const u_int8_t flags)
+: TransportPDU(len, src_port, dest_port)
 , flags(flags)
 {}
 
@@ -25,23 +23,21 @@ std::string TCP::make_info() const {
 
     std::string info = std::format("{} -> {} ", src, dest);
 
-    info += tcp_functions::tcp_flags_to_string(flags);
+    info += protocol::tcp::tcp_flags_to_string(flags);
 
     return info;
 
 }
 
-std::string TCP::name() const {
-    return "TCP";
+std::string_view TCP::name() const {
+    return protocol::tcp::name;
 }
 
-std::unique_ptr<TransportPDU> tcp_functions::tcp_parse(
+std::unique_ptr<TransportPDU> protocol::tcp::tcp_parse(
     std::span<std::byte> raw_data,
     parse_context &context) {
 
-    using namespace layer::transport;
-
-    if (!PacketRead::valid_length(raw_data, context.offset, sizeof(tcp_header))) {
+    if (!valid_length(raw_data, context.offset, sizeof(tcp_header))) {
         return nullptr;
     }
 
@@ -53,13 +49,13 @@ std::unique_ptr<TransportPDU> tcp_functions::tcp_parse(
 
     return std::make_unique<TCP>(
         length,
-        std::to_string(ntohs(tcp_hdr->src)),
-        std::to_string(ntohs(tcp_hdr->dest)),
+        ntohs(tcp_hdr->src),
+        ntohs(tcp_hdr->dest),
         tcp_hdr->flags);
 
 }
 
-ProtocolDetails tcp_functions::tcp_detailed_parse(
+ProtocolDetails protocol::tcp::tcp_detailed_parse(
     std::span<std::byte> raw_data,
     parse_context& context) {
 
@@ -78,21 +74,21 @@ ProtocolDetails tcp_functions::tcp_detailed_parse(
     details.emplace_back(std::format("Checksum: {}", ntohs(hdr->chksum)));
     details.emplace_back(std::format("Urgent pointer: {}", ntohs(hdr->urgent)));
 
-    return {full_protocol_name(),details};
+    return {full_protocol_name ,details};
 }
 
 
-std::string tcp_functions::tcp_flags_to_string(u_int8_t flags) {
+std::string protocol::tcp::tcp_flags_to_string(u_int8_t flags) {
 
     static constexpr std::array<std::pair<uint8_t, const char*>, 8> table{{
-        {tcp_flags::SYN, "SYN"},
-        {tcp_flags::ACK, "ACK"},
-        {tcp_flags::FIN, "FIN"},
-        {tcp_flags::RST, "RST"},
-        {tcp_flags::PSH, "PSH"},
-        {tcp_flags::URG, "URG"},
-        {tcp_flags::ECE, "ECE"},
-        {tcp_flags::CWR, "CWR"}
+        {flags::SYN, "SYN"},
+        {flags::ACK, "ACK"},
+        {flags::FIN, "FIN"},
+        {flags::RST, "RST"},
+        {flags::PSH, "PSH"},
+        {flags::URG, "URG"},
+        {flags::ECE, "ECE"},
+        {flags::CWR, "CWR"}
     }};
 
     std::string s;
@@ -121,11 +117,11 @@ std::string tcp_functions::tcp_flags_to_string(u_int8_t flags) {
 
     }
 
-    if (flags & tcp_flags::SYN && flags & tcp_flags::FIN) {
+    if (flags & flags::SYN && flags & flags::FIN) {
 
         s += " (invalid: SYN+FIN)";
 
-    } else if (flags & tcp_flags::FIN && flags & tcp_flags::PSH && flags & tcp_flags::URG) {
+    } else if (flags & flags::FIN && flags & flags::PSH && flags & flags::URG) {
 
         s += " (christmas)";
 

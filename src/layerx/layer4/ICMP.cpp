@@ -3,39 +3,35 @@
 //
 
 #include <layerx/layer4/ICMP.h>
-#include <util/PacketRead.h>
 #include <layerx/iana_numbers.h>
-#include <utility>
+#include <layerx/layer4/Layer4Registry.h>
 
 ICMP::ICMP(const size_t len, const u_int8_t type, const u_int8_t code) :
-TransportPDU(len, "", ""), //icmp does not have src or dest addresses so we pass blank
-type(type),
-code(code)
+TransportPDU(len, 0, 0),
+    type(type),
+    code(code)
 {
 }
 
 std::string ICMP::make_info() const {
 
-    return icmp_functions::type_code_to_string(type, code);
+    return protocol::icmp::type_code_to_string(type, code);
 }
 
-std::string ICMP::name() const {
-    return "ICMP";
+std::string_view ICMP::name() const {
+    return protocol::icmp::name;
 }
 
-Layer4Registry &icmp_functions::get_icmp_registry() {
-    static Layer4Registry icmp_reg(layer::iana::ICMP, icmp_parse);
-    return icmp_reg;
+void registter_icmp() {
+    static Layer4Registry icmp_reg(layer::iana::ICMP, protocol::icmp::icmp_parse);
 }
 
 
-std::unique_ptr<TransportPDU> icmp_functions::icmp_parse(
+std::unique_ptr<TransportPDU> protocol::icmp::icmp_parse(
     std::span<std::byte> raw_data,
-    packet::parse_context &context) {
+    parse_context &context) {
 
-    using namespace layer::transport;
-
-    if (!PacketRead::valid_length(raw_data, context.offset, sizeof(icmp_header))) {
+    if (!valid_length(raw_data, context.offset, sizeof(icmp_header))) {
 
         return nullptr;
     }
@@ -51,9 +47,7 @@ std::unique_ptr<TransportPDU> icmp_functions::icmp_parse(
 
 }
 
-std::string icmp_functions::type_code_to_string(u_int8_t type, u_int8_t code) {
-
-    using namespace layer::transport;
+std::string protocol::icmp::type_code_to_string(u_int8_t type, u_int8_t code) {
 
     switch (type) {
 
