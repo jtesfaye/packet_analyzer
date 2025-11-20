@@ -4,12 +4,11 @@
 
 #include <layerx/layer3/IPv6.h>
 #include <layerx/iana_numbers.h>
-#include <utility>
-#include <util/PacketRead.h>
-#include <__format/format_functions.h>
+#include <layerx/layer3/Layer3Registry.h>
+#include <format>
 
-IPv6::IPv6(size_t len, std::string src, std::string dest, u_int8_t protocol)
-: NetworkPDU(len, std::move(src), std::move(dest))
+IPv6::IPv6(const size_t len, const u_int16_t src, const u_int16_t dest, const u_int8_t protocol)
+: NetworkPDU(len, src, dest)
 , protocol(protocol) {
 
 }
@@ -21,22 +20,22 @@ std::string IPv6::make_info() const {
     return iana::protocol_to_string(protocol);
 }
 
-std::string IPv6::name() const {
-    return "IPv6";
+std::string_view IPv6::name() const {
+    return protocol::ipv6::name;
 }
 
-void IPv6_functions::register_ipv6() {
+void protocol::ipv6::register_ipv6() {
     static Layer3Registry ipv6_reg(layer::iana::IPV6, ipv6_parse);
     static Layer3Registry ipv6_detailed_reg(layer::iana::IPV6, ipv6_detailed_parse);
 }
 
 
-std::unique_ptr<NetworkPDU> IPv6_functions::ipv6_parse(
+std::unique_ptr<NetworkPDU> protocol::ipv6::ipv6_parse(
     std::span<std::byte> raw_data,
-    packet::parse_context& context) {
+    parse_context& context) {
     size_t start = context.offset;
 
-    if (!PacketRead::valid_length(raw_data, start, sizeof(ipv6_header))) {
+    if (!valid_length(raw_data, start, sizeof(ipv6_header))) {
         return nullptr;
     }
 
@@ -53,15 +52,15 @@ std::unique_ptr<NetworkPDU> IPv6_functions::ipv6_parse(
 
     return std::make_unique<IPv6>(
         context.curr_length,
-        PacketRead::format_ipv6_src_dest(ipv6_hdr->src_addr),
-        PacketRead::format_ipv6_src_dest(ipv6_hdr->dst_addr),
+        ipv6_hdr->src_addr,
+        ipv6_hdr->dst_addr,
         next_protocol
     );
 }
 
-ProtocolDetails IPv6_functions::ipv6_detailed_parse(
+ProtocolDetails protocol::ipv6::ipv6_detailed_parse(
     std::span<std::byte> raw_data,
-    packet::parse_context &context) {
+    parse_context &context) {
 
     using namespace std;
     using namespace layer;
@@ -78,8 +77,8 @@ ProtocolDetails IPv6_functions::ipv6_detailed_parse(
     uint8_t next_header = hdr->next_header;
     uint8_t hop_limit = hdr->hop_limit;
 
-    string src = PacketRead::format_ipv6_src_dest(hdr->src_addr);
-    string dst = PacketRead::format_ipv6_src_dest(hdr->dst_addr);
+    string src = format_ipv6_src_dest(reinterpret_cast<const u_int8_t *>(&hdr->src_addr));
+    string dst = format_ipv6_src_dest(reinterpret_cast<const u_int8_t *>(&hdr->dst_addr));
 
     details.push_back(std::format("Version: {}", version));
     details.push_back(std::format("Traffic Class: 0x{:02X}", traffic_class));
@@ -90,7 +89,7 @@ ProtocolDetails IPv6_functions::ipv6_detailed_parse(
     details.push_back(std::format("Source Address: {}", src));
     details.push_back(std::format("Destination Address: {}", dst));
 
-    return { full_protocol_name(), details };
+    return { full_protocol_name, details };
 
 }
 

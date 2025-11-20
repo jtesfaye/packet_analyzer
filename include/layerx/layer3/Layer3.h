@@ -8,7 +8,6 @@
 #include <layerx/layer3/Layer3Types.h>
 #include <layerx/Layer.h>
 
-using namespace layer;
 class Layer3 : public Layer {
 public:
 
@@ -20,5 +19,17 @@ public:
 
     ~Layer3() override = default;
 };
+
+struct NetworkPDU : ProtocolDataUnit {
+
+    NetworkPDU(const size_t len, const u_int16_t src, const u_int16_t dest)
+    : ProtocolDataUnit(len, src, dest)
+    {}
+
+    ~NetworkPDU() override = default;
+
+};
+
+
 
 #endif //LAYER3_H

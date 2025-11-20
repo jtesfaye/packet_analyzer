@@ -3,13 +3,13 @@
 //
 
 #include <layerx/layer3/IPv4.h>
-#include <util/PacketRead.h>
+#include <layerx/layer3/Layer3Registry.h>
 #include <layerx/iana_numbers.h>
 #include <format>
 #include <utility>
 
-IPv4::IPv4(size_t len, std::string src, std::string dest, const bool is_fragmented, u_int8_t protocol)
-: NetworkPDU(len, std::move(src), std::move(dest))
+IPv4::IPv4(const size_t len, const u_int16_t src, const u_int16_t dest, const bool is_fragmented, const u_int8_t protocol)
+: NetworkPDU(len, src, dest)
 , protocol(protocol)
 , is_fragmented(is_fragmented)
 {
@@ -32,22 +32,22 @@ std::string IPv4::make_info() const {
     return info;
 }
 
-std::string IPv4::name() const {
-    return "IPv4";
+std::string_view IPv4::name() const {
+    return protocol::ipv4::name;
 }
 
-void IPv4_functions::register_ipv4() {
+void protocol::ipv4::register_ipv4() {
     static Layer3Registry ipv4_reg(layer::iana::IPV4, ipv4_parse);
     static Layer3Registry ipv4_detail_reg(layer::iana::IPV4, ipv4_detailed_parse);
 }
 
-std::unique_ptr<NetworkPDU> IPv4_functions::ipv4_parse(
+std::unique_ptr<NetworkPDU> protocol::ipv4::ipv4_parse(
     std::span<std::byte> raw_data,
     packet::parse_context &context) {
 
     size_t start = context.offset;
 
-    if (!PacketRead::valid_length(raw_data, start, sizeof(ipv4_header))) {
+    if (!valid_length(raw_data, start, sizeof(ipv4_header))) {
         return nullptr;
     }
 
@@ -77,13 +77,13 @@ std::unique_ptr<NetworkPDU> IPv4_functions::ipv4_parse(
 
     return std::make_unique<IPv4>(
         header_len,
-        PacketRead::format_ipv4_src_dst(ipv4_hdr->src_addr),
-        PacketRead::format_ipv4_src_dst(ipv4_hdr->dest_adr),
+        ipv4_hdr->src_addr,
+        ipv4_hdr->dest_adr,
         is_fragmented,
         next_protocol);
 }
 
-ProtocolDetails IPv4_functions::ipv4_detailed_parse(
+ProtocolDetails protocol::ipv4::ipv4_detailed_parse(
     std::span<std::byte> raw_data,
     parse_context& context) {
 
@@ -107,8 +107,8 @@ ProtocolDetails IPv4_functions::ipv4_detailed_parse(
     uint8_t protocol = hdr->protocol;
     uint16_t checksum = ntohs(hdr->chksum);
 
-    std::string src = PacketRead::format_ipv4_src_dst(hdr->src_addr);
-    std::string dst = PacketRead::format_ipv4_src_dst(hdr->dest_adr);
+    std::string src = format_ipv4_src_dst(hdr->src_addr);
+    std::string dst = format_ipv4_src_dst(hdr->dest_adr);
 
     details.push_back(std::format("Version: {}", version));
     details.push_back(std::format("Header Length: {} bytes", ihl * 4));
@@ -124,6 +124,6 @@ ProtocolDetails IPv4_functions::ipv4_detailed_parse(
     details.push_back(std::format("Source Address: {}", src));
     details.push_back(std::format("Destination Address: {}", dst));
 
-    return {full_protocol_name(),details};
+    return {full_protocol_name,details};
 
 }
