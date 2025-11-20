@@ -1,7 +1,7 @@
 set(CMAKE_AUTOMOC ON)
 function(add_gtest test_name)
     add_executable(${test_name} ${ARGN})
-    target_link_libraries(${test_name} PRIVATE GTest::gtest_main Packet parsing layerx Qt6::Core capture util)
+    target_link_libraries(${test_name} PRIVATE GTest::gtest_main parsing Packet)
     target_include_directories(${test_name} PUBLIC ${CMAKE_SOURCE_DIR}/include)
     target_include_directories(${test_name} PRIVATE ${Boost_INCLUDE_DIRS})
     include(GoogleTest)
