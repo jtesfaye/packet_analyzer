@@ -5,11 +5,14 @@
 #include <layerx/layer3/IPv6.h>
 #include <layerx/layer3/Layer3Registry.h>
 #include <format>
-
-IPv6::IPv6(const size_t len, const u_int16_t src, const u_int16_t dest, const u_int8_t protocol)
-: NetworkPDU(len, src, dest)
+IPv6::IPv6(const size_t len, const u_int8_t *src, const u_int8_t *dest, const u_int8_t protocol)
+: NetworkPDU(len)
 , protocol(protocol) {
 
+    std::memcpy(src_address.bytes.data(), src, protocol::ipv6::addr_len);
+    std::memcpy(dest_address.bytes.data(), dest, protocol::ipv6::addr_len);
+    src_address.size = protocol::ipv6::addr_len;
+    dest_address.size = protocol::ipv6::addr_len;
 }
 
 std::string IPv6::make_info() const {
@@ -21,11 +24,25 @@ std::string_view IPv6::name() const {
     return protocol::ipv6::name;
 }
 
+std::string IPv6::address_to_string(const Address &addr) const {
+
+    u_int8_t data[16];
+    std::memcpy(&data, addr.bytes.data(), 16);
+    return packet::format_ipv6_src_dest(data);
+}
+
+Address IPv6::src() const {
+    return src_address;
+}
+
+Address IPv6::dest() const {
+    return dest_address;
+}
+
 void protocol::ipv6::register_ipv6() {
     registry::layer3::register_self(iana_number, ipv6_parse);
     registry::layer3::register_self(iana_number, ipv6_detailed_parse);
 }
-
 
 std::unique_ptr<NetworkPDU> protocol::ipv6::ipv6_parse(
     std::span<std::byte> raw_data,
@@ -73,8 +90,8 @@ packet::ProtocolDetails protocol::ipv6::ipv6_detailed_parse(
     uint8_t next_header = hdr->next_header;
     uint8_t hop_limit = hdr->hop_limit;
 
-    string src = format_ipv6_src_dest(reinterpret_cast<const u_int8_t *>(&hdr->src_addr));
-    string dst = format_ipv6_src_dest(reinterpret_cast<const u_int8_t *>(&hdr->dst_addr));
+    string src = format_ipv6_src_dest(hdr->src_addr);
+    string dst = format_ipv6_src_dest(hdr->dst_addr);
 
     details.push_back(std::format("Version: {}", version));
     details.push_back(std::format("Traffic Class: 0x{:02X}", traffic_class));
@@ -86,7 +103,6 @@ packet::ProtocolDetails protocol::ipv6::ipv6_detailed_parse(
     details.push_back(std::format("Destination Address: {}", dst));
 
     return { full_protocol_name, details };
-
 }
 
 

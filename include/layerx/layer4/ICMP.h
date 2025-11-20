@@ -16,7 +16,8 @@ struct ICMP final : TransportPDU {
 
     std::string make_info() const override;
     std::string_view name() const override;
-
+    Address src() const override {return {};}
+    Address dest() const override {return {};}
     u_int8_t type;
     u_int8_t code;
 
@@ -43,7 +44,7 @@ namespace protocol::icmp {
         u_int16_t checksum;
         u_int32_t data;
 
-    };
+    } __attribute__((packed));
 
     namespace icmp_types {
 

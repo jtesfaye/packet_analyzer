@@ -17,7 +17,12 @@ struct TCP final : TransportPDU {
 
     std::string make_info() const override;
     std::string_view name() const override;
+    std::string address_to_string(const Address& addr) const override;
+    Address src() const override;
+    Address dest() const override;
 
+    Address src_address;
+    Address dest_address;
     u_int8_t flags;
 
 };
@@ -39,6 +44,7 @@ namespace protocol::tcp {
     inline constexpr std::string_view name = "TCP";
     inline constexpr std::string_view full_protocol_name = "Transmission Control Protocol";
     inline constexpr int iana_number = 6;
+    inline constexpr size_t addr_len = 2;
 
     namespace flags {
 
@@ -65,7 +71,7 @@ namespace protocol::tcp {
         u_int16_t chksum;
         u_int16_t urgent;
 
-    };
+    } __attribute__((packed));
 
 }
 

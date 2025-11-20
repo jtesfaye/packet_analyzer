@@ -6,14 +6,18 @@
 #include <layerx/layer2/Ethernet.h>
 #include <layerx/layer2/Layer2Registry.h>
 
-Ethernet::Ethernet(const size_t len, const u_int16_t src, const u_int16_t dest, const u_int16_t ether_type)
-: LinkPDU(len, src, dest)
+Ethernet::Ethernet(const size_t len, const u_int8_t *src, const u_int8_t *dest, const u_int16_t ether_type)
+: LinkPDU(len)
 , ether_type(ether_type)
 {
+    std::memcpy(&src_address.bytes, src, protocol::ethernet::addr_len);
+    std::memcpy(&dest_address.bytes, dest, protocol::ethernet::addr_len);
+
+    src_address.size = protocol::ethernet::addr_len;
+    dest_address.size = protocol::ethernet::addr_len;
 }
 
 Ethernet::~Ethernet() = default;
-
 
 std::string Ethernet::make_info() const {
 
@@ -27,13 +31,23 @@ std::string Ethernet::make_info() const {
     }
 
     return std::format("EtherType= {}" ,  protocol);
-
 }
 
 std::string_view Ethernet::name() const {
     static const std::string name = "Ethernet II";
     return name;
+}
 
+std::string Ethernet::address_to_string(const Address &addr) const {
+    return format_mac(reinterpret_cast<const u_int8_t*>(addr.bytes.data()));
+}
+
+Address Ethernet::src() const {
+    return src_address;
+}
+
+Address Ethernet::dest() const {
+    return dest_address;
 }
 
 void protocol::ethernet::register_ethernet() {
@@ -46,10 +60,8 @@ std::unique_ptr<LinkPDU> protocol::ethernet::ethernet_parse(
     std::span<std::byte> raw_data,
     parse_context& context) {
 
-    const auto valid_len = valid_length(raw_data, context.offset, sizeof(ethernet_hdr));
-
     size_t start = context.offset;
-    if(!valid_len(raw_data, start, sizeof(ethernet_hdr))) {
+    if(!valid_length(raw_data, start, sizeof(ethernet_hdr))) {
         return nullptr;
     }
 
@@ -63,7 +75,7 @@ std::unique_ptr<LinkPDU> protocol::ethernet::ethernet_parse(
 
         case 0x8100: {
 
-            if (valid_len(raw_data, start, sizeof(ether_802_1_Q_hdr)))
+            if (!valid_length(raw_data, start, sizeof(ether_802_1_Q_hdr)))
                 return nullptr;
 
             const auto vlan = reinterpret_cast<const ether_802_1_Q_hdr*> (layer2_start);
@@ -74,7 +86,7 @@ std::unique_ptr<LinkPDU> protocol::ethernet::ethernet_parse(
 
         case 0x88A8: {
 
-            if (valid_len(raw_data, start, sizeof(ether_802_1_ad_hdr)))
+            if (!valid_length(raw_data, start, sizeof(ether_802_1_ad_hdr)))
                 return nullptr;
 
             const auto q_ad = reinterpret_cast<const ether_802_1_ad_hdr*> (layer2_start);
@@ -93,8 +105,8 @@ std::unique_ptr<LinkPDU> protocol::ethernet::ethernet_parse(
 
     return std::make_unique<Ethernet>(
         context.curr_length,
-        *ether->src_addr,
-        *ether->dest_addr,
+        ether->src_addr,
+        ether->dest_addr,
         ether_type
         );
 }
@@ -175,7 +187,6 @@ ProtocolDetails protocol::ethernet::ethernet_detailed_parse(
     }
 
     return {full_protocol_name, details};
-
 }
 
 

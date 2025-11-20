@@ -6,33 +6,57 @@
 #include <layerx/layer4/Layer4Registry.h>
 #include <format>
 
-void protocol::tcp::register_tcp() {
-
-    registry::layer4::register_self(iana_number, tcp_parse);
-    registry::layer4::register_self(iana_number, tcp_detailed_parse);
-
-}
-
-
 TCP::TCP(const size_t len, u_int16_t src_port, u_int16_t dest_port, const u_int8_t flags)
-: TransportPDU(len, src_port, dest_port)
-, flags(flags)
-{}
+: TransportPDU(len)
+, flags(flags) {
+
+    using namespace protocol::tcp;
+    std::memcpy(&src_address.bytes, &src_port, addr_len);
+    std::memcpy(&dest_address.bytes, &dest_port, addr_len);
+    src_address.size = addr_len;
+    dest_address.size = addr_len;
+}
 
 TCP::~TCP() = default;
 
 std::string TCP::make_info() const {
 
-    std::string info = std::format("{} -> {} ", std::to_string(src, dest);
+    u_int16_t src_p;
+    u_int16_t dest_p;
+
+    std::memcpy(&src_p, &src_address.bytes, protocol::tcp::addr_len);
+    std::memcpy(&dest_p, &dest_address.bytes, protocol::tcp::addr_len);
+
+    std::string info = std::format("{} -> {} ", src_p, dest_p);
 
     info += protocol::tcp::tcp_flags_to_string(flags);
 
     return info;
-
 }
 
 std::string_view TCP::name() const {
     return protocol::tcp::name;
+}
+
+std::string TCP::address_to_string(const Address &addr) const {
+
+    u_int16_t target{};
+    std::memcpy(&target, addr.bytes.data(), sizeof(target));
+    return std::to_string(target);
+}
+
+Address TCP::src() const {
+    return src_address;
+}
+
+Address TCP::dest() const {
+    return dest_address;
+}
+
+void protocol::tcp::register_tcp() {
+
+    registry::layer4::register_self(iana_number, tcp_parse);
+    registry::layer4::register_self(iana_number, tcp_detailed_parse);
 }
 
 std::unique_ptr<TransportPDU> protocol::tcp::tcp_parse(
@@ -54,7 +78,6 @@ std::unique_ptr<TransportPDU> protocol::tcp::tcp_parse(
         ntohs(tcp_hdr->src),
         ntohs(tcp_hdr->dest),
         tcp_hdr->flags);
-
 }
 
 ProtocolDetails protocol::tcp::tcp_detailed_parse(
@@ -78,7 +101,6 @@ ProtocolDetails protocol::tcp::tcp_detailed_parse(
 
     return {full_protocol_name ,details};
 }
-
 
 std::string protocol::tcp::tcp_flags_to_string(u_int8_t flags) {
 

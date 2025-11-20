@@ -6,7 +6,7 @@
 #include <layerx/layer4/Layer4Registry.h>
 
 ICMP::ICMP(const size_t len, const u_int8_t type, const u_int8_t code) :
-TransportPDU(len, 0, 0),
+TransportPDU(len),
     type(type),
     code(code)
 {

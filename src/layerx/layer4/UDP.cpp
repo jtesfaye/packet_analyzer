@@ -6,14 +6,15 @@
 #include <format>
 #include <layerx/layer4/Layer4Registry.h>
 
-void protocol::udp::register_udp() {
-    registry::layer4::register_self(iana_number, udp_parse);
-    registry::layer4::register_self(iana_number, udp_detailed_parse);
-}
-
 UDP::UDP(const size_t len, const u_int16_t src_port, const u_int16_t dest_port)
-: TransportPDU(len, src_port, dest_port)
-{}
+: TransportPDU(len) {
+
+    using namespace protocol::udp;
+    std::memcpy(&src_address.bytes, &src_port, addr_len);
+    std::memcpy(&dest_address.bytes, &dest_port, addr_len);
+    src_address.size = addr_len;
+    dest_address.size = addr_len;
+}
 
 UDP::~UDP() = default;
 
@@ -24,6 +25,25 @@ std::string UDP::make_info() const {
 
 std::string_view UDP::name() const {
     return protocol::udp::name;
+}
+
+std::string UDP::address_to_string(const Address &addr) const {
+    u_int16_t target{};
+    std::memcpy(&target, addr.bytes.data(), sizeof(target));
+    return std::to_string(target);
+}
+
+Address UDP::src() const {
+    return src_address;
+}
+
+Address UDP::dest() const {
+    return dest_address;
+}
+
+void protocol::udp::register_udp() {
+    registry::layer4::register_self(iana_number, udp_parse);
+    registry::layer4::register_self(iana_number, udp_detailed_parse);
 }
 
 std::unique_ptr<TransportPDU> protocol::udp::udp_parse(

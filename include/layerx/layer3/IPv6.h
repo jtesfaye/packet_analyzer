@@ -10,13 +10,18 @@
 
 struct IPv6 final : NetworkPDU {
 
-    IPv6(size_t len, u_int16_t src, u_int16_t dest, u_int8_t protocol);
+    IPv6(size_t len, const u_int8_t *src, const u_int8_t *dest, u_int8_t protocol);
     ~IPv6() override = default;
 
     std::string make_info() const override;
     std::string_view name() const override;
+    std::string address_to_string(const Address& addr) const override;
+    Address src() const override;
+    Address dest() const override;
 
     u_int8_t protocol;
+    Address src_address;
+    Address dest_address;
 
 };
 
@@ -33,16 +38,16 @@ namespace protocol::ipv6 {
     inline constexpr std::string_view full_protocol_name = "Internet Protocol Version 6";
     inline constexpr std::string_view name = "UDP";
     inline constexpr u_int16_t iana_number = 0x86DD;
+    inline constexpr size_t addr_len = 16;
 
     struct ipv6_header {
-
         uint32_t ver_tc_fl;    // version, traffic class, flow label
         uint16_t payload_length;
         uint8_t  next_header;
         uint8_t  hop_limit;
-        uint16_t  src_addr;
-        uint16_t  dst_addr;
-    };
+        uint8_t  src_addr[16];
+        uint8_t  dst_addr[16];
+    } __attribute__((packed));
 
     inline uint8_t ipv6_version(const ipv6_header* hdr) {
         return (ntohl(hdr->ver_tc_fl) >> 28) & 0xF;

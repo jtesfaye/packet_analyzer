@@ -10,12 +10,17 @@
 
 struct IPv4 final : NetworkPDU {
 
-    IPv4(size_t len, u_int16_t src, u_int16_t dest, bool is_fragmented, u_int8_t protocol);
+    IPv4(size_t len, u_int32_t src, u_int32_t dest, bool is_fragmented, u_int8_t protocol);
     ~IPv4() override;
 
     std::string make_info() const override;
     std::string_view name() const override;
+    std::string address_to_string(const Address& addr) const override;
+    Address src() const override;
+    Address dest() const override;
 
+    Address src_address;
+    Address dest_address;
     u_int8_t protocol;
     bool is_fragmented;
 
@@ -34,6 +39,7 @@ namespace protocol::ipv4 {
     inline constexpr std::string_view full_protocol_name = "Internet Protocol Version 4";
     inline constexpr std::string_view name = "IPv4";
     inline constexpr u_int16_t iana_number = 0x0800;
+    inline constexpr size_t addr_len = 4;
 
     constexpr uint16_t IP_RF = 0x8000;
     constexpr uint16_t IP_DF = 0x4000;
@@ -53,7 +59,7 @@ namespace protocol::ipv4 {
         u_int32_t src_addr;
         u_int32_t dest_adr;
 
-    };
+    } __attribute__((packed));
 }
 
 #endif //IPV4_H

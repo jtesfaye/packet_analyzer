@@ -18,6 +18,12 @@ struct UDP : TransportPDU {
 
     std::string make_info() const override;
     std::string_view name() const override;
+    std::string address_to_string(const Address& addr) const override;
+    Address src() const override;
+    Address dest() const override;
+
+    Address src_address;
+    Address dest_address;
 
 };
 
@@ -36,6 +42,7 @@ namespace protocol::udp {
     inline constexpr std::string_view full_protocol_name = "User Datagram Protocol";
     inline constexpr std::string_view name = "UDP";
     inline constexpr u_int8_t iana_number = 17;
+    inline constexpr size_t addr_len = 2;
 
     struct udp_header {
 
@@ -44,7 +51,7 @@ namespace protocol::udp {
         u_int16_t len;
         u_int16_t checksum;
 
-    };
+    } __attribute__((packed));
 }
 
 

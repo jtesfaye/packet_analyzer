@@ -7,11 +7,16 @@
 #include <format>
 #include <utility>
 
-IPv4::IPv4(const size_t len, const u_int16_t src, const u_int16_t dest, const bool is_fragmented, const u_int8_t protocol)
-: NetworkPDU(len, src, dest)
+IPv4::IPv4(const size_t len, const u_int32_t src, const u_int32_t dest, const bool is_fragmented, const u_int8_t protocol)
+: NetworkPDU(len)
 , protocol(protocol)
 , is_fragmented(is_fragmented)
 {
+    using namespace protocol::ipv4;
+    std::memcpy(&src_address.bytes, &src, addr_len);
+    std::memcpy(&dest_address.bytes, &dest, addr_len);
+    src_address.size = addr_len;
+    dest_address.size = addr_len;
 }
 
 IPv4::~IPv4() = default;
@@ -31,6 +36,21 @@ std::string IPv4::make_info() const {
 
 std::string_view IPv4::name() const {
     return protocol::ipv4::name;
+}
+
+std::string IPv4::address_to_string(const Address &addr) const {
+
+    u_int32_t target{};
+    std::memcpy(&target, &addr.bytes, sizeof(target));
+    return packet::format_ipv4_src_dst(target);
+}
+
+Address IPv4::src() const {
+    return src_address;
+}
+
+Address IPv4::dest() const {
+    return dest_address;
 }
 
 void protocol::ipv4::register_ipv4() {
@@ -120,5 +140,4 @@ packet::ProtocolDetails protocol::ipv4::ipv4_detailed_parse(
     details.push_back(std::format("Destination Address: {}", dst));
 
     return {full_protocol_name,details};
-
 }
