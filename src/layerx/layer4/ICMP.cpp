@@ -3,7 +3,6 @@
 //
 
 #include <layerx/layer4/ICMP.h>
-#include <layerx/iana_numbers.h>
 #include <layerx/layer4/Layer4Registry.h>
 
 ICMP::ICMP(const size_t len, const u_int8_t type, const u_int8_t code) :
@@ -22,16 +21,16 @@ std::string_view ICMP::name() const {
     return protocol::icmp::name;
 }
 
-void registter_icmp() {
-    static Layer4Registry icmp_reg(layer::iana::ICMP, protocol::icmp::icmp_parse);
+void protocol::icmp::register_icmp() {
+    registry::layer4::register_self(iana_number, icmp_parse);
 }
 
 
 std::unique_ptr<TransportPDU> protocol::icmp::icmp_parse(
     std::span<std::byte> raw_data,
-    parse_context &context) {
+    packet::parse_context &context) {
 
-    if (!valid_length(raw_data, context.offset, sizeof(icmp_header))) {
+    if (!packet::valid_length(raw_data, context.offset, sizeof(icmp_header))) {
 
         return nullptr;
     }

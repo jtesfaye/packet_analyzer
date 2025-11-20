@@ -1,7 +1,6 @@
 add_library(layer4_protocols
         TCP.cpp
         ICMP.cpp
-        Layer4.cpp
         UDP.cpp
 )
 

@@ -6,7 +6,7 @@
 #define UDP_H
 
 #include <packet/PacketUtil.h>
-#include <layerx/layer4/Layer4.h>
+#include <layerx/ProtocolDataUnit.h>
 #include <vector>
 
 using namespace packet;
@@ -35,6 +35,7 @@ namespace protocol::udp {
 
     inline constexpr std::string_view full_protocol_name = "User Datagram Protocol";
     inline constexpr std::string_view name = "UDP";
+    inline constexpr u_int8_t iana_number = 17;
 
     struct udp_header {
 

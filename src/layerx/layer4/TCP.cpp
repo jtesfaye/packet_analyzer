@@ -3,12 +3,14 @@
 //
 
 #include <layerx/layer4/TCP.h>
-#include <format>
 #include <layerx/layer4/Layer4Registry.h>
+#include <format>
 
 void protocol::tcp::register_tcp() {
-    static Layer4Registry tcp_reg(iana_number, tcp_parse);
-    static Layer4Registry detail_reg(iana_number, tcp_detailed_parse);
+
+    registry::layer4::register_self(iana_number, tcp_parse);
+    registry::layer4::register_self(iana_number, tcp_detailed_parse);
+
 }
 
 
@@ -21,7 +23,7 @@ TCP::~TCP() = default;
 
 std::string TCP::make_info() const {
 
-    std::string info = std::format("{} -> {} ", src, dest);
+    std::string info = std::format("{} -> {} ", std::to_string(src, dest);
 
     info += protocol::tcp::tcp_flags_to_string(flags);
 

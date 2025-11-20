@@ -4,12 +4,11 @@
 
 #include <layerx/layer4/UDP.h>
 #include <format>
-#include <layerx/iana_numbers.h>
 #include <layerx/layer4/Layer4Registry.h>
 
 void protocol::udp::register_udp() {
-    static Layer4Registry udp_reg(layer::iana::UDP, udp_parse);
-    static Layer4Registry udp_detail_reg(layer::iana::UDP, udp_detailed_parse);
+    registry::layer4::register_self(iana_number, udp_parse);
+    registry::layer4::register_self(iana_number, udp_detailed_parse);
 }
 
 UDP::UDP(const size_t len, const u_int16_t src_port, const u_int16_t dest_port)

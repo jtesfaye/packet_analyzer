@@ -4,7 +4,6 @@
 
 #include <layerx/layer3/IPv4.h>
 #include <layerx/layer3/Layer3Registry.h>
-#include <layerx/iana_numbers.h>
 #include <format>
 #include <utility>
 
@@ -19,15 +18,13 @@ IPv4::~IPv4() = default;
 
 std::string IPv4::make_info() const {
 
-    using namespace layer;
-
     std::string info;
 
     if (is_fragmented) {
         info += "(Fragmented datagram) ";
     }
 
-    info += iana::protocol_to_string(protocol);
+    info += packet::protocol_to_string(protocol);
 
     return info;
 }
@@ -37,8 +34,8 @@ std::string_view IPv4::name() const {
 }
 
 void protocol::ipv4::register_ipv4() {
-    static Layer3Registry ipv4_reg(layer::iana::IPV4, ipv4_parse);
-    static Layer3Registry ipv4_detail_reg(layer::iana::IPV4, ipv4_detailed_parse);
+    registry::layer3::register_self(iana_number, ipv4_parse);
+    registry::layer3::register_self(iana_number, ipv4_detailed_parse);
 }
 
 std::unique_ptr<NetworkPDU> protocol::ipv4::ipv4_parse(
@@ -83,11 +80,9 @@ std::unique_ptr<NetworkPDU> protocol::ipv4::ipv4_parse(
         next_protocol);
 }
 
-ProtocolDetails protocol::ipv4::ipv4_detailed_parse(
+packet::ProtocolDetails protocol::ipv4::ipv4_detailed_parse(
     std::span<std::byte> raw_data,
     parse_context& context) {
-
-    using namespace layer;
 
     const auto* hdr = reinterpret_cast<const ipv4_header*>(raw_data.data() + context.offset);
 
@@ -119,7 +114,7 @@ ProtocolDetails protocol::ipv4::ipv4_detailed_parse(
     details.push_back(std::format("Flags: 0b{:03b}", flags));
     details.push_back(std::format("Fragment Offset: {}", frag_offset));
     details.push_back(std::format("Time to Live (TTL): {}", ttl));
-    details.push_back(std::format("Protocol: {} ({})", protocol, iana::protocol_to_string(protocol)));
+    details.push_back(std::format("Protocol: {} ({})", protocol, protocol_to_string(protocol)));
     details.push_back(std::format("Header Checksum: 0x{:04X}", checksum));
     details.push_back(std::format("Source Address: {}", src));
     details.push_back(std::format("Destination Address: {}", dst));

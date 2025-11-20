@@ -7,8 +7,6 @@
 
 #include <packet/PacketUtil.h>
 #include <vector>
-#include <layerx/layer3/Layer3.h>
-
 
 struct IPv4 final : NetworkPDU {
 
@@ -35,6 +33,7 @@ namespace protocol::ipv4 {
 
     inline constexpr std::string_view full_protocol_name = "Internet Protocol Version 4";
     inline constexpr std::string_view name = "IPv4";
+    inline constexpr u_int16_t iana_number = 0x0800;
 
     constexpr uint16_t IP_RF = 0x8000;
     constexpr uint16_t IP_DF = 0x4000;

@@ -3,7 +3,6 @@
 //
 
 #include <layerx/layer3/IPv6.h>
-#include <layerx/iana_numbers.h>
 #include <layerx/layer3/Layer3Registry.h>
 #include <format>
 
@@ -15,9 +14,7 @@ IPv6::IPv6(const size_t len, const u_int16_t src, const u_int16_t dest, const u_
 
 std::string IPv6::make_info() const {
 
-    using namespace layer;
-
-    return iana::protocol_to_string(protocol);
+    return packet::protocol_to_string(protocol);
 }
 
 std::string_view IPv6::name() const {
@@ -25,8 +22,8 @@ std::string_view IPv6::name() const {
 }
 
 void protocol::ipv6::register_ipv6() {
-    static Layer3Registry ipv6_reg(layer::iana::IPV6, ipv6_parse);
-    static Layer3Registry ipv6_detailed_reg(layer::iana::IPV6, ipv6_detailed_parse);
+    registry::layer3::register_self(iana_number, ipv6_parse);
+    registry::layer3::register_self(iana_number, ipv6_detailed_parse);
 }
 
 
@@ -58,12 +55,11 @@ std::unique_ptr<NetworkPDU> protocol::ipv6::ipv6_parse(
     );
 }
 
-ProtocolDetails protocol::ipv6::ipv6_detailed_parse(
+packet::ProtocolDetails protocol::ipv6::ipv6_detailed_parse(
     std::span<std::byte> raw_data,
     parse_context &context) {
 
     using namespace std;
-    using namespace layer;
 
     const auto* hdr = reinterpret_cast<const ipv6_header*>(raw_data.data() + context.offset);
 
@@ -84,7 +80,7 @@ ProtocolDetails protocol::ipv6::ipv6_detailed_parse(
     details.push_back(std::format("Traffic Class: 0x{:02X}", traffic_class));
     details.push_back(std::format("Flow Label: 0x{:05X}", flow_label));
     details.push_back(std::format("Payload Length: {}", payload_length));
-    details.push_back(std::format("Next Header: {} ({})", next_header, iana::protocol_to_string(next_header)));
+    details.push_back(std::format("Next Header: {} ({})", next_header, protocol_to_string(next_header)));
     details.push_back(std::format("Hop Limit: {}", hop_limit));
     details.push_back(std::format("Source Address: {}", src));
     details.push_back(std::format("Destination Address: {}", dst));

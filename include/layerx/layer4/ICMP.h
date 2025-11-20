@@ -7,7 +7,7 @@
 
 #include <packet/PacketUtil.h>
 #include <vector>
-#include <layerx/layer4/Layer4.h>
+
 
 struct ICMP final : TransportPDU {
 
@@ -26,7 +26,7 @@ namespace protocol::icmp {
 
     std::unique_ptr<TransportPDU> icmp_parse(
         std::span<std::byte> raw_data,
-        parse_context& context);
+        packet::parse_context& context);
 
     void register_icmp();
 
@@ -34,6 +34,7 @@ namespace protocol::icmp {
 
     inline constexpr std::string_view full_protocol_name = "Internet Control Message Protocol";
     inline constexpr std::string_view name = "ICMP";
+    inline constexpr u_int8_t iana_number = 1;
 
     struct icmp_header {
 

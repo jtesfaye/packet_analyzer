@@ -7,7 +7,6 @@
 
 #include <packet/PacketUtil.h>
 #include <vector>
-#include <layerx/layer3/Layer3.h>
 
 struct IPv6 final : NetworkPDU {
 
@@ -33,6 +32,7 @@ namespace protocol::ipv6 {
 
     inline constexpr std::string_view full_protocol_name = "Internet Protocol Version 6";
     inline constexpr std::string_view name = "UDP";
+    inline constexpr u_int16_t iana_number = 0x86DD;
 
     struct ipv6_header {
 

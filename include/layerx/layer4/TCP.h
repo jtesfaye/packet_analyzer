@@ -6,7 +6,6 @@
 #define TCP_H
 
 #include <packet/PacketUtil.h>
-#include <layerx/layer4/Layer4.h>
 #include <vector>
 
 using namespace packet;

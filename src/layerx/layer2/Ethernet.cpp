@@ -4,13 +4,10 @@
 
 #include <iostream>
 #include <layerx/layer2/Ethernet.h>
-#include <util/PacketRead.h>
 #include <layerx/layer2/Layer2Registry.h>
-#include <layerx/iana_numbers.h>
 
-
-Ethernet::Ethernet(size_t len, std::string src, std::string dest, u_int16_t ether_type)
-: LinkPDU(len, std::move(src), std::move(dest))
+Ethernet::Ethernet(const size_t len, const u_int16_t src, const u_int16_t dest, const u_int16_t ether_type)
+: LinkPDU(len, src, dest)
 , ether_type(ether_type)
 {
 }
@@ -33,26 +30,23 @@ std::string Ethernet::make_info() const {
 
 }
 
-std::string Ethernet::name() const {
-
-    return {"Ethernet II"};
+std::string_view Ethernet::name() const {
+    static const std::string name = "Ethernet II";
+    return name;
 
 }
 
-void ethernet_functions::register_ethernet() {
-    static Layer2Registry eth_reg(layer::IEEE_802_3, ethernet_parse);
-    static Layer2Registry eth_detailed_reg(layer::IEEE_802_3, ethernet_detailed_parse);
+void protocol::ethernet::register_ethernet() {
+    registry::layer2::register_self(IEEE_802_3, ethernet_parse);
+    registry::layer2::register_self(IEEE_802_3, ethernet_detailed_parse);
 }
 
 
-std::unique_ptr<LinkPDU>
-ethernet_functions::ethernet_parse
-(std::span<std::byte> raw_data, packet::parse_context& context) {
+std::unique_ptr<LinkPDU> protocol::ethernet::ethernet_parse(
+    std::span<std::byte> raw_data,
+    parse_context& context) {
 
-    using namespace layer::frame;
-    using namespace packet;
-
-    const auto valid_len = PacketRead::valid_length;
+    const auto valid_len = valid_length(raw_data, context.offset, sizeof(ethernet_hdr));
 
     size_t start = context.offset;
     if(!valid_len(raw_data, start, sizeof(ethernet_hdr))) {
@@ -97,24 +91,19 @@ ethernet_functions::ethernet_parse
 
     context.next_type = ether_type;
 
-    std::string src = PacketRead::format_mac(ether->src_addr);
-    std::string dest = PacketRead::format_mac(ether->dest_addr);
-
     return std::make_unique<Ethernet>(
         context.curr_length,
-        std::move(src),
-        std::move(dest),
+        *ether->src_addr,
+        *ether->dest_addr,
         ether_type
         );
 }
 
-ProtocolDetails ethernet_functions::ethernet_detailed_parse(
+ProtocolDetails protocol::ethernet::ethernet_detailed_parse(
     std::span<std::byte> raw_data,
     parse_context &context) {
 
     std::vector<std::string> details;
-
-    using namespace layer::frame;
 
     auto hdr = reinterpret_cast<const ethernet_hdr*> (raw_data.data() + context.offset);
     u_int16_t ether_type = hdr->ether_type;
@@ -174,8 +163,8 @@ ProtocolDetails ethernet_functions::ethernet_detailed_parse(
 
         default: {
 
-            std::string src = PacketRead::format_mac(hdr->src_addr);
-            std::string dst = PacketRead::format_mac(hdr->dest_addr);
+            std::string src = format_mac(hdr->src_addr);
+            std::string dst = format_mac(hdr->dest_addr);
 
             details.push_back(std::format("Destination MAC: {}", dst));
             details.push_back(std::format("Source MAC: {}", src));
@@ -185,7 +174,7 @@ ProtocolDetails ethernet_functions::ethernet_detailed_parse(
         }
     }
 
-    return {full_protocol_name(), details};
+    return {full_protocol_name, details};
 
 }
 

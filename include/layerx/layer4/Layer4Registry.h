@@ -6,30 +6,32 @@
 #define LAYER4REGISTRY_H
 
 #include <functional>
-#include <iostream>
 #include <vector>
-#include <layerx/Layer.h>
+#include <layerx/ParseFormat.h>
+#include <layerx/layer4/TCP.h>
+#include <layerx/layer4/UDP.h>
+#include <layerx/layer4/ICMP.h>
 
-struct Layer4Registry {
+namespace registry::layer4 {
 
-    static std::vector<std::pair<int, Layer::function>>& get_registry() {
-        static std::vector<std::pair<int, Layer::function>> registry;
-        return registry;
+    static std::vector<std::pair<int, parse::function>> layer4_initial_parse_registry;
+    static std::vector<std::pair<int, parse::detail_function>> layer4_detail_parse_registry;
+
+    inline void register_self(int key, const parse::function& func) {
+        layer4_initial_parse_registry.push_back(std::pair{key, func});
     }
 
-    static std::vector<std::pair<int, Layer::detail_function>>& get_detail_registry() {
-        static std::vector<std::pair<int ,Layer::detail_function>> detail_reg;
-        return detail_reg;
+    inline void register_self(int key, const parse::detail_function& func) {
+        layer4_detail_parse_registry.push_back(std::pair{key, func});
     }
 
-    Layer4Registry(int key, const Layer::function& func) {
-        get_registry().push_back(std::pair{key, func});
+    inline void register_all_functions() {
+        using namespace protocol;
+        tcp::register_tcp();
+        udp::register_udp();
+        icmp::register_icmp();
     }
 
-    Layer4Registry(int key, const Layer::detail_function& func) {
-        get_detail_registry().push_back(std::pair{key, func});
-    }
-
-};
+}
 
 #endif //LAYER4REGISTRY_H
