@@ -73,6 +73,7 @@ private:
     boost::concurrent_flat_map<size_t, int> stream_indicies;
     std::hash<tuple_5> hasher {};
     std::atomic<size_t> counter = 0;
+    std::mutex lock;
 
 };
 

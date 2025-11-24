@@ -9,14 +9,13 @@
 #include <packet/PacketUtil.h>
 #include <vector>
 #include <chrono>
+#include <deque>
 
-using milisec = std::chrono::duration<long long, std::ratio<1,1000>>;
-
+using EpochTime = std::chrono::duration<double, std::milli>;
 struct StreamStats {
 
-    milisec start_time;
-    milisec end_time;
-    double rtt;
+    EpochTime start_time;
+    EpochTime end_time;
     double throughput;
     size_t bytes_sent;
     size_t bytes_recieved;
@@ -30,14 +29,14 @@ using namespace protocol;
 class Stream {
 public:
 
-    virtual void add_index(const packet::packet_ref&) = 0;
+    virtual void add_index(const packet_ref&) = 0;
 
     static  std::shared_ptr<Stream> createConnection(ProtocolKeys type);
     virtual ~Stream();
 
 protected:
 
-    constexpr size_t EPHEMERAL_PORT_START {49151};
+    static constexpr size_t EPHEMERAL_PORT_START {49151};
 
     Stream(const ProtocolKeys type)
     : type(type)
@@ -47,11 +46,10 @@ protected:
 
     ProtocolKeys type;
     std::vector<size_t> pkt_idx;
-    StreamStats stats{};
-
+    StreamStats stats;
 };
 
-class TCPStream : public Stream {
+class TCPStream final : public Stream {
 public:
 
     enum class State {
@@ -74,11 +72,31 @@ public:
         State curr_state;
     };
 
+    struct UnackedPacket {
+        size_t expected_ack;
+        EpochTime time;
+    };
+
+    struct TCPStats : StreamStats {
+
+        u_int32_t init_seq{};
+        static constexpr double SRTT_FACTOR = 0.125;
+        long double rtt_last{};
+        long double rtt_smoothed{};
+        size_t retransmissions{};
+
+        std::deque<UnackedPacket> unacks;
+
+        void track_send(u_int32_t seq, size_t payload_len, EpochTime time);
+        void track_recv(u_int32_t ack, EpochTime time);
+
+    };
+
     TCPStream(ProtocolKeys type);
     ~TCPStream() override;
 
     //take packet, update state, then add to list
-    void add_index(const packet::packet_ref& ref) override;
+    void add_index(const packet_ref& ref) override;
 
 private:
 
@@ -90,6 +108,7 @@ private:
 
     Side client;
     Side server;
+    TCPStats tcp_stats{};
 
 };
 

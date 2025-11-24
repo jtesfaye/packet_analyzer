@@ -97,6 +97,7 @@ private:
   std::shared_ptr<PacketObserver> m_observer;
   std::shared_ptr<PcapFile> m_pcap_file;
   std::shared_ptr<ParsingEngine> m_pool;
+  StreamTable table;
 
   std::unique_ptr<pcap_t, decltype(&close_handle)> m_handle;
   std::unique_ptr<bpf_program, decltype(&free_bpf_program)> m_bpf_program;
