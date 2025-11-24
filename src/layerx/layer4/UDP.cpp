@@ -24,7 +24,7 @@ std::string UDP::make_info() const {
 }
 
 std::string_view UDP::name() const {
-    return protocol::udp::name;
+    return udp::name;
 }
 
 std::string UDP::address_to_string(const Address &addr) const {
@@ -41,12 +41,17 @@ Address UDP::dest() const {
     return dest_address;
 }
 
-void protocol::udp::register_udp() {
-    registry::layer4::register_self(iana_number, udp_parse);
-    registry::layer4::register_self(iana_number, udp_detailed_parse);
+ProtocolKeys UDP::type() const {
+    return key;
 }
 
-std::unique_ptr<TransportPDU> protocol::udp::udp_parse(
+
+void udp::register_udp() {
+    registry::layer4::register_self(static_cast<int>(ProtocolKeys::UDP), udp_parse);
+    registry::layer4::register_self(static_cast<int> (ProtocolKeys::UDP), udp_detailed_parse);
+}
+
+std::unique_ptr<TransportPDU> udp::udp_parse(
     std::span<std::byte> raw_data,
     parse_context &context) {
 
@@ -67,7 +72,7 @@ std::unique_ptr<TransportPDU> protocol::udp::udp_parse(
         );
 }
 
-ProtocolDetails protocol::udp::udp_detailed_parse(
+ProtocolDetails udp::udp_detailed_parse(
     std::span<std::byte> raw_data,
     parse_context &context) {
 

@@ -18,11 +18,14 @@ struct IPv4 final : NetworkPDU {
     std::string address_to_string(const Address& addr) const override;
     Address src() const override;
     Address dest() const override;
+    ProtocolKeys type() const override;
 
     Address src_address;
     Address dest_address;
     u_int8_t protocol;
     bool is_fragmented;
+
+    ProtocolKeys key = ProtocolKeys::IPv4;
 
 };
 
@@ -38,7 +41,6 @@ namespace protocol::ipv4 {
 
     inline constexpr std::string_view full_protocol_name = "Internet Protocol Version 4";
     inline constexpr std::string_view name = "IPv4";
-    inline constexpr u_int16_t iana_number = 0x0800;
     inline constexpr size_t addr_len = 4;
 
     constexpr uint16_t IP_RF = 0x8000;

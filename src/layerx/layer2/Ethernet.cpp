@@ -10,11 +10,11 @@ Ethernet::Ethernet(const size_t len, const u_int8_t *src, const u_int8_t *dest, 
 : LinkPDU(len)
 , ether_type(ether_type)
 {
-    std::memcpy(&src_address.bytes, src, protocol::ethernet::addr_len);
-    std::memcpy(&dest_address.bytes, dest, protocol::ethernet::addr_len);
+    std::memcpy(&src_address.bytes, src, ethernet::addr_len);
+    std::memcpy(&dest_address.bytes, dest, ethernet::addr_len);
 
-    src_address.size = protocol::ethernet::addr_len;
-    dest_address.size = protocol::ethernet::addr_len;
+    src_address.size = ethernet::addr_len;
+    dest_address.size = ethernet::addr_len;
 }
 
 Ethernet::~Ethernet() = default;
@@ -50,13 +50,12 @@ Address Ethernet::dest() const {
     return dest_address;
 }
 
-void protocol::ethernet::register_ethernet() {
-    registry::layer2::register_self(IEEE_802_3, ethernet_parse);
-    registry::layer2::register_self(IEEE_802_3, ethernet_detailed_parse);
+void ethernet::register_ethernet() {
+    registry::layer2::register_self(static_cast<int>(ProtocolKeys::ETH), ethernet_parse);
+    registry::layer2::register_self(static_cast<int>(ProtocolKeys::ETH), ethernet_detailed_parse);
 }
 
-
-std::unique_ptr<LinkPDU> protocol::ethernet::ethernet_parse(
+std::unique_ptr<LinkPDU> ethernet::ethernet_parse(
     std::span<std::byte> raw_data,
     parse_context& context) {
 
@@ -111,7 +110,7 @@ std::unique_ptr<LinkPDU> protocol::ethernet::ethernet_parse(
         );
 }
 
-ProtocolDetails protocol::ethernet::ethernet_detailed_parse(
+ProtocolDetails ethernet::ethernet_detailed_parse(
     std::span<std::byte> raw_data,
     parse_context &context) {
 

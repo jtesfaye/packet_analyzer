@@ -7,26 +7,26 @@
 
 ICMP::ICMP(const size_t len, const u_int8_t type, const u_int8_t code) :
 TransportPDU(len),
-    type(type),
+    type_field(type),
     code(code)
 {
 }
 
 std::string ICMP::make_info() const {
 
-    return protocol::icmp::type_code_to_string(type, code);
+    return icmp::type_code_to_string(type_field, code);
 }
 
 std::string_view ICMP::name() const {
-    return protocol::icmp::name;
+    return icmp::name;
 }
 
-void protocol::icmp::register_icmp() {
-    registry::layer4::register_self(iana_number, icmp_parse);
+void icmp::register_icmp() {
+    registry::layer4::register_self(static_cast<int>(ProtocolKeys::ICMP), icmp_parse);
 }
 
 
-std::unique_ptr<TransportPDU> protocol::icmp::icmp_parse(
+std::unique_ptr<TransportPDU> icmp::icmp_parse(
     std::span<std::byte> raw_data,
     packet::parse_context &context) {
 
@@ -46,7 +46,7 @@ std::unique_ptr<TransportPDU> protocol::icmp::icmp_parse(
 
 }
 
-std::string protocol::icmp::type_code_to_string(u_int8_t type, u_int8_t code) {
+std::string icmp::type_code_to_string(u_int8_t type, u_int8_t code) {
 
     switch (type) {
 

@@ -21,14 +21,17 @@ struct Ethernet final : LinkPDU {
     std::string address_to_string(const Address& addr) const override;
     Address src() const override;
     Address dest() const override;
+    ProtocolKeys type() const override;
 
     Address src_address;
     Address dest_address;
     u_int16_t ether_type;
+    ProtocolKeys key = ProtocolKeys::ETH;
 
 };
 
 namespace protocol::ethernet {
+
 
     std::unique_ptr<LinkPDU> ethernet_parse(std::span<std::byte>, parse_context&);
     ProtocolDetails ethernet_detailed_parse(std::span<std::byte>, parse_context&);
@@ -36,7 +39,6 @@ namespace protocol::ethernet {
 
     inline constexpr std::string_view full_protocol_name = "802.3 Ethernet";
     inline constexpr std::string_view name = "Ethernet";
-    inline constexpr u_int8_t IEEE_802_3 = static_cast<u_int8_t>(0x05DC);
     inline constexpr size_t addr_len = 48;
 
     struct ethernet_hdr {

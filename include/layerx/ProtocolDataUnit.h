@@ -8,6 +8,10 @@
 #include <cstdint>
 #include <string>
 #include <utility>
+#include <layerx/ProtocolKeys.h>
+
+
+using namespace protocol;
 
 struct Address {
   std::array<std::byte, 16> bytes{};
@@ -26,9 +30,11 @@ struct ProtocolDataUnit {
   virtual std::string address_to_string(const Address& addr) const {return {};};
   virtual Address src() const = 0;
   virtual Address dest() const = 0;
+  virtual ProtocolKeys type() const = 0;
 
   size_t length;
   size_t stream_index = -1;
+  ProtocolKeys key;
 
 };
 

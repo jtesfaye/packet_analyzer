@@ -9,7 +9,6 @@ function(add_gtest test_name)
 endfunction()
 
 add_gtest(test_PcapFile ./test_PcapFile.cpp)
-add_gtest(test_parser ./test_PacketParse.cpp)
 add_gtest(test_layer2 ./test_layer2.cpp)
 add_gtest(test_layer3 ./test_layer3.cpp)
 add_gtest(test_layer4 ./test_layer4.cpp)

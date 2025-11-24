@@ -10,7 +10,7 @@ using namespace packet;
 
 QStandardItem* TreeModelFactory::make_protocol_item(const ProtocolDetails& protocol) {
     // Create a top-level item with the protocol name
-    QStandardItem* protocolItem = new QStandardItem(QString::fromStdString(protocol.name));
+    QStandardItem* protocolItem = new QStandardItem(QString::fromStdString(protocol.name.data()));
 
     // Add each field as a child row
     for (const auto& field : protocol.fields) {

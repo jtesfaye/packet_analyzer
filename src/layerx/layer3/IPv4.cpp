@@ -35,7 +35,7 @@ std::string IPv4::make_info() const {
 }
 
 std::string_view IPv4::name() const {
-    return protocol::ipv4::name;
+    return ipv4::name;
 }
 
 std::string IPv4::address_to_string(const Address &addr) const {
@@ -53,14 +53,19 @@ Address IPv4::dest() const {
     return dest_address;
 }
 
-void protocol::ipv4::register_ipv4() {
-    registry::layer3::register_self(iana_number, ipv4_parse);
-    registry::layer3::register_self(iana_number, ipv4_detailed_parse);
+ProtocolKeys IPv4::type() const {
+    return key;
 }
 
-std::unique_ptr<NetworkPDU> protocol::ipv4::ipv4_parse(
+
+void ipv4::register_ipv4() {
+    registry::layer3::register_self(static_cast<int>(ProtocolKeys::IPv4), ipv4_parse);
+    registry::layer3::register_self(static_cast<int>(ProtocolKeys::IPv4), ipv4_detailed_parse);
+}
+
+std::unique_ptr<NetworkPDU> ipv4::ipv4_parse(
     std::span<std::byte> raw_data,
-    packet::parse_context &context) {
+    parse_context &context) {
 
     size_t start = context.offset;
 
@@ -100,7 +105,7 @@ std::unique_ptr<NetworkPDU> protocol::ipv4::ipv4_parse(
         next_protocol);
 }
 
-packet::ProtocolDetails protocol::ipv4::ipv4_detailed_parse(
+packet::ProtocolDetails ipv4::ipv4_detailed_parse(
     std::span<std::byte> raw_data,
     parse_context& context) {
 

@@ -18,10 +18,13 @@ struct IPv6 final : NetworkPDU {
     std::string address_to_string(const Address& addr) const override;
     Address src() const override;
     Address dest() const override;
+    ProtocolKeys type() const override;
 
     u_int8_t protocol;
     Address src_address;
     Address dest_address;
+
+    ProtocolKeys key = ProtocolKeys::IPv6;
 
 };
 
@@ -37,7 +40,6 @@ namespace protocol::ipv6 {
 
     inline constexpr std::string_view full_protocol_name = "Internet Protocol Version 6";
     inline constexpr std::string_view name = "UDP";
-    inline constexpr u_int16_t iana_number = 0x86DD;
     inline constexpr size_t addr_len = 16;
 
     struct ipv6_header {

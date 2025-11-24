@@ -5,6 +5,7 @@
 
 #include <benchmark/benchmark.h>
 #include <parsing/InitialParser.h>
+#include <layerx/layer2/Ethernet.h>
 #include <packet/PcapFile.h>
 #include <pcap/pcap.h>
 #include <packet/PacketUtil.h>
@@ -44,7 +45,7 @@ static void BM_initial_parser_baseline(benchmark::State& state) {
 
     }
 
-    InitialParser parser{DLT_EN10MB, 0xff};
+    InitialParser parser{220, 0xff};
 
     for (auto _ : state) {
 

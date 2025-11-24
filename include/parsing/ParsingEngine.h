@@ -42,7 +42,7 @@ public:
 
 private:
 
-    void parse_packet(RawPacket pkt);
+    void process_packet(RawPacket& pkt);
 
     std::shared_ptr<InitialParser> m_initial_parser;
     std::shared_ptr<DetailParser> m_detail_parser;

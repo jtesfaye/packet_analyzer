@@ -4,7 +4,6 @@
 
 #include <packet/PacketUtil.h>
 #include <parsing/ParseDispatcher.h>
-#include <layerx/ProtocolTypes.h>
 #include <functional>
 #include <mutex>
 #include <span>
@@ -46,8 +45,6 @@ private:
   std::vector<LayerJob> create_first_parse_jobs();
 
   void set_initial_time(const parse_time& time);
-
-  double set_relative_time(const parse_time& time);
 
   int m_dlt; //data link type
 

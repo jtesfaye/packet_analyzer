@@ -5,18 +5,27 @@
 #ifndef PACKETUTIL_H
 #define PACKETUTIL_H
 
-#include <array>
 #include <pcap/pcap.h>
 #include <sstream>
-#include <iomanip>
 #include <vector>
 #include <layerx/ProtocolDataUnit.h>
+#include <span>
 
 struct LinkPDU;
 struct NetworkPDU;
 struct TransportPDU;
 
 namespace packet {
+
+  bool valid_length(std::span<std::byte> data, size_t offset, size_t needed);
+
+  std::string format_mac(const u_int8_t* addr);
+
+  std::string format_ipv4_src_dst(const u_int32_t& addr);
+
+  std::string format_ipv6_src_dest(const u_int8_t* addr);
+
+  std::string protocol_to_string(u_int16_t protocol);
 
   struct RawPacket {
     size_t index;
@@ -72,6 +81,7 @@ namespace packet {
     std::unique_ptr<ProtocolDataUnit> layer3;
     std::unique_ptr<ProtocolDataUnit> layer4;
 
+
     packet_ref();
     ~packet_ref();
     packet_ref(packet_ref&&) noexcept;
@@ -83,7 +93,7 @@ namespace packet {
   };
 
   struct ProtocolDetails {
-    std::string name;
+    std::string_view name;
     std::vector<std::string> fields;
   };
 

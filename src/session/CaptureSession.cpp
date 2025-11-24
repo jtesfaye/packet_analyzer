@@ -8,7 +8,6 @@
 #include <capture/PacketCapture.h>
 #include <iostream>
 #include <filesystem>
-#include <layerx/iana_numbers.h>
 #include <benchmark/benchmark.h>
 
 
@@ -31,21 +30,30 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
             config.filter
             );
 
-        int l2 = pcap_dlt_to_ieee.at(pcap_datalink(m_handle.get()));
+        int l2 = 220;
 
         std::string temp_file = std::filesystem::temp_directory_path().generic_string() + "foobar.pcap";
 
         m_initial_parser = std::make_shared<InitialParser>(l2, config.flags);
         m_detail_parser = std::make_shared<DetailParser>();
 
-        EngineInit init {m_initial_parser, m_detail_parser, m_pkt_ref_buffer, m_details_cache, m_observer ,m_raw_pkt_queue};
+        EngineInit init {
+            m_initial_parser,
+            m_detail_parser,
+            m_pkt_ref_buffer,
+             m_details_cache,
+            m_observer,
+            m_raw_pkt_queue,
+            std::thread::hardware_concurrency(),
+            table
+        };
+
         m_pool = std::make_shared<ParsingEngine>(init);
 
         m_pcap_file = std::make_shared<PcapFile> (
             temp_file,
             m_handle.get()
             );
-
 
         capture = PacketCapture::createOnlineCapture(
             m_handle.get(),
@@ -69,7 +77,13 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
         m_initial_parser = std::make_shared<InitialParser>(data_link_type, config.flags);
         m_detail_parser = std::make_shared<DetailParser>();
 
-        EngineInit init {m_initial_parser, m_detail_parser, m_pkt_ref_buffer, m_details_cache, m_observer ,m_raw_pkt_queue};
+        EngineInit init {m_initial_parser,
+            m_detail_parser,
+            m_pkt_ref_buffer,
+            m_details_cache,
+            m_observer ,m_raw_pkt_queue,
+            1,
+            table};
         m_pool = std::make_shared<ParsingEngine>(init);
 
         capture = PacketCapture::createOfflineCapture(
@@ -162,9 +176,7 @@ void CaptureSession::stop_capture() const {
 bool CaptureSession::save_capture(const std::string& path) const {
 
     return m_pcap_file->save_file(path);
-
 }
-
 
 void CaptureSession::close_handle(pcap_t *handle) {
 
@@ -172,9 +184,7 @@ void CaptureSession::close_handle(pcap_t *handle) {
         return;
 
     pcap_close(handle);
-
 }
-
 
 void CaptureSession::initialize_online_handle(
     const std::string& device,
@@ -195,7 +205,6 @@ void CaptureSession::initialize_online_handle(
 
     } else {
         throw std::runtime_error(errbuf);
-
     }
 
     if (m_handle == nullptr) {
@@ -212,9 +221,7 @@ void CaptureSession::initialize_online_handle(
 
     //promisous mode
     if (settings & PROMISC) {
-
         pcap_set_promisc(m_handle.get(), 1);
-
     }
 
     //precision of timestamps
@@ -257,9 +264,7 @@ void CaptureSession::initialize_offline_handle(const std::string& path) {
 void CaptureSession::free_bpf_program(bpf_program *program) {
 
     pcap_freecode(program);
-
 }
-
 
 void CaptureSession::apply_filter(const std::string& device_name, const std::string &filter) {
 
@@ -277,7 +282,6 @@ void CaptureSession::apply_filter(const std::string& device_name, const std::str
 
     pcap_compile(m_handle.get(), m_bpf_program.get(), filter.c_str(), 1, mask);
     pcap_setfilter(m_handle.get(), m_bpf_program.get());
-
 }
 
 InitialParseBuffer& CaptureSession::get_buffer() const {
@@ -287,7 +291,6 @@ InitialParseBuffer& CaptureSession::get_buffer() const {
 DetailParseCache &CaptureSession::get_cache() const {
     return *m_details_cache;
 }
-
 
 std::shared_ptr<PacketObserver> CaptureSession::get_observer() const {
     return m_observer;

@@ -5,14 +5,15 @@
 #include <layerx/layer3/IPv6.h>
 #include <layerx/layer3/Layer3Registry.h>
 #include <format>
+
 IPv6::IPv6(const size_t len, const u_int8_t *src, const u_int8_t *dest, const u_int8_t protocol)
 : NetworkPDU(len)
 , protocol(protocol) {
 
-    std::memcpy(src_address.bytes.data(), src, protocol::ipv6::addr_len);
-    std::memcpy(dest_address.bytes.data(), dest, protocol::ipv6::addr_len);
-    src_address.size = protocol::ipv6::addr_len;
-    dest_address.size = protocol::ipv6::addr_len;
+    std::memcpy(src_address.bytes.data(), src, ipv6::addr_len);
+    std::memcpy(dest_address.bytes.data(), dest, ipv6::addr_len);
+    src_address.size = ipv6::addr_len;
+    dest_address.size = ipv6::addr_len;
 }
 
 std::string IPv6::make_info() const {
@@ -21,7 +22,7 @@ std::string IPv6::make_info() const {
 }
 
 std::string_view IPv6::name() const {
-    return protocol::ipv6::name;
+    return ipv6::name;
 }
 
 std::string IPv6::address_to_string(const Address &addr) const {
@@ -39,12 +40,16 @@ Address IPv6::dest() const {
     return dest_address;
 }
 
-void protocol::ipv6::register_ipv6() {
-    registry::layer3::register_self(iana_number, ipv6_parse);
-    registry::layer3::register_self(iana_number, ipv6_detailed_parse);
+ProtocolKeys IPv6::type() const {
+    return key;
 }
 
-std::unique_ptr<NetworkPDU> protocol::ipv6::ipv6_parse(
+void ipv6::register_ipv6() {
+    registry::layer3::register_self(static_cast<int>(ProtocolKeys::IPv6), ipv6_parse);
+    registry::layer3::register_self(static_cast<int>(ProtocolKeys::IPv6), ipv6_detailed_parse);
+}
+
+std::unique_ptr<NetworkPDU> ipv6::ipv6_parse(
     std::span<std::byte> raw_data,
     parse_context& context) {
     size_t start = context.offset;
@@ -72,7 +77,7 @@ std::unique_ptr<NetworkPDU> protocol::ipv6::ipv6_parse(
     );
 }
 
-packet::ProtocolDetails protocol::ipv6::ipv6_detailed_parse(
+packet::ProtocolDetails ipv6::ipv6_detailed_parse(
     std::span<std::byte> raw_data,
     parse_context &context) {
 

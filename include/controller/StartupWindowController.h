@@ -1,0 +1,8 @@
+//
+// Created by jeremiah tesfaye on 11/24/25.
+//
+
+#ifndef STARTUPWINDOWCONTROLLER_H
+#define STARTUPWINDOWCONTROLLER_H
+
+#endif //STARTUPWINDOWCONTROLLER_H

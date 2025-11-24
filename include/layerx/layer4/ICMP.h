@@ -18,8 +18,11 @@ struct ICMP final : TransportPDU {
     std::string_view name() const override;
     Address src() const override {return {};}
     Address dest() const override {return {};}
-    u_int8_t type;
+    ProtocolKeys type() const override;
+    u_int8_t type_field;
     u_int8_t code;
+
+    ProtocolKeys key = ProtocolKeys::ICMP;
 
 };
 
@@ -35,7 +38,6 @@ namespace protocol::icmp {
 
     inline constexpr std::string_view full_protocol_name = "Internet Control Message Protocol";
     inline constexpr std::string_view name = "ICMP";
-    inline constexpr u_int8_t iana_number = 1;
 
     struct icmp_header {
 

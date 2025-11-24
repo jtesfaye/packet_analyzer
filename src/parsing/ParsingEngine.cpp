@@ -36,13 +36,11 @@ void ParsingEngine::do_work() {
             m_pkt_queue.pop();
 
         }
-
-        parse_packet(pkt);
-
+        process_packet(pkt);
     }
 }
 
-void ParsingEngine::parse_packet(RawPacket pkt) {
+void ParsingEngine::process_packet(RawPacket& pkt) {
 
     const auto pkt_span = std::span<std::byte>(pkt.packet);
     size_t index = pkt.index;
@@ -52,6 +50,8 @@ void ParsingEngine::parse_packet(RawPacket pkt) {
     std::vector<ProtocolDetails> details = m_detail_parser->detail_parse(
         pkt_span,
         ref.data);
+
+
 
     m_initial_buffer->add(index, std::move(ref));
 

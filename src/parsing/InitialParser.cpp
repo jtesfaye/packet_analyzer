@@ -1,18 +1,19 @@
 
 #include <iostream>
 #include <parsing/InitialParser.h>
+#include <layerx/Registry.h>
 
 
 InitialParser::InitialParser(int layer2_type, u_int8_t flags)
 : m_dlt{layer2_type}
 , m_flags{flags}
 , m_inital_time()
-, first_parse_dispatcher(Layer::get_first_parse_functions())
+, first_parse_dispatcher(registry::full_initial_reg)
 
 {}
 
 packet_ref InitialParser::start_extract(
-  std::span<std::byte> raw_data,
+  const std::span<std::byte> raw_data,
   const size_t index) {
 
   packet_ref pkt_ref{};
@@ -24,8 +25,8 @@ packet_ref InitialParser::start_extract(
   std::memcpy(&context.header, raw_data.data(), sizeof(pcaprec_hdr_t));
   const parse_time time {context.header.ts_sec, context.header.ts_usec};
 
-  //find time relative to first capture
-  pkt_ref.time = set_relative_time(time);
+  set_initial_time(time);
+  pkt_ref.time = time.ts_sec + time.ts_usec / 1e6;
 
   const std::vector<LayerJob> jobs = create_first_parse_jobs();
 
@@ -171,11 +172,3 @@ void InitialParser::set_initial_time(const parse_time &time) {
 
 }
 
-double InitialParser::set_relative_time(const parse_time &time) {
-
-  set_initial_time(time);
-
-  return (time.ts_sec - m_inital_time.ts_sec) +
-    (time.ts_usec - m_inital_time.ts_usec) / 1e6;
-
-}

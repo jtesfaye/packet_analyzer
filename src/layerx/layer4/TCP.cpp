@@ -24,18 +24,18 @@ std::string TCP::make_info() const {
     u_int16_t src_p;
     u_int16_t dest_p;
 
-    std::memcpy(&src_p, &src_address.bytes, protocol::tcp::addr_len);
-    std::memcpy(&dest_p, &dest_address.bytes, protocol::tcp::addr_len);
+    std::memcpy(&src_p, &src_address.bytes, tcp::addr_len);
+    std::memcpy(&dest_p, &dest_address.bytes, tcp::addr_len);
 
     std::string info = std::format("{} -> {} ", src_p, dest_p);
 
-    info += protocol::tcp::tcp_flags_to_string(flags);
+    info += tcp::tcp_flags_to_string(flags);
 
     return info;
 }
 
 std::string_view TCP::name() const {
-    return protocol::tcp::name;
+    return tcp::name;
 }
 
 std::string TCP::address_to_string(const Address &addr) const {
@@ -53,10 +53,14 @@ Address TCP::dest() const {
     return dest_address;
 }
 
-void protocol::tcp::register_tcp() {
+ProtocolKeys TCP::type() const {
+    return key;
+}
 
-    registry::layer4::register_self(iana_number, tcp_parse);
-    registry::layer4::register_self(iana_number, tcp_detailed_parse);
+void tcp::register_tcp() {
+
+    registry::layer4::register_self(static_cast<int>(ProtocolKeys::TCP), tcp_parse);
+    registry::layer4::register_self(static_cast<int>(ProtocolKeys::TCP), tcp_detailed_parse);
 }
 
 std::unique_ptr<TransportPDU> protocol::tcp::tcp_parse(
@@ -80,7 +84,7 @@ std::unique_ptr<TransportPDU> protocol::tcp::tcp_parse(
         tcp_hdr->flags);
 }
 
-ProtocolDetails protocol::tcp::tcp_detailed_parse(
+ProtocolDetails tcp::tcp_detailed_parse(
     std::span<std::byte> raw_data,
     parse_context& context) {
 
@@ -102,7 +106,7 @@ ProtocolDetails protocol::tcp::tcp_detailed_parse(
     return {full_protocol_name ,details};
 }
 
-std::string protocol::tcp::tcp_flags_to_string(u_int8_t flags) {
+std::string tcp::tcp_flags_to_string(u_int8_t flags) {
 
     static constexpr std::array<std::pair<uint8_t, const char*>, 8> table{{
         {flags::SYN, "SYN"},
