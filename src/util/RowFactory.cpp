@@ -65,7 +65,7 @@ row_entry RowFactory::create_row(const packet::packet_ref &ref) {
 
         return layer4_top_row(
             ref.index,
-            ref.time,
+            ref.time.ts_sec + ref.time.ts_usec,
             ref.length,
             dynamic_cast<const TransportPDU *>(ref.layer4.get()),
             dynamic_cast<const NetworkPDU *>(ref.layer3.get())
@@ -77,7 +77,7 @@ row_entry RowFactory::create_row(const packet::packet_ref &ref) {
 
         return layerx_top_row(
             ref.index,
-            ref.time,
+            ref.time.ts_sec + ref.time.ts_usec,
             ref.length,
             ref.layer3.get()
             );
@@ -88,12 +88,12 @@ row_entry RowFactory::create_row(const packet::packet_ref &ref) {
 
         return layerx_top_row(
         ref.index,
-        ref.time,
+        ref.time.ts_sec + ref.time.ts_usec,
         ref.length,
         ref.layer2.get()
         );
 
     }
 
-    return layerx_error_row(ref.index, ref.time);
+    return layerx_error_row(ref.index, ref.time.ts_sec + ref.time.ts_usec);
 }

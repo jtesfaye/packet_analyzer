@@ -32,7 +32,7 @@ namespace packet {
     std::byte packet[1500];
   };
 
-  struct parse_time {
+  struct timestamp {
     uint32_t ts_sec;
     uint32_t ts_usec;
   };
@@ -74,13 +74,12 @@ namespace packet {
   struct packet_ref {
 
     size_t index{};
-    double time{};
+    timestamp time{};
     size_t length{};
     layer_offsets data{};
     std::unique_ptr<ProtocolDataUnit> layer2;
     std::unique_ptr<ProtocolDataUnit> layer3;
     std::unique_ptr<ProtocolDataUnit> layer4;
-
 
     packet_ref();
     ~packet_ref();

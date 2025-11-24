@@ -65,7 +65,6 @@ void Online::pcap_loop_callback(
 void Online::stop_func() {
 
   pcap_breakloop(handle());
-
 }
 
 
