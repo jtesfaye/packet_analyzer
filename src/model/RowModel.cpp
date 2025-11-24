@@ -17,19 +17,14 @@ QVariant RowModel::headerData(int section, Qt::Orientation orientation, int role
 {
 
     if (role != Qt::DisplayRole) {
-
         return {};
-
     }
 
     if (orientation == Qt::Horizontal && section < static_cast<int>(m_column_names.size())) {
-
         return m_column_names[section];
-
     }
 
     return QString::number(section + 1);
-
 }
 
 int RowModel::rowCount(const QModelIndex &parent) const

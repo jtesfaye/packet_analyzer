@@ -12,14 +12,14 @@
 #include <span>
 #include <util/RowFactory.h>
 
-class DisplayModel : public QAbstractTableModel {
+class RowModel : public QAbstractTableModel {
 
     Q_OBJECT
 
 public:
-    explicit DisplayModel(QObject* parent = nullptr);
+    explicit RowModel(QObject* parent = nullptr);
 
-    ~DisplayModel() override = default;
+    ~RowModel() override = default;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
@@ -32,8 +32,8 @@ public:
     size_t row_entires_size();
 
 public slots:
-    void add_data(std::deque<packet::packet_ref>::iterator first, std::deque<packet::packet_ref>::iterator last);
 
+    void add_data(std::deque<packet::packet_ref>::iterator first, std::deque<packet::packet_ref>::iterator last);
 
 private:
 

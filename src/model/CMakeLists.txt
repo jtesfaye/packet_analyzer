@@ -1,6 +1,7 @@
 add_library(model
-        DisplayModel.cpp
-        ${CMAKE_SOURCE_DIR}/include/model/DisplayModel.h
+        RowModel.cpp
+        ${CMAKE_SOURCE_DIR}/include/model/RowModel.h
+        DetailModel.cpp
 )
 
 target_include_directories(model PUBLIC ${CMAKE_SOURCE_DIR}/include)
