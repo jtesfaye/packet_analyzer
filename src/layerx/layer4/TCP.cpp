@@ -6,7 +6,7 @@
 #include <layerx/layer4/Layer4Registry.h>
 #include <format>
 
-TCP::TCP(const size_t len, u_int16_t src_port, u_int16_t dest_port, const u_int8_t flags)
+TCP::TCP(const size_t len, u_int16_t src_port, u_int16_t dest_port, u_int32_t seq, u_int32_t ack, const u_int8_t flags)
 : TransportPDU(len)
 , flags(flags) {
 
@@ -15,6 +15,8 @@ TCP::TCP(const size_t len, u_int16_t src_port, u_int16_t dest_port, const u_int8
     std::memcpy(&dest_address.bytes, &dest_port, addr_len);
     src_address.size = addr_len;
     dest_address.size = addr_len;
+    seq_number = seq;
+    ack_number = ack;
 }
 
 TCP::~TCP() = default;
@@ -81,6 +83,8 @@ std::unique_ptr<TransportPDU> protocol::tcp::tcp_parse(
         length,
         ntohs(tcp_hdr->src),
         ntohs(tcp_hdr->dest),
+        ntohl(tcp_hdr->sequence),
+        ntohl(tcp_hdr->ack),
         tcp_hdr->flags);
 }
 
@@ -161,5 +165,23 @@ std::string tcp::tcp_flags_to_string(u_int8_t flags) {
 
     return s;
 }
+
+uint32_t tcp::tcp_segment_len(u_int32_t tcp_hdr_len, uint32_t ip_total_len, uint32_t ip_hdr_len, u_int8_t flags) {
+
+    using namespace protocol::tcp;
+    u_int32_t tcp_segment = ip_total_len - ip_hdr_len;
+    u_int32_t data_len = tcp_segment - tcp_hdr_len;
+
+    if (flags & flags::SYN) {
+        data_len += 1;
+    }
+
+    if (flags & flags::ACK) {
+        data_len += 1;
+    }
+
+    return data_len;
+}
+
 
 

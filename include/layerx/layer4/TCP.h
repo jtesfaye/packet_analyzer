@@ -10,9 +10,9 @@
 
 using namespace packet;
 
-struct TCP final : TransportPDU {
+struct TCP : TransportPDU {
 
-    TCP(size_t len, u_int16_t src_port, u_int16_t dest_port, u_int8_t flags);
+    TCP(size_t len, u_int16_t src_port, u_int16_t dest_port, u_int32_t seq, u_int32_t ack, u_int8_t flags);
     ~TCP() override;
 
     std::string make_info() const override;
@@ -24,6 +24,8 @@ struct TCP final : TransportPDU {
 
     Address src_address;
     Address dest_address;
+    u_int32_t seq_number;
+    u_int32_t ack_number;
     u_int8_t flags;
     ProtocolKeys key = ProtocolKeys::TCP;
 
@@ -42,6 +44,8 @@ namespace protocol::tcp {
     void register_tcp();
 
     std::string tcp_flags_to_string(u_int8_t flags);
+
+    uint32_t tcp_segment_len(u_int32_t tcp_hdr_len, uint32_t ip_total_len, uint32_t ip_hdr_len, u_int8_t flags);
 
     inline constexpr std::string_view name = "TCP";
     inline constexpr std::string_view full_protocol_name = "Transmission Control Protocol";
