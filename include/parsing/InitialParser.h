@@ -44,13 +44,13 @@ private:
 
   std::vector<LayerJob> create_first_parse_jobs();
 
-  void set_initial_time(const parse_time& time);
+  void set_initial_time(const timestamp& time);
 
   int m_dlt; //data link type
 
   u_int8_t m_flags;
 
-  parse_time m_inital_time; //time at which first packet was captured
+  timestamp m_inital_time; //time at which first packet was captured
 
   std::once_flag time_init_flag;
 

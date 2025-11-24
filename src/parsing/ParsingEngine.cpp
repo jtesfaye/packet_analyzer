@@ -11,6 +11,7 @@ ParsingEngine::ParsingEngine(const EngineInit &init)
 , m_pkt_queue(init.raw_pkt_queue)
 , m_details_cache(init.detail_buffer)
 , m_observer(init.observer)
+, stream_table(init.table)
 {
     for (size_t i = 0; i < init.thread_count; ++i) {
         m_workers.emplace_back([this] {do_work();});
@@ -51,7 +52,8 @@ void ParsingEngine::process_packet(RawPacket& pkt) {
         pkt_span,
         ref.data);
 
-
+    auto key = stream_table.add(ref);
+    ref.layer4->stream_index = stream_table.get_index(key);
 
     m_initial_buffer->add(index, std::move(ref));
 

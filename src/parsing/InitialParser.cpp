@@ -23,10 +23,10 @@ packet_ref InitialParser::start_extract(
   pkt_ref.index = index;
   pkt_ref.length = 0;
   std::memcpy(&context.header, raw_data.data(), sizeof(pcaprec_hdr_t));
-  const parse_time time {context.header.ts_sec, context.header.ts_usec};
+  const timestamp time {context.header.ts_sec, context.header.ts_usec};
 
   set_initial_time(time);
-  pkt_ref.time = time.ts_sec + time.ts_usec / 1e6;
+  pkt_ref.time = {context.header.ts_sec, context.header.ts_usec};
 
   const std::vector<LayerJob> jobs = create_first_parse_jobs();
 
@@ -41,7 +41,6 @@ packet_ref InitialParser::start_extract(
   pkt_ref.data = offsets;
 
   return pkt_ref;
-
 }
 
 std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
@@ -164,7 +163,7 @@ std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
 
 }
 
-void InitialParser::set_initial_time(const parse_time &time) {
+void InitialParser::set_initial_time(const timestamp &time) {
 
   std::call_once(time_init_flag, [&]() {
     m_inital_time = time;
