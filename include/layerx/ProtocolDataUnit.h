@@ -8,23 +8,61 @@
 #include <cstdint>
 #include <string>
 #include <utility>
+#include <layerx/ProtocolKeys.h>
+
+
+using namespace protocol;
+
+struct Address {
+  std::array<std::byte, 16> bytes{};
+  u_int8_t size = 0;
+};
 
 struct ProtocolDataUnit {
 
-  ProtocolDataUnit(const size_t len, std::string s, std::string d)
-  : length(len)
-  , src(std::move(s))
-  , dest(std::move(d)) {}
+  ProtocolDataUnit(const size_t hdr_len)
+  : length(hdr_len) {}
 
   virtual ~ProtocolDataUnit() = default;
 
   virtual std::string make_info() const = 0;
-  virtual std::string name() const = 0;
+  virtual std::string_view name() const = 0;
+  virtual std::string address_to_string(const Address& addr) const {return {};};
+  virtual Address src() const = 0;
+  virtual Address dest() const = 0;
+  virtual ProtocolKeys type() const = 0;
 
   size_t length;
-  std::string src;
-  std::string dest;
+  size_t stream_index = -1;
+  ProtocolKeys key;
 
+};
+
+struct LinkPDU : ProtocolDataUnit {
+
+  LinkPDU(const size_t len)
+  : ProtocolDataUnit(len)
+  {}
+
+  ~LinkPDU() override = default;
+};
+
+struct NetworkPDU : ProtocolDataUnit {
+
+  NetworkPDU(const size_t len)
+  : ProtocolDataUnit(len)
+  {}
+
+  ~NetworkPDU() override = default;
+};
+
+struct TransportPDU : ProtocolDataUnit {
+
+  TransportPDU(size_t len)
+  : ProtocolDataUnit(len)
+  {}
+
+  ~TransportPDU() override = default;
 };
 
 #endif //PROTOCOLDATAUNIT_H

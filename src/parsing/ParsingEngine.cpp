@@ -11,6 +11,7 @@ ParsingEngine::ParsingEngine(const EngineInit &init)
 , m_pkt_queue(init.raw_pkt_queue)
 , m_details_cache(init.detail_buffer)
 , m_observer(init.observer)
+, stream_table(init.table)
 {
     for (size_t i = 0; i < init.thread_count; ++i) {
         m_workers.emplace_back([this] {do_work();});
@@ -36,23 +37,23 @@ void ParsingEngine::do_work() {
             m_pkt_queue.pop();
 
         }
-
-        parse_packet(pkt);
-
+        process_packet(pkt);
     }
 }
 
-void ParsingEngine::parse_packet(RawPacket pkt) {
+void ParsingEngine::process_packet(RawPacket& pkt) {
 
     const auto pkt_span = std::span<std::byte>(pkt.packet);
-    const std::vector<std::byte> data {pkt_span.begin(), pkt_span.end()};
     size_t index = pkt.index;
 
-    packet_ref ref = m_initial_parser->start_extract(data, index);
+    packet_ref ref = m_initial_parser->start_extract(pkt_span, index);
 
     std::vector<ProtocolDetails> details = m_detail_parser->detail_parse(
-        {pkt_span.begin(), pkt_span.end()},
-               ref.data);
+        pkt_span,
+        ref.data);
+
+    auto key = stream_table.add(ref);
+    ref.layer4->stream_index = stream_table.get_index(key);
 
     m_initial_buffer->add(index, std::move(ref));
 

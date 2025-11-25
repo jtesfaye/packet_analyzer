@@ -4,35 +4,30 @@
 
 #include <iostream>
 #include <print>
-#include <model/DisplayModel.h>
+#include <model/RowModel.h>
 #include <span>
 
-DisplayModel::DisplayModel(QObject* parent)
+RowModel::RowModel(QObject* parent)
 : QAbstractTableModel(parent)
 , m_row_count(0)
 {
 }
 
-QVariant DisplayModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant RowModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
 
     if (role != Qt::DisplayRole) {
-
         return {};
-
     }
 
     if (orientation == Qt::Horizontal && section < static_cast<int>(m_column_names.size())) {
-
         return m_column_names[section];
-
     }
 
     return QString::number(section + 1);
-
 }
 
-int DisplayModel::rowCount(const QModelIndex &parent) const
+int RowModel::rowCount(const QModelIndex &parent) const
 {
 
     Q_UNUSED(parent)
@@ -40,7 +35,7 @@ int DisplayModel::rowCount(const QModelIndex &parent) const
 
 }
 
-int DisplayModel::columnCount(const QModelIndex &parent) const
+int RowModel::columnCount(const QModelIndex &parent) const
 {
 
     Q_UNUSED(parent)
@@ -48,7 +43,7 @@ int DisplayModel::columnCount(const QModelIndex &parent) const
 
 }
 
-QVariant DisplayModel::data(const QModelIndex &index, int role) const
+QVariant RowModel::data(const QModelIndex &index, int role) const
 {
 
     if (!index.isValid() || role != Qt::DisplayRole) {
@@ -70,11 +65,11 @@ QVariant DisplayModel::data(const QModelIndex &index, int role) const
     return m_row_entries[row][column];
 }
 
-size_t DisplayModel::row_entires_size() {
+size_t RowModel::row_entires_size() {
     return m_row_entries.size();
 }
 
-void DisplayModel::add_data(std::deque<packet::packet_ref>::iterator first, std::deque<packet::packet_ref>::iterator last) {
+void RowModel::add_data(std::deque<packet::packet_ref>::iterator first, std::deque<packet::packet_ref>::iterator last) {
 
 
     int start_index = static_cast<int>(m_row_entries.size());

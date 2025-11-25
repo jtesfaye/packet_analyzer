@@ -7,30 +7,21 @@
 
 #include <functional>
 #include <vector>
-#include <packet/PacketUtil.h>
-#include <layerx/Layer.h>
-#include <iostream>
+#include <layerx/ParseFormat.h>
 
-struct Layer3Registry {
-    static std::vector<std::pair<int, Layer::function>>& get_registry() {
-        static std::vector<std::pair<int, Layer::function>> registry;
-        return registry;
-    }
+namespace registry::layer3 {
 
-    static std::vector<std::pair<int, Layer::detail_function>>& get_detail_registry() {
-        static std::vector<std::pair<int ,Layer::detail_function>> detail_reg;
-        return detail_reg;
-    }
+    inline std::vector<std::pair<int, parse::function>> layer3_initial_parse_registry;
+    inline std::vector<std::pair<int, parse::detail_function>> layer3_detail_parse_registry;
+
+    void register_self(int key, const parse::function& func);
+
+    void register_self(int key, const parse::detail_function& func);
+
+    void register_all_functions();
+
+}
 
 
-    Layer3Registry(int key, const Layer::function& func) {
-        get_registry().push_back(std::pair{key, func});
-    }
-
-    Layer3Registry(int key, const Layer::detail_function& func) {
-        get_detail_registry().push_back(std::pair{key, func});
-    }
-
-};
 
 #endif //LAYER3REGISTRY_H

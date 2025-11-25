@@ -6,30 +6,20 @@
 #define LAYER4REGISTRY_H
 
 #include <functional>
-#include <iostream>
 #include <vector>
-#include <layerx/Layer.h>
+#include <layerx/ParseFormat.h>
 
-struct Layer4Registry {
+namespace registry::layer4 {
 
-    static std::vector<std::pair<int, Layer::function>>& get_registry() {
-        static std::vector<std::pair<int, Layer::function>> registry;
-        return registry;
-    }
+    inline std::vector<std::pair<int, parse::function>> layer4_initial_parse_registry;
+    inline std::vector<std::pair<int, parse::detail_function>> layer4_detail_parse_registry;
 
-    static std::vector<std::pair<int, Layer::detail_function>>& get_detail_registry() {
-        static std::vector<std::pair<int ,Layer::detail_function>> detail_reg;
-        return detail_reg;
-    }
+    void register_self(int key, const parse::function& func);
 
-    Layer4Registry(int key, const Layer::function& func) {
-        get_registry().push_back(std::pair{key, func});
-    }
+    void register_self(int key, const parse::detail_function& func);
 
-    Layer4Registry(int key, const Layer::detail_function& func) {
-        get_detail_registry().push_back(std::pair{key, func});
-    }
+    void register_all_functions();
 
-};
+}
 
 #endif //LAYER4REGISTRY_H

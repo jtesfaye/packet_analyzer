@@ -5,7 +5,8 @@
 #include <gtest/gtest.h>
 #include <parsing/ParseDispatcher.h>
 #include <packet/PcapFile.h>
-#include <layerx/layer2/Layer2.h>
+#include <layerx/Registry.h>
+#include <layerx/layer2/Ethernet.h>
 
 class Layer2Test : public ::testing::Test {
 protected:
@@ -21,19 +22,21 @@ protected:
 
 TEST_F(Layer2Test, EthernetTest) {
 
-    ParseDispatcher parser(Layer::get_first_parse_functions());
+    ParseDispatcher parser(registry::get_initial_registry());
 
     auto raw_data = file.read(0);
 
     context.offset = 16;
 
-    std::unique_ptr<ProtocolDataUnit> ether = parser(DLT_EN10MB,raw_data, context);
+    std::unique_ptr<ProtocolDataUnit> ether = parser(protocol::ethernet::IEEE_802_3 ,raw_data, context);
+
+    Address src = ether->src();
+    Address dest = ether->dest();
 
     ASSERT_NE(ether, nullptr);
 
     EXPECT_EQ(ether->length, 14);
-    EXPECT_EQ(ether->src, "08:00:27:fc:6a:c9");
-    EXPECT_EQ(ether->dest, "08:00:27:e2:9f:a6");
+    EXPECT_EQ(ether->address_to_string(src), "08:00:27:fc:6a:c9");
+    EXPECT_EQ(ether->address_to_string(dest), "08:00:27:e2:9f:a6");
     EXPECT_EQ(context.next_type, 0x0800);
-
 }

@@ -4,71 +4,43 @@
 #include <QMessageBox>
 #include <view/SessionForm.h>
 #include <util/PacketObserver.h>
-#include <capture/CaptureSession.h>
 #include <controller/CaptureController.h>
 #include <print>
 #include <util/RowFactory.h>
 #include <util/TreeModelFactory.h>
 
 CaptureController::CaptureController() :
-m_window_view(new StartupWindow()),
 consumer_thread()
 {
-
     consumer_thread = nullptr;
-
-    init_start_btn(m_window_view->get_start_session_btn());
-
-    connect_session_form_to_main();
-
-    m_window_view->show();
-
 }
 
+void CaptureController::stop_capture() {
+    if (!current_session) return;
 
-void CaptureController::init_start_btn(QPushButton *btn) {
+    if (stopped) {
+        end_capture();
+    }
 
-    connect(btn, &QPushButton::clicked, this, [=]() {
-
-        if (current_session) {
-            prompt_save();
-            current_session->send_command(SessionCommand::end());
-            current_session.reset();
-        }
-
-        m_window_view->get_form()->show();
-
-    });
+    current_session->send_command(SessionCommand::stop());
+    stopped = true;
 }
 
-void CaptureController::init_stop_btn(QPushButton *btn, const std::shared_ptr<CaptureSession>& session) {
+void CaptureController::end_capture() {
 
-    connect(btn, &QPushButton::clicked, this, [=]() {
+    if (!current_session) return;
 
-        this->stop_online_capture(session);
+    if (stopped) {
+        prompt_save();
+    } else {
+        current_session->send_command(SessionCommand::stop());
+        prompt_save();
 
-    });
+    }
 
-}
+    current_session->send_command(SessionCommand::end());
+    current_session.reset();
 
-void CaptureController::connect_session_form_to_main() {
-
-    const QPushButton* form = m_window_view->get_form()->get_start_session_button();
-
-    connect(form, &QPushButton::clicked, this, &CaptureController::start_session);
-
-}
-
-void CaptureController::start_session() {
-
-    auto form = m_window_view->get_form();
-    start_capture(form->get_config());
-    form->hide();
-}
-
-
-void CaptureController::stop_online_capture(const std::shared_ptr<CaptureSession>& session) {
-    session->send_command(SessionCommand::stop());
 }
 
 void CaptureController::connect_session_to_table_view(const QTableView& table) {
@@ -77,19 +49,15 @@ void CaptureController::connect_session_to_table_view(const QTableView& table) {
 
 }
 
-void CaptureController::start_capture(const CaptureConfig& config) {
+void CaptureController::start_capture(const CaptureConfig& config, QTableView& row_table, QTreeView &tree) {
 
     using namespace capture;
 
     current_session = std::make_shared<CaptureSession>(config);
 
-    if (config.mode == CaptureMode::Online) {
-        init_stop_btn(m_window_view->get_stop_session_btn(), current_session);
-    }
+    connect_session_to_table_view(row_table);
 
-    connect_session_to_table_view(*m_window_view->get_table_view());
-
-    connect_observer_to_this(*current_session);
+    connect_observer_to_this(*current_session, row_table, tree);
 
     std::thread session_thread([this] {
 
@@ -103,24 +71,30 @@ void CaptureController::start_capture(const CaptureConfig& config) {
 
 }
 
-void CaptureController::connect_observer_to_this(const CaptureSession& session) {
+void CaptureController::connect_observer_to_this(const CaptureSession& session, QTableView &table, QTreeView &tree) {
 
     //This removes any pre-existing models from a previous session.
-    if (m_model) {
-        m_model.reset();
+    if (m_row_model) {
+        m_row_model.reset();
     }
 
     const std::shared_ptr<PacketObserver> observer = session.get_observer();
 
-    m_model = std::make_shared<DisplayModel>(this);
+    m_row_model = std::make_shared<RowModel>(this);
+    m_detail_model = std::make_shared<DetailModel> (this);
 
-    m_window_view->get_table_view()->setModel(m_model.get());
+    table.setModel(m_row_model.get());
+    tree.setModel(m_detail_model.get());
 
     consumer_thread = new QThread;
 
     observer->moveToThread(consumer_thread);
 
-    connect(consumer_thread, &QThread::started, observer.get(), &PacketObserver::start_observer);
+    connect(
+        consumer_thread,
+        &QThread::started,
+        observer.get(),
+        &PacketObserver::start_observer);
 
     //When packets enter the internal buffer, Observer notifies controller of ready packets
     connect(
@@ -147,22 +121,18 @@ void CaptureController::connect_observer_to_this(const CaptureSession& session) 
         Qt::QueuedConnection);
 
 
-    connect(this, &CaptureController::send_row_to_model, m_model.get(), &DisplayModel::add_data);
+    connect(this,
+        &CaptureController::send_row_to_model,
+        m_row_model.get(),
+        &RowModel::add_data);
     consumer_thread->start();
 
 }
 
 void CaptureController::receive_details(const std::vector<ProtocolDetails>& details) {
 
-    //later cache the old models instead
-    if (const auto old_model = m_window_view->get_tree_view()->model()) {
-        delete old_model;
-    }
-
-    m_window_view->get_tree_view()->setModel(TreeModelFactory::make_model(details));
-
+    m_detail_model->set_data(&details);
 }
-
 
 void CaptureController::recieve_row(std::deque<packet_ref>::iterator first, std::deque<packet_ref>::iterator last) const {
 
@@ -175,7 +145,6 @@ void CaptureController::recieve_row_index(const QModelIndex& index) {
     emit forward_detail_request(row);
 
 }
-
 
 void CaptureController::prompt_save() const {
 

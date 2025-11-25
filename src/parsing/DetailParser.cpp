@@ -3,10 +3,10 @@
 //
 
 #include <parsing/DetailParser.h>
-#include <layerx/Layer.h>
+#include <layerx/Registry.h>
 
 DetailParser::DetailParser()
-: parser(Layer::get_detail_parse_functions())
+: parser(registry::get_detail_parse_functions())
 {
 }
 

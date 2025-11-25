@@ -38,4 +38,5 @@ target_link_libraries(main_src
 
 target_include_directories(main_src PRIVATE ${Boost_INCLUDE_DIRS} ${concurrentqueue_SOURCE_DIR})
 add_subdirectory(tests)
+add_subdirectory(benchmarks)
 target_include_directories(main_src PUBLIC ${CMAKE_SOURCE_DIR}/include)

@@ -1,5 +1,4 @@
 add_library(util
-        PacketRead.cpp
         RowFactory.cpp
         ${CMAKE_SOURCE_DIR}/include/util/SparsePacketBuffer.h
         PacketObserver.cpp

@@ -1,19 +1,19 @@
 
 #include <iostream>
 #include <parsing/InitialParser.h>
-
+#include <layerx/Registry.h>
 
 
 InitialParser::InitialParser(int layer2_type, u_int8_t flags)
 : m_dlt{layer2_type}
 , m_flags{flags}
 , m_inital_time()
-, first_parse_dispatcher(Layer::get_first_parse_functions())
+, first_parse_dispatcher(registry::full_initial_reg)
 
 {}
 
 packet_ref InitialParser::start_extract(
-  const std::vector<std::byte> &raw_data,
+  const std::span<std::byte> raw_data,
   const size_t index) {
 
   packet_ref pkt_ref{};
@@ -23,10 +23,10 @@ packet_ref InitialParser::start_extract(
   pkt_ref.index = index;
   pkt_ref.length = 0;
   std::memcpy(&context.header, raw_data.data(), sizeof(pcaprec_hdr_t));
-  const parse_time time {context.header.ts_sec, context.header.ts_usec};
+  const timestamp time {context.header.ts_sec, context.header.ts_usec};
 
-  //find time relative to first capture
-  pkt_ref.time = set_relative_time(time);
+  set_initial_time(time);
+  pkt_ref.time = {context.header.ts_sec, context.header.ts_usec};
 
   const std::vector<LayerJob> jobs = create_first_parse_jobs();
 
@@ -41,7 +41,6 @@ packet_ref InitialParser::start_extract(
   pkt_ref.data = offsets;
 
   return pkt_ref;
-
 }
 
 std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
@@ -50,7 +49,7 @@ std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
 
   auto layer2_job = [&](
     packet_ref& pkt,
-    const std::vector<std::byte> data,
+    std::span<std::byte> data,
     parse_context& context,
     layer_offsets& offsets) {
 
@@ -85,7 +84,7 @@ std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
 
     auto layer3_job = [&](
     packet_ref& pkt,
-    const std::vector<std::byte>& data,
+    std::span<std::byte> data,
     parse_context& context,
     layer_offsets& offsets) {
 
@@ -126,7 +125,7 @@ std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
 
     auto layer4_job = [&](
     packet_ref& pkt,
-    const std::vector<std::byte>& data,
+    std::span<std::byte> data,
     parse_context& context,
     layer_offsets& offsets) {
 
@@ -164,7 +163,7 @@ std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
 
 }
 
-void InitialParser::set_initial_time(const parse_time &time) {
+void InitialParser::set_initial_time(const timestamp &time) {
 
   std::call_once(time_init_flag, [&]() {
     m_inital_time = time;
@@ -172,11 +171,3 @@ void InitialParser::set_initial_time(const parse_time &time) {
 
 }
 
-double InitialParser::set_relative_time(const parse_time &time) {
-
-  set_initial_time(time);
-
-  return (time.ts_sec - m_inital_time.ts_sec) +
-    (time.ts_usec - m_inital_time.ts_usec) / 1e6;
-
-}

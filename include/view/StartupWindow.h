@@ -32,7 +32,6 @@ private:
 
     QTableView *m_table_view;
     QTreeView* m_tree_view;
-    Sidebar* m_sidebar;
     QLineEdit* m_filter_box;
     QPushButton* m_start_session_btn;
     QPushButton* m_stop_session_btn;
@@ -45,8 +44,6 @@ public:
     QTableView* get_table_view() {return m_table_view;}
 
     QTreeView* get_tree_view() {return m_tree_view;}
-
-    Sidebar* get_sidebar() {return m_sidebar;}
 
     QPushButton* get_start_session_btn() {return m_start_session_btn;}
 

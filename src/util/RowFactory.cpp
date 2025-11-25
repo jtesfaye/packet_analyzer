@@ -5,7 +5,6 @@
 
 #include <iostream>
 #include <util/RowFactory.h>
-#include <layerx/ProtocolTypes.h>
 
 row_entry RowFactory::layer4_top_row(
     const size_t index,
@@ -14,12 +13,14 @@ row_entry RowFactory::layer4_top_row(
     const TransportPDU *data,
     const NetworkPDU *addr_data) {
 
+
+
     return row_entry {
         QString::number(index),
         QString::number(time, 'f', 6),
-        QString::fromStdString(addr_data->src),
-        QString::fromStdString(addr_data->dest),
-        QString::fromStdString(data->name()),
+        QString::fromStdString(addr_data->address_to_string(addr_data->src())),
+        QString::fromStdString(addr_data->address_to_string(addr_data->dest())),
+        QString::fromStdString(data->name().data()),
         QString::number(length),
         QString::fromStdString(data->make_info())
     };
@@ -34,9 +35,9 @@ row_entry RowFactory::layerx_top_row(
     return row_entry {
         QString::number(index),
         QString::number(time, 'f', 6),
-        QString::fromStdString(data->src),
-        QString::fromStdString(data->dest),
-        QString::fromStdString(data->name()),
+        QString::fromStdString(data->address_to_string(data->src())),
+        QString::fromStdString(data->address_to_string(data->dest())),
+        QString::fromStdString(data->name().data()),
         QString::number(length),
         QString::fromStdString(data->make_info())
     };
@@ -57,14 +58,14 @@ row_entry RowFactory::layerx_error_row(size_t index,
 
 }
 
-row_entry RowFactory::create_row(const packet_ref &ref) {
+row_entry RowFactory::create_row(const packet::packet_ref &ref) {
 
     //if layer4 is defined, info and protocol field will be in place for that layer
     if (ref.layer4) {
 
         return layer4_top_row(
             ref.index,
-            ref.time,
+            ref.time.ts_sec + ref.time.ts_usec,
             ref.length,
             dynamic_cast<const TransportPDU *>(ref.layer4.get()),
             dynamic_cast<const NetworkPDU *>(ref.layer3.get())
@@ -76,7 +77,7 @@ row_entry RowFactory::create_row(const packet_ref &ref) {
 
         return layerx_top_row(
             ref.index,
-            ref.time,
+            ref.time.ts_sec + ref.time.ts_usec,
             ref.length,
             ref.layer3.get()
             );
@@ -87,12 +88,12 @@ row_entry RowFactory::create_row(const packet_ref &ref) {
 
         return layerx_top_row(
         ref.index,
-        ref.time,
+        ref.time.ts_sec + ref.time.ts_usec,
         ref.length,
         ref.layer2.get()
         );
 
     }
 
-    return layerx_error_row(ref.index, ref.time);
+    return layerx_error_row(ref.index, ref.time.ts_sec + ref.time.ts_usec);
 }

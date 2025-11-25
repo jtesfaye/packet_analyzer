@@ -6,6 +6,7 @@ add_subdirectory(Packet)
 add_subdirectory(parsing)
 add_subdirectory(util)
 add_subdirectory(view)
+add_subdirectory(session)
 
 add_library(sniffer_main)
 

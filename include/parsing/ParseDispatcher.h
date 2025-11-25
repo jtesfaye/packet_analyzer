@@ -8,6 +8,7 @@
 #include <functional>
 #include <packet/PacketUtil.h>
 #include <iostream>
+#include <span>
 
 using namespace packet;
 
@@ -15,14 +16,14 @@ template <typename RefType>
 class ParseDispatcher {
 public:
 
-    using function = std::function<RefType(const std::vector<std::byte>&, parse_context&)>;
+    using function = std::function<RefType(std::span<std::byte>, parse_context&)>;
     using pair = std::pair<int, function>;
 
     explicit ParseDispatcher(std::vector<pair> funcs) {
         func_table = std::unordered_map<int, function>(funcs.begin(), funcs.end());
     }
 
-    RefType operator() (int key, const std::vector<std::byte> &raw_data, parse_context& context) {
+    RefType operator() (int key, std::span<std::byte> raw_data, parse_context& context) {
 
 
         if (!func_table.contains(key)) {
@@ -36,7 +37,7 @@ public:
 private:
 
     std::unordered_map<int, function> func_table;
-    std::function<RefType(const std::vector<std::byte>&, parse_context&)> parse_func;
+    std::function<RefType(std::span<std::byte>, parse_context&)> parse_func;
 
 };
 

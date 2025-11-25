@@ -5,9 +5,8 @@
 #include <gtest/gtest.h>
 #include <parsing/ParseDispatcher.h>
 #include <packet/PcapFile.h>
-#include <layerx/iana_numbers.h>
-#include <layerx/layer4/Layer4.h>
-#include <layerx/Layer.h>
+#include <layerx/Registry.h>
+#include <layerx/layer4/TCP.h>
 
 class Layer4Test : public ::testing::Test {
 protected:
@@ -24,8 +23,7 @@ protected:
 
 TEST_F(Layer4Test, DispatchTest) {
 
-    Layer::register_parse_functions();
-    const auto& funcs = Layer::get_first_parse_functions();
+    const auto& funcs = registry::get_initial_registry();
 
     // check it’s not empty
     ASSERT_FALSE(funcs.empty());
@@ -33,7 +31,7 @@ TEST_F(Layer4Test, DispatchTest) {
     // look for TCP entry
     bool found_tcp = false;
     for (const auto& [key, func] : funcs) {
-        if (key == layer::iana::TCP) {
+        if (key == protocol::tcp::iana_number) {
             found_tcp = true;
             EXPECT_TRUE(static_cast<bool>(func)); // non-null callable
         }
@@ -45,10 +43,10 @@ TEST_F(Layer4Test, DispatchTest) {
 
 TEST_F(Layer4Test, TCPParseSuccess) {
 
-    int key = layer::iana::TCP;
+    int key = protocol::tcp::iana_number;
 
-    Layer::register_parse_functions();
-    ParseDispatcher<std::unique_ptr<ProtocolDataUnit>> transport_parse(Layer::get_first_parse_functions());
+
+    ParseDispatcher transport_parse(registry::get_initial_registry());
 
     auto raw_data = file.read(2);
 
@@ -59,18 +57,25 @@ TEST_F(Layer4Test, TCPParseSuccess) {
 
     ASSERT_NE(tcp, nullptr);
 
-    EXPECT_EQ(tcp->src, "57782");
-    EXPECT_EQ(tcp->dest, "443");
+    u_int16_t src;
+    Address src_addr = tcp->src();
+    std::memcpy(&src, &src_addr.bytes, sizeof(src));
+
+    u_int16_t dest;
+    Address dest_addr = tcp->dest();
+    std::memcpy(&dest, &dest_addr.bytes, sizeof(dest));
+
+    EXPECT_EQ(src, 57782);
+    EXPECT_EQ(dest, 443);
     EXPECT_EQ(tcp->length, 32);
 
 }
 
 TEST_F(Layer4Test, TCPDetailParse) {
 
-    int key = layer::iana::TCP;
+    int key = protocol::tcp::iana_number;
 
-    Layer::register_parse_functions();
-    ParseDispatcher<ProtocolDetails> parser(Layer::get_detail_parse_functions());
+    ParseDispatcher parser(registry::get_detail_parse_functions());
 
     auto raw_data = file.read(2);
     context.offset = sizeof(pcaprec_hdr_t) + 14 + 40;

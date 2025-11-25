@@ -4,7 +4,6 @@
 
 #include <packet/PacketUtil.h>
 #include <parsing/ParseDispatcher.h>
-#include <layerx/ProtocolTypes.h>
 #include <functional>
 #include <mutex>
 #include <span>
@@ -28,7 +27,7 @@ public:
   ~InitialParser() = default;
 
   packet_ref start_extract(
-    const std::vector<std::byte> &raw_data,
+    std::span<std::byte> raw_data,
     size_t index);
 
 private:
@@ -37,7 +36,7 @@ private:
 
     std::function<bool(
       packet_ref&,
-      const std::vector<std::byte>&,
+      std::span<std::byte>,
       parse_context&,
       layer_offsets&)> func;
 
@@ -45,15 +44,13 @@ private:
 
   std::vector<LayerJob> create_first_parse_jobs();
 
-  void set_initial_time(const parse_time& time);
-
-  double set_relative_time(const parse_time& time);
+  void set_initial_time(const timestamp& time);
 
   int m_dlt; //data link type
 
   u_int8_t m_flags;
 
-  parse_time m_inital_time; //time at which first packet was captured
+  timestamp m_inital_time; //time at which first packet was captured
 
   std::once_flag time_init_flag;
 

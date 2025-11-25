@@ -6,29 +6,18 @@
 #define LAYER2REGISTRY_H
 #include <functional>
 #include <vector>
-#include <layerx/Layer.h>
+#include <layerx/ParseFormat.h>
 
 
-struct Layer2Registry {
+namespace registry::layer2 {
+    inline std::vector<std::pair<int, parse::function>> layer2_initial_parse_registry;
+    inline std::vector<std::pair<int, parse::detail_function>> layer2_detail_parse_registry;
 
-    static std::vector<std::pair<int, Layer::function>>& get_registry() {
-        static std::vector<std::pair<int, Layer::function>> registry;
-        return registry;
-    }
+    void register_self(int key, const parse::function& func);
 
-    static std::vector<std::pair<int, Layer::detail_function>>& get_detail_registry() {
-        static std::vector<std::pair<int ,Layer::detail_function>> detail_reg;
-        return detail_reg;
-    }
+    void register_self(int key, const parse::detail_function& func);
 
+    void register_all_functions();
+}
 
-    Layer2Registry(int key, const Layer::function& func) {
-        get_registry().push_back(std::pair{key, func});
-    }
-
-    Layer2Registry(int key, const Layer::detail_function& func) {
-        get_detail_registry().push_back(std::pair{key, func});
-    }
-
-};
 #endif //LAYER2REGISTRY_H

@@ -13,6 +13,7 @@
 #include <util/PacketObserver.h>
 #include <atomic>
 #include <boost/lockfree/spsc_queue.hpp>
+#include <session/StreamTable.h>
 
 using namespace boost::lockfree;
 using raw_pkt_queue = spsc_queue<RawPacket, capacity<255>> ;
@@ -25,6 +26,7 @@ struct EngineInit {
     const std::shared_ptr<PacketObserver> observer;
     raw_pkt_queue& raw_pkt_queue;
     size_t thread_count = std::thread::hardware_concurrency();
+    StreamTable& table;
 };
 
 class ParsingEngine {
@@ -42,7 +44,7 @@ public:
 
 private:
 
-    void parse_packet(RawPacket pkt);
+    void process_packet(RawPacket& pkt);
 
     std::shared_ptr<InitialParser> m_initial_parser;
     std::shared_ptr<DetailParser> m_detail_parser;
@@ -51,6 +53,8 @@ private:
     std::shared_ptr<IContainerType<std::vector<ProtocolDetails>>> m_details_cache;
     std::shared_ptr<PacketObserver> m_observer;
     raw_pkt_queue& m_pkt_queue;
+
+    StreamTable& stream_table;
 
     std::vector<std::thread> m_workers;
     std::mutex lock;

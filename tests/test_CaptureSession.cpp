@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include <capture/CaptureSession.h>
+#include <session/CaptureSession.h>
 #include <chrono>
 
 class CaptureSessionTest : public ::testing::Test {

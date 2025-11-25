@@ -4,19 +4,17 @@
 
 #include <layerx/layer4/UDP.h>
 #include <format>
-#include <iostream>
-#include <util/PacketRead.h>
-#include <layerx/iana_numbers.h>
+#include <layerx/layer4/Layer4Registry.h>
 
-Layer4Registry& udp_functions::get_udp_registry() {
-    static Layer4Registry udp_reg(layer::iana::UDP, udp_parse);
-    static Layer4Registry udp_detail_reg(layer::iana::UDP, udp_detailed_parse);
-    return udp_reg;
+UDP::UDP(const size_t len, const u_int16_t src_port, const u_int16_t dest_port)
+: TransportPDU(len) {
+
+    using namespace protocol::udp;
+    std::memcpy(&src_address.bytes, &src_port, addr_len);
+    std::memcpy(&dest_address.bytes, &dest_port, addr_len);
+    src_address.size = addr_len;
+    dest_address.size = addr_len;
 }
-
-UDP::UDP(const size_t len, std::string src_port, std::string dest_port)
-: TransportPDU(len, std::move(src_port), std::move(dest_port))
-{}
 
 UDP::~UDP() = default;
 
@@ -25,17 +23,39 @@ std::string UDP::make_info() const {
     return "";
 }
 
-std::string UDP::name() const {
-    return "UDP";
+std::string_view UDP::name() const {
+    return udp::name;
 }
 
-std::unique_ptr<TransportPDU> udp_functions::udp_parse(
-    const std::vector<std::byte> &raw_data,
+std::string UDP::address_to_string(const Address &addr) const {
+    u_int16_t target{};
+    std::memcpy(&target, addr.bytes.data(), sizeof(target));
+    return std::to_string(target);
+}
+
+Address UDP::src() const {
+    return src_address;
+}
+
+Address UDP::dest() const {
+    return dest_address;
+}
+
+ProtocolKeys UDP::type() const {
+    return key;
+}
+
+
+void udp::register_udp() {
+    registry::layer4::register_self(static_cast<int>(ProtocolKeys::UDP), udp_parse);
+    registry::layer4::register_self(static_cast<int> (ProtocolKeys::UDP), udp_detailed_parse);
+}
+
+std::unique_ptr<TransportPDU> udp::udp_parse(
+    std::span<std::byte> raw_data,
     parse_context &context) {
 
-    using namespace layer::transport;
-
-    if (!PacketRead::valid_length(raw_data, context.offset, sizeof(udp_header))) {
+    if (valid_length(raw_data, context.offset, sizeof(udp_header))) {
         return nullptr;
     }
 
@@ -47,13 +67,13 @@ std::unique_ptr<TransportPDU> udp_functions::udp_parse(
 
     return std::make_unique<UDP>(
         length,
-        std::to_string(ntohs(udp_hdr->src)),
-        std::to_string(ntohs(udp_hdr->dest))
+        ntohs(udp_hdr->src),
+        ntohs(udp_hdr->dest)
         );
 }
 
-ProtocolDetails udp_functions::udp_detailed_parse(
-    const std::vector<std::byte> &raw_data,
+ProtocolDetails udp::udp_detailed_parse(
+    std::span<std::byte> raw_data,
     parse_context &context) {
 
     const auto hdr = reinterpret_cast<const udp_header*> (raw_data.data() + context.offset);
@@ -67,6 +87,6 @@ ProtocolDetails udp_functions::udp_detailed_parse(
     details.emplace_back("Checksum: " + std::format(":x", ntohs(hdr->checksum)));
     details.emplace_back(std::format("UDP Payload ({})", std::to_string(ntohs(hdr->len) - 8)));
 
-    return { full_protocol_name(), details };
+    return { full_protocol_name, details };
 }
 
