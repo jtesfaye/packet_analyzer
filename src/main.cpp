@@ -2,13 +2,13 @@
 // Created by jeremiah tesfaye on 7/31/25.
 //
 #include <QApplication>
-#include <controller/CaptureController.h>
+#include <controller/StartupWindowController.h>
 
 int main(int argc, char** argv) {
 
  QApplication app(argc,argv);
 
- CaptureController controller;
+ StartupWindowController c;
 
  return app.exec();
 

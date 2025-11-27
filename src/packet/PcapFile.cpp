@@ -113,8 +113,6 @@ bool PcapFile::save_file(std::string file_path) {
     flush();
     close_dumper();
 
-    std::cout << file_path << std::endl;
-
     std::filesystem::copy(
         m_abs_file_path,
         file_path,
@@ -132,13 +130,13 @@ bool PcapFile::save_file(std::string file_path) {
 
     pcap_close(handle);
     return true;
-
 }
 
 
 void PcapFile::flush() const {
 
-    pcap_dump_flush(m_dumper);
+    if (m_dumper)
+        pcap_dump_flush(m_dumper);
 }
 
 void PcapFile::close_dumper() {

@@ -31,7 +31,7 @@ TEST_F(Layer4Test, DispatchTest) {
     // look for TCP entry
     bool found_tcp = false;
     for (const auto& [key, func] : funcs) {
-        if (key == protocol::tcp::iana_number) {
+        if (key == static_cast<int>(protocol::ProtocolKeys::TCP)) {
             found_tcp = true;
             EXPECT_TRUE(static_cast<bool>(func)); // non-null callable
         }
@@ -43,8 +43,7 @@ TEST_F(Layer4Test, DispatchTest) {
 
 TEST_F(Layer4Test, TCPParseSuccess) {
 
-    int key = protocol::tcp::iana_number;
-
+    int key = static_cast<int> (ProtocolKeys::TCP);
 
     ParseDispatcher transport_parse(registry::get_initial_registry());
 

@@ -11,7 +11,6 @@ StartupWindowController::StartupWindowController()
     init_start_btn(main_window->get_start_session_btn());
     init_stop_btn(main_window->get_stop_session_btn());
     connect_session_form_to_main();
-
     main_window->show();
 }
 
@@ -23,7 +22,7 @@ void StartupWindowController::connect_session_form_to_main() {
 
         const auto config = form->get_config();
 
-        capture_controller->start_capture(
+        capture_controller.start_capture(
             config,
             *main_window->get_table_view(),
             *main_window->get_tree_view()
@@ -39,7 +38,7 @@ void StartupWindowController::init_start_btn(QPushButton *btn) {
     connect(btn, &QPushButton::clicked, this, [=]() {
 
         if (current_session.lock()) {
-            capture_controller->end_capture();
+            capture_controller.end_capture();
         }
 
         main_window->get_form()->show();
@@ -48,8 +47,8 @@ void StartupWindowController::init_start_btn(QPushButton *btn) {
 
 void StartupWindowController::init_stop_btn(QPushButton *btn) {
 
-    connect(btn, &QPushButton::clicked, this, [=]() {
-        capture_controller->stop_capture();
+    connect(btn, &QPushButton::clicked, this, [this]() {
+        capture_controller.stop_capture();
     });
 }
 

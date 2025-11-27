@@ -8,8 +8,7 @@ InitialParser::InitialParser(int layer2_type, u_int8_t flags)
 : m_dlt{layer2_type}
 , m_flags{flags}
 , m_inital_time()
-, first_parse_dispatcher(registry::full_initial_reg)
-
+, first_parse_dispatcher(registry::get_initial_registry())
 {}
 
 packet_ref InitialParser::start_extract(

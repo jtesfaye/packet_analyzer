@@ -4,6 +4,7 @@
 
 #ifndef STARTUPWINDOWCONTROLLER_H
 #define STARTUPWINDOWCONTROLLER_H
+
 #include <QObject>
 #include <session/CaptureSession.h>
 #include <view/StartupWindow.h>
@@ -15,6 +16,7 @@ class StartupWindowController : public QObject {
 public:
 
     StartupWindowController();
+    ~StartupWindowController() override = default;
 
 private:
 
@@ -23,7 +25,7 @@ private:
     void connect_session_form_to_main();
 
     StartupWindow* main_window;
-    CaptureController* capture_controller;
+    CaptureController capture_controller{};
     std::weak_ptr<CaptureSession> current_session;
 
 };

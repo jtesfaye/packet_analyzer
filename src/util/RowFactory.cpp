@@ -13,8 +13,6 @@ row_entry RowFactory::layer4_top_row(
     const TransportPDU *data,
     const NetworkPDU *addr_data) {
 
-
-
     return row_entry {
         QString::number(index),
         QString::number(time, 'f', 6),

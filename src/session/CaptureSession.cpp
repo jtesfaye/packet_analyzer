@@ -9,6 +9,7 @@
 #include <iostream>
 #include <filesystem>
 #include <benchmark/benchmark.h>
+#include <layerx/ProtocolKeys.h>
 
 
 CaptureSession::CaptureSession(const CaptureConfig &config)
@@ -30,11 +31,10 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
             config.filter
             );
 
-        int l2 = 220;
-
         std::string temp_file = std::filesystem::temp_directory_path().generic_string() + "foobar.pcap";
 
-        m_initial_parser = std::make_shared<InitialParser>(l2, config.flags);
+        const int dlt = pcap_datalink(m_handle.get());
+        m_initial_parser = std::make_shared<InitialParser>(pcap_dlt_to_ieee.at(dlt), config.flags);
         m_detail_parser = std::make_shared<DetailParser>();
 
         EngineInit init {
@@ -68,13 +68,13 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
 
         initialize_offline_handle(config.source);
 
-        int data_link_type = pcap_datalink(m_handle.get());
+        int dlt = pcap_datalink(m_handle.get());
 
         m_pcap_file = std::make_shared<PcapFile>(
             config.source
         );
 
-        m_initial_parser = std::make_shared<InitialParser>(data_link_type, config.flags);
+        m_initial_parser = std::make_shared<InitialParser>(pcap_dlt_to_ieee.at(dlt), config.flags);
         m_detail_parser = std::make_shared<DetailParser>();
 
         EngineInit init {m_initial_parser,
@@ -84,6 +84,7 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
             m_observer ,m_raw_pkt_queue,
             1,
             table};
+
         m_pool = std::make_shared<ParsingEngine>(init);
 
         capture = PacketCapture::createOfflineCapture(
@@ -94,17 +95,15 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
             );
 
     } else {
-
         throw std::runtime_error("Error initializing capture session");
-
     }
 }
 
 CaptureSession::~CaptureSession() {
+
     m_pool->shutdown();
     m_observer->set_done();
 }
-
 
 void CaptureSession::send_command(const SessionCommand &cmd) {
 
@@ -122,7 +121,9 @@ void CaptureSession::start_session() {
     while (running) {
 
         std::unique_lock ul(lock);
-        cv.wait(ul, [this] (){return !commands.empty();} );
+        cv.wait(ul, [this] () {
+            return !commands.empty();
+        });
 
         auto cmd = std::move(commands.front());
         commands.pop();
@@ -157,6 +158,7 @@ void CaptureSession::process_cmd(const SessionCommand &cmd) {
 void CaptureSession::start_capture() {
 
     capture_on = true;
+
     std::thread capture_thread { [this] () {
         capture->start_capture();
         if (capture_on)

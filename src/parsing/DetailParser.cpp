@@ -12,7 +12,7 @@ DetailParser::DetailParser()
 
 
 std::vector<ProtocolDetails> DetailParser::detail_parse(
-  const std::span<std::byte> &raw_data,
+    const std::span<std::byte> raw_data,
   const layer_offsets &offsets) {
 
     std::vector<ProtocolDetails> details_arr;

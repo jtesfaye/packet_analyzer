@@ -5,6 +5,8 @@ add_library(view
         ${CMAKE_SOURCE_DIR}/include/view/SessionForm.h
         Sidebar.cpp
         ${CMAKE_SOURCE_DIR}/include/view/Sidebar.h
+        ThroughputChart.cpp
+        ${CMAKE_SOURCE_DIR}/include/view/ThroughputChart.h
 )
 
 target_include_directories(view PUBLIC ${CMAKE_SOURCE_DIR}/include)

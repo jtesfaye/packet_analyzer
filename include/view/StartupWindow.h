@@ -4,6 +4,7 @@
 
 #ifndef STARTUPWINDOW_H
 #define STARTUPWINDOW_H
+
 #include <QMainWindow>
 #include <QStackedWidget>
 #include <QToolBar>
@@ -12,7 +13,7 @@
 #include <view/SessionForm.h>
 #include <QTreeView>
 #include <QPushButton>
-
+#include <view/ThroughputChart.h>
 
 class StartupWindow : public QMainWindow {
     Q_OBJECT
@@ -28,10 +29,13 @@ private:
 
     QWidget* setup_buttons();
     QWidget* setup_central_view();
+    QWidget* setup_detail_view();
     void configure_table_view();
+
 
     QTableView *m_table_view;
     QTreeView* m_tree_view;
+    ThroughputChart *throughput_chart;
     QLineEdit* m_filter_box;
     QPushButton* m_start_session_btn;
     QPushButton* m_stop_session_btn;
@@ -42,12 +46,10 @@ public:
     SessionForm* session_form;
 
     QTableView* get_table_view() {return m_table_view;}
-
     QTreeView* get_tree_view() {return m_tree_view;}
-
     QPushButton* get_start_session_btn() {return m_start_session_btn;}
-
     QPushButton* get_stop_session_btn() {return m_stop_session_btn;}
+    ThroughputChart* get_throughput_chart() {return throughput_chart;}
 
 };
 

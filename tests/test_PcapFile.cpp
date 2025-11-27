@@ -46,7 +46,7 @@ TEST_F(PcapFileTest, ConstructAndMapFileSuccessfully) {
 TEST_F(PcapFileTest, SaveFileSuccessfully) {
 
 
-    const char* new_file_path = "/Users/jt/Desktop/pcap_files/foobar.pcap";
+    const char* new_file_path = "/Users/jt/Desktop/pcap_files/foobar2.pcap";
 
     PcapFile offlineFile(offline_test_file_name);
 

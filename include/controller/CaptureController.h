@@ -35,10 +35,9 @@ public slots:
   signals:
   void send_row_to_model(std::deque<packet_ref>::iterator, std::deque<packet_ref>::iterator) const;
   void forward_detail_request(size_t index);
-  void prompt_save() const;
 
 private:
-
+  void prompt_save() const;
   void connect_observer_to_this(const CaptureSession&, QTableView&, QTreeView&);
   void connect_session_to_table_view(const QTableView&);
 

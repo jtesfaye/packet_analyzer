@@ -32,14 +32,13 @@ struct Ethernet final : LinkPDU {
 
 namespace protocol::ethernet {
 
-
     std::unique_ptr<LinkPDU> ethernet_parse(std::span<std::byte>, parse_context&);
     ProtocolDetails ethernet_detailed_parse(std::span<std::byte>, parse_context&);
     void register_ethernet();
 
     inline constexpr std::string_view full_protocol_name = "802.3 Ethernet";
     inline constexpr std::string_view name = "Ethernet";
-    inline constexpr size_t addr_len = 48;
+    inline constexpr size_t addr_len = 6;
 
     struct ethernet_hdr {
 

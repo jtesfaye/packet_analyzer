@@ -22,7 +22,7 @@ protected:
         , buffer(std::make_shared<SparsePacketBuffer<packet_ref>>(10))
         , detail_buffer(std::make_shared<LRUCache<std::vector<ProtocolDetails>>>(10))
         , observer(std::make_shared<PacketObserver>(*buffer, *detail_buffer))
-        , init({init_parser, detail_parser, buffer, detail_buffer , observer ,queue ,5})
+        , init({init_parser, detail_parser, buffer, detail_buffer , observer ,queue ,5, table})
         {}
 
     const std::shared_ptr<InitialParser> init_parser;
@@ -31,6 +31,7 @@ protected:
     std::shared_ptr<LRUCache<std::vector<ProtocolDetails>>> detail_buffer;
     std::shared_ptr<PacketObserver> observer;
     raw_pkt_queue queue;
+    StreamTable table;
     EngineInit init;
 
 };

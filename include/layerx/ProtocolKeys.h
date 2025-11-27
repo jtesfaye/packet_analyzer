@@ -4,7 +4,8 @@
 
 #ifndef PROTOCOLKEYS_H
 #define PROTOCOLKEYS_H
-
+#include <unordered_map>
+#include <pcap/pcap.h>
 namespace protocol {
     enum class ProtocolKeys : int {
         ETH = 220,
@@ -14,6 +15,9 @@ namespace protocol {
         UDP = 17,
         ICMP = 1,
     };
+
+    static std::unordered_map<int, int> pcap_dlt_to_ieee {std::make_pair(DLT_EN10MB, 220)};
+
 };
 
 #endif //PROTOCOLKEYS_H

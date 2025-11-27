@@ -22,7 +22,8 @@ void Offline::capture_func() {
     RawPacket data{};
     data.index = i;
     auto raw_data = file->read(i);
-    std::memcpy(data.packet, raw_data.data(), raw_data.size());
+    size_t len = raw_data.size() > 1500 ? 1500 : raw_data.size();
+    std::memcpy(data.packet, raw_data.data(), len);
     queue.push(data);
   }
 

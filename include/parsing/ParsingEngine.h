@@ -19,6 +19,7 @@ using namespace boost::lockfree;
 using raw_pkt_queue = spsc_queue<RawPacket, capacity<255>> ;
 
 struct EngineInit {
+
     const std::shared_ptr<InitialParser>init_parser;
     const std::shared_ptr<DetailParser> detail_parser;
     const std::shared_ptr<IContainerType<packet_ref>> pkt_buffer;
@@ -27,6 +28,7 @@ struct EngineInit {
     raw_pkt_queue& raw_pkt_queue;
     size_t thread_count = std::thread::hardware_concurrency();
     StreamTable& table;
+
 };
 
 class ParsingEngine {
@@ -44,7 +46,7 @@ public:
 
 private:
 
-    void process_packet(RawPacket& pkt);
+    void process_packet(RawPacket pkt);
 
     std::shared_ptr<InitialParser> m_initial_parser;
     std::shared_ptr<DetailParser> m_detail_parser;
@@ -60,7 +62,6 @@ private:
     std::mutex lock;
     std::condition_variable m_work_to_do;
     std::atomic<bool> m_stop{false};
-
 };
 
 #endif //PARSINGENGINE_H

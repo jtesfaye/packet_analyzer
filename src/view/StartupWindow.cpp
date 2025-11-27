@@ -13,14 +13,14 @@
 
 StartupWindow::StartupWindow(QWidget* parent)
 : QMainWindow(parent)
-, session_form(new SessionForm(this))
 , m_table_view(new QTableView(this))
+, m_tree_view(new QTreeView(this))
+, throughput_chart(new ThroughputChart(this))
+, m_filter_box(new QLineEdit(this))
 , m_start_session_btn(new QPushButton( this))
 , m_stop_session_btn(new QPushButton(this))
 , m_save_capture_btn(new QPushButton(this))
-, m_filter_box(new QLineEdit(this))
-, m_tree_view(new QTreeView(this)) {
-
+, session_form(new SessionForm(this)) {
     configure_table_view();
     setCentralWidget(setup_central_view());
     resize(600,600);
@@ -34,24 +34,36 @@ QWidget *StartupWindow::setup_central_view() {
     auto splitter = new QSplitter(Qt::Orientation::Vertical, this);
 
     auto btn_widget = setup_buttons();
-
     main_layout->addWidget(btn_widget);
 
     m_filter_box->setReadOnly(false);
     main_layout->addWidget(m_filter_box);
 
     m_table_view->setSelectionMode(QTableView::SingleSelection);
-
     splitter->addWidget(m_table_view);
-    splitter->addWidget(m_tree_view);
+
+    auto detail_view = setup_detail_view();
+    splitter->addWidget(detail_view);
 
     main_layout->addWidget(splitter);
-
     main_widget->setLayout(main_layout);
 
     return main_widget;
 }
 
+QWidget *StartupWindow::setup_detail_view() {
+
+    auto widget = new QWidget(this);
+    auto layout = new QHBoxLayout(widget);
+    auto splitter = new QSplitter(Qt::Orientation::Horizontal, this);
+
+    splitter->addWidget(m_tree_view);
+    splitter->addWidget(throughput_chart);
+    layout->addWidget(splitter);
+    widget->setLayout(layout);
+    return widget;
+
+}
 
 QWidget *StartupWindow::setup_buttons() {
 
@@ -88,7 +100,6 @@ QWidget *StartupWindow::setup_buttons() {
 void StartupWindow::configure_table_view() {
 
     m_table_view->setSelectionBehavior(QAbstractItemView::SelectRows);
-
 }
 
 SessionForm *StartupWindow::get_form() {

@@ -28,7 +28,7 @@ TEST_F(Layer2Test, EthernetTest) {
 
     context.offset = 16;
 
-    std::unique_ptr<ProtocolDataUnit> ether = parser(protocol::ethernet::IEEE_802_3 ,raw_data, context);
+    std::unique_ptr<ProtocolDataUnit> ether = parser(static_cast<int>(protocol::ProtocolKeys::ETH) ,raw_data, context);
 
     Address src = ether->src();
     Address dest = ether->dest();

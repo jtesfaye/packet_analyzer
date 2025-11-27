@@ -14,7 +14,7 @@ public:
     DetailParser();
 
     std::vector<ProtocolDetails> detail_parse(
-        const std::span<std::byte> &raw_data,
+        std::span<std::byte> raw_data,
         const layer_offsets &offsets);
 
 private:

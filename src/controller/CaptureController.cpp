@@ -39,7 +39,6 @@ void CaptureController::end_capture() {
     }
 
     current_session->send_command(SessionCommand::end());
-    current_session.reset();
 
 }
 
@@ -81,7 +80,7 @@ void CaptureController::connect_observer_to_this(const CaptureSession& session, 
     const std::shared_ptr<PacketObserver> observer = session.get_observer();
 
     m_row_model = std::make_shared<RowModel>(this);
-    m_detail_model = std::make_shared<DetailModel> (this);
+    m_detail_model = std::make_shared<DetailModel>(this);
 
     table.setModel(m_row_model.get());
     tree.setModel(m_detail_model.get());
@@ -131,7 +130,7 @@ void CaptureController::connect_observer_to_this(const CaptureSession& session, 
 
 void CaptureController::receive_details(const std::vector<ProtocolDetails>& details) {
 
-    m_detail_model->set_data(&details);
+    m_detail_model->set_data(details);
 }
 
 void CaptureController::recieve_row(std::deque<packet_ref>::iterator first, std::deque<packet_ref>::iterator last) const {

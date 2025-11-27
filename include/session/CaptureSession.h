@@ -5,8 +5,6 @@
 #ifndef CAPTURESESSION_H
 #define CAPTURESESSION_H
 
-//black sherif iron boy
-
 #include <QObject>
 #include <packet/PcapFile.h>
 #include <packet/PacketUtil.h>
@@ -43,7 +41,7 @@ public:
 
   explicit CaptureSession(const CaptureConfig& config);
 
-  virtual ~CaptureSession();
+  ~CaptureSession();
 
   void send_command(const SessionCommand& cmd);
 
@@ -101,6 +99,8 @@ private:
 
   std::unique_ptr<pcap_t, decltype(&close_handle)> m_handle;
   std::unique_ptr<bpf_program, decltype(&free_bpf_program)> m_bpf_program;
+
+
 
 };
 

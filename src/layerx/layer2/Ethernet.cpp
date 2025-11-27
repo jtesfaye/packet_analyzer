@@ -38,6 +38,10 @@ std::string_view Ethernet::name() const {
     return name;
 }
 
+ProtocolKeys Ethernet::type() const {
+    return key;
+}
+
 std::string Ethernet::address_to_string(const Address &addr) const {
     return format_mac(reinterpret_cast<const u_int8_t*>(addr.bytes.data()));
 }

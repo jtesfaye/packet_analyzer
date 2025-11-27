@@ -21,10 +21,14 @@ std::string_view ICMP::name() const {
     return icmp::name;
 }
 
+ProtocolKeys ICMP::type() const {
+    return key;
+}
+
+
 void icmp::register_icmp() {
     registry::layer4::register_self(static_cast<int>(ProtocolKeys::ICMP), icmp_parse);
 }
-
 
 std::unique_ptr<TransportPDU> icmp::icmp_parse(
     std::span<std::byte> raw_data,
