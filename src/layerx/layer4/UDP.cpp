@@ -55,7 +55,7 @@ std::unique_ptr<TransportPDU> udp::udp_parse(
     std::span<std::byte> raw_data,
     parse_context &context) {
 
-    if (valid_length(raw_data, context.offset, sizeof(udp_header))) {
+    if (!valid_length(raw_data, context.offset, sizeof(udp_header))) {
         return nullptr;
     }
 
