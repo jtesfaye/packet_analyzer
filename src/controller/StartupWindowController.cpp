@@ -3,6 +3,7 @@
 //
 
 #include <controller/StartupWindowController.h>
+#include <view/ViewComponents.h>
 #include <QPushButton>
 
 StartupWindowController::StartupWindowController()
@@ -21,12 +22,9 @@ void StartupWindowController::connect_session_form_to_main() {
     connect(form->get_start_session_button(), &QPushButton::clicked, this, [this, form] () {
 
         const auto config = form->get_config();
+        ViewComponents v{main_window->get_table_view(), main_window->get_tree_view(), main_window->get_throughput_chart()};
 
-        capture_controller.start_capture(
-            config,
-            *main_window->get_table_view(),
-            *main_window->get_tree_view()
-            );
+        capture_controller.start_capture(config,v);
 
         main_window->get_form()->hide();
     });

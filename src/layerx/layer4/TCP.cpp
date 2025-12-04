@@ -17,6 +17,7 @@ TCP::TCP(const size_t len, u_int16_t src_port, u_int16_t dest_port, u_int32_t se
     dest_address.size = addr_len;
     seq_number = seq;
     ack_number = ack;
+    key = ProtocolKeys::TCP;
 }
 
 TCP::~TCP() = default;

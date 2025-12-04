@@ -14,6 +14,7 @@ IPv6::IPv6(const size_t len, const u_int8_t *src, const u_int8_t *dest, const u_
     std::memcpy(dest_address.bytes.data(), dest, ipv6::addr_len);
     src_address.size = ipv6::addr_len;
     dest_address.size = ipv6::addr_len;
+    key = ProtocolKeys::IPv6;
 }
 
 std::string IPv6::make_info() const {

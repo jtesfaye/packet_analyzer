@@ -4,13 +4,8 @@
 #include <iostream>
 
 Offline::Offline
-(
-  pcap_t* handle,
-  const std::shared_ptr<PcapFile>& file,
-  const std::shared_ptr<ParsingEngine>& pool,
-  raw_pkt_queue& queue
-)
-: PacketCapture(handle,file, pool, queue)
+(CaptureInit init)
+: PacketCapture(init)
 {
 }
 
@@ -27,7 +22,7 @@ void Offline::capture_func() {
     queue.push(data);
   }
 
-  pool->notify_all();
+  pool.notify_all();
 
 }
 

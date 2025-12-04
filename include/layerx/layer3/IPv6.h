@@ -24,8 +24,6 @@ struct IPv6 final : NetworkPDU {
     Address src_address;
     Address dest_address;
 
-    ProtocolKeys key = ProtocolKeys::IPv6;
-
 };
 
 namespace protocol::ipv6 {

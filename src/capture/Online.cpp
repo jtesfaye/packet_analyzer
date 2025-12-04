@@ -5,14 +5,11 @@
 
 Online::Online
 (
-  pcap_t* handle,
   int packet_count,
   size_t layer_flags,
-  const std::shared_ptr<PcapFile> &file,
-  const std::shared_ptr<ParsingEngine> &pool,
-  raw_pkt_queue& queue
+  CaptureInit init
 )
-: PacketCapture(handle, file, pool, queue)
+: PacketCapture(init)
 , m_flags(layer_flags)
 {
   m_packets_to_capture = packet_count;
@@ -58,7 +55,7 @@ void Online::pcap_loop_callback(
   std::memcpy(pkt.packet + header_size, packet, payload_len);
 
   obj->queue.push(pkt);
-  obj->tpool->notify_all();
+  obj->engine.notify_all();
 
 }
 

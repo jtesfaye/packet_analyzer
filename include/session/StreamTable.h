@@ -17,14 +17,13 @@
 using namespace packet;
 
 struct tuple_5 {
-    size_t ref_index;
     Address src_port;
     Address src_address;
     Address dest_port;
     Address dest_address;
     std::string_view protocol;
-};
 
+};
 
 namespace std {
     template<>
@@ -32,28 +31,23 @@ namespace std {
 
         std::size_t operator()(const tuple_5& t) const noexcept {
 
-            const auto& [
-                _,
-                src_p,
-                src_addr,
-                dest_port,
-                dest_addr,
-                protocol
-                ] = t;
+            const Address& port_a = t.src_port < t.dest_port ? t.src_port : t.dest_port;
+            const Address& port_b = port_a.bytes == t.src_port.bytes ? t.dest_port : t.src_port;
+            const Address& ip_c = t.src_address < t.dest_address ? t.src_address : t.dest_address;
+            const Address& ip_d = t.src_address.bytes == ip_c.bytes ? t.dest_address : t.src_address;
 
             size_t seed = 0;
 
-            boost::hash_combine(seed, src_p.bytes);
-            boost::hash_combine(seed, src_addr.bytes);
-            boost::hash_combine(seed, dest_port.bytes);
-            boost::hash_combine(seed, dest_addr.bytes);
-            boost::hash_combine(seed, protocol);
+            boost::hash_combine(seed, port_a.bytes);
+            boost::hash_combine(seed, port_b.bytes);
+            boost::hash_combine(seed, ip_c.bytes);
+            boost::hash_combine(seed, ip_d.bytes);
+            boost::hash_combine(seed, t.protocol);
 
             return seed;
         }
     };
 }
-
 
 class StreamTable {
 
@@ -63,7 +57,9 @@ class StreamTable {
 public:
 
     size_t add(const packet_ref& ref);
-    int get_index(size_t);
+    size_t number_of_connections();
+    size_t get_index(size_t, int& store) const;
+    size_t get_stream(size_t key, std::shared_ptr<Stream>& store) const;
 
 private:
 

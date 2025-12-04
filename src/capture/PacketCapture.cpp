@@ -6,42 +6,31 @@
 #include <packet/PcapFile.h>
 
 
-PacketCapture::PacketCapture(
-  pcap_t *h,
-  const std::shared_ptr<PcapFile> &file,
-  const std::shared_ptr<ParsingEngine> &pool,
-  raw_pkt_queue& queue
-  )
-: _handle(h)
-, file(file)
-, pool(pool)
+PacketCapture::PacketCapture(CaptureInit init)
+: _handle(init.handle)
+, file(init.file)
+, pool(init.pool)
 , queue(queue)
 {
 }
 
 std::unique_ptr<PacketCapture>
 PacketCapture::createOnlineCapture(
-  pcap_t* handle,
   int packet_count,
   size_t layer_flags,
-  const std::shared_ptr<PcapFile>& file,
-  const std::shared_ptr<ParsingEngine> &pool,
-  raw_pkt_queue& queue) {
+  CaptureInit init
+  ) {
 
-  auto cap = std::make_unique<Online>(handle, packet_count, layer_flags, file, pool, queue);
+  auto cap = std::make_unique<Online>(packet_count, layer_flags, init);
 
   return cap;
 
 }
 
 std::unique_ptr<PacketCapture>
-PacketCapture::createOfflineCapture(
-  pcap_t* handle,
-  const std::shared_ptr<PcapFile>& file,
-  const std::shared_ptr<ParsingEngine> &pool,
-  raw_pkt_queue& queue) {
+PacketCapture::createOfflineCapture(CaptureInit init) {
 
-  auto cap = std::make_unique<Offline>(handle, file, pool, queue);
+  auto cap = std::make_unique<Offline>(init);
 
   return cap;
 

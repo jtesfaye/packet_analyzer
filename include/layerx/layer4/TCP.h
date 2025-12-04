@@ -27,7 +27,7 @@ struct TCP : TransportPDU {
     u_int32_t seq_number;
     u_int32_t ack_number;
     u_int8_t flags;
-    ProtocolKeys key = ProtocolKeys::TCP;
+
 
 };
 

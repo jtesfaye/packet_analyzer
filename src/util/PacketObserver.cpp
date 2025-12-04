@@ -6,6 +6,8 @@
 #include <print>
 #include <QtConcurrent>
 
+#include "model/RowModel.h"
+
 void PacketObserver::notify_if_next(size_t index) {
 
     std::unique_lock lock(m_lock);
@@ -84,6 +86,14 @@ void PacketObserver::receive_detail_request(size_t index) {
 
 }
 
+void PacketObserver::recieve_stream_stat_request(size_t index) {
+
+    std::shared_ptr<Stream> stream;
+    stream_table.get_stream(index, stream);
+    std::shared_ptr<StreamStats> stats = stream->get_stats();
+    emit emit_stream_stat(stats);
+
+}
 
 PacketObserver::~PacketObserver() {
 
@@ -94,5 +104,23 @@ PacketObserver::~PacketObserver() {
         m_wait_for_next_worker.join();
     }
 }
+
+void PacketObserver::init_observer(Models &models) {
+    connect_to_table(models.row_model);
+    connect_to_detail_pane(models.detail_model);
+}
+
+void PacketObserver::connect_to_table(RowModel* model) {
+    connect(this, &PacketObserver::emit_packets_ready, model, &RowModel::add_data, Qt::QueuedConnection);
+}
+
+void PacketObserver::connect_to_detail_pane(DetailModel *model) {
+    connect(this, &PacketObserver::emit_pkt_details, model, &DetailModel::set_data, Qt::QueuedConnection);
+}
+
+void PacketObserver::connect_to_throughput_chart(ThroughputChart* chart) {
+    connect(this, &PacketObserver::emit_stream_stat, chart, &ThroughputChart::addValue);
+}
+
 
 

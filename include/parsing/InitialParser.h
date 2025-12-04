@@ -21,6 +21,7 @@ public:
   InitialParser(int layer2_type, u_int8_t flags);
 
   InitialParser(const InitialParser&) = delete;
+  InitialParser(const InitialParser&&) = delete;
   InitialParser operator=(const InitialParser&) = delete;
   InitialParser& operator= (InitialParser&&) = delete;
 

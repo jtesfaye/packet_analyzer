@@ -5,15 +5,26 @@
 #ifndef PACKETOBSERVER_H
 #define PACKETOBSERVER_H
 
-#include <QObject>
-#include <packet/PacketUtil.h>
-#include <util/IContainerType.h>
-#include <condition_variable>
 #include <span>
-#include <util/SparsePacketBuffer.h>
-#include <util/LRUCache.h>
 #include <thread>
+#include <QObject>
+#include <condition_variable>
 
+#include <capture/CaptureConfig.h>
+#include <packet/PacketUtil.h>
+#include <util/LRUCache.h>
+#include <util/IContainerType.h>
+#include <util/SparsePacketBuffer.h>
+#include <session/StreamTable.h>
+#include <model/RowModel.h>
+#include <model/DetailModel.h>
+#include <model/Models.h>
+
+struct ObserverInit {
+    SparsePacketBuffer<packet_ref>& buffer;
+    LRUCache<std::vector<ProtocolDetails>>& detail_cache;
+    StreamTable& stream_table;
+};
 
 class PacketObserver : public QObject {
 
@@ -24,9 +35,10 @@ public:
     using InitialParseBuffer = SparsePacketBuffer<packet_ref>;
     using DetailParseCache = LRUCache<std::vector<ProtocolDetails>>;
 
-    explicit PacketObserver(InitialParseBuffer& buffer, DetailParseCache& detail_cache)
-        : m_buffer(buffer)
-        , m_cache(detail_cache) {}
+    explicit PacketObserver(const ObserverInit& init)
+        : m_buffer(init.buffer)
+        , m_cache(init.detail_cache)
+        , stream_table(init.stream_table) {}
 
     ~PacketObserver() override;
 
@@ -39,15 +51,22 @@ public:
     void wait_for_next();
 
     void set_done() {m_done = true;}
-
+    void init_observer(Models& models);
 public slots:
 
     void receive_detail_request(size_t index);
+    void recieve_stream_stat_request(size_t index);
+    void recieve_global_stat_request();
 
 private:
 
+    void connect_to_table(RowModel* model);
+    void connect_to_detail_pane(DetailModel* model);
+    void connect_to_throughput_chart(ThroughputChart* chart);
+
     InitialParseBuffer& m_buffer;
     DetailParseCache& m_cache;
+    StreamTable& stream_table;
 
     std::thread m_wait_for_next_worker;
     std::mutex m_lock;
@@ -60,6 +79,7 @@ signals:
 
     void emit_packets_ready(std::deque<packet_ref>::iterator first, std::deque<packet_ref>::iterator last);
     void emit_pkt_details(std::vector<ProtocolDetails>);
+    void emit_stream_stat(std::shared_ptr<StreamStats> stats);
 
 };
 

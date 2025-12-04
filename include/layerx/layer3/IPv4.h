@@ -25,8 +25,6 @@ struct IPv4 final : NetworkPDU {
     u_int8_t protocol;
     bool is_fragmented;
 
-    ProtocolKeys key = ProtocolKeys::IPv4;
-
 };
 
 namespace protocol::ipv4 {

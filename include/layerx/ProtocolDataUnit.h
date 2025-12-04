@@ -16,6 +16,26 @@ using namespace protocol;
 struct Address {
   std::array<std::byte, 16> bytes{};
   u_int8_t size = 0;
+
+  bool operator<(const Address& addr) const {
+
+    if (addr.size != this->size) {
+      return this->size < addr.size;
+    }
+
+    for (auto it = bytes.begin(), it2 = addr.bytes.begin(); it != this->bytes.end() && it2 != addr.bytes.end(); ++it, ++it2) {
+      auto a = std::to_integer<unsigned>(*it);
+      auto b = std::to_integer<unsigned>(*it2);
+
+      if (a < b) {
+        return true;
+      }
+      if (a > b) {
+        return false;
+      }
+    }
+    return false;
+  }
 };
 
 struct ProtocolDataUnit {

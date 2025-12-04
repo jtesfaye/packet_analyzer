@@ -6,10 +6,12 @@
 #define CAPTURECONFIG_H
 
 #include <cstdint>
+#include <model/DetailModel.h>
+#include <model/RowModel.h>
 
 enum class CaptureMode {
     Online, Offline
-  };
+};
 
 struct CaptureConfig {
 
@@ -22,7 +24,5 @@ struct CaptureConfig {
     std::string filter;
 
 };
-
-
 
 #endif //CAPTURECONFIG_H

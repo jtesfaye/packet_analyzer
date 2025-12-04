@@ -26,8 +26,6 @@ struct Ethernet final : LinkPDU {
     Address src_address;
     Address dest_address;
     u_int16_t ether_type;
-    ProtocolKeys key = ProtocolKeys::ETH;
-
 };
 
 namespace protocol::ethernet {

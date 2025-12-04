@@ -25,7 +25,6 @@ struct UDP : TransportPDU {
 
     Address src_address;
     Address dest_address;
-    ProtocolKeys key = ProtocolKeys::UDP;
 
 };
 

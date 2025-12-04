@@ -6,8 +6,6 @@
 #include <util/PacketObserver.h>
 #include <controller/CaptureController.h>
 #include <print>
-#include <util/RowFactory.h>
-#include <util/TreeModelFactory.h>
 
 CaptureController::CaptureController() :
 consumer_thread()
@@ -42,21 +40,21 @@ void CaptureController::end_capture() {
 
 }
 
-void CaptureController::connect_session_to_table_view(const QTableView& table) {
-
-    connect(&table, &QTableView::clicked, this, &CaptureController::recieve_row_index);
-
-}
-
-void CaptureController::start_capture(const CaptureConfig& config, QTableView& row_table, QTreeView &tree) {
+void CaptureController::start_capture(const CaptureConfig& config, ViewComponents& comp) {
 
     using namespace capture;
+    m_row_model = std::make_shared<RowModel>(this);
+    m_detail_model = std::make_shared<DetailModel>(this);
 
-    current_session = std::make_shared<CaptureSession>(config);
+    Models m(m_row_model.get(), m_detail_model.get(), comp.chart_view);
+    current_session = std::make_shared<CaptureSession>(config, m);
 
-    connect_session_to_table_view(row_table);
+    connect(comp.row_view, &QTableView::clicked, this, [this] (const QModelIndex& index) {
+        current_session->send_command(CommandType::GetDetails(index.row()));
+    });
 
-    connect_observer_to_this(*current_session, row_table, tree);
+    comp.row_view->setModel(m_row_model.get());
+    comp.detail_view->setModel(m_detail_model.get());
 
     std::thread session_thread([this] {
 
@@ -67,82 +65,6 @@ void CaptureController::start_capture(const CaptureConfig& config, QTableView& r
     session_thread.detach();
 
     current_session->send_command(SessionCommand::start());
-
-}
-
-void CaptureController::connect_observer_to_this(const CaptureSession& session, QTableView &table, QTreeView &tree) {
-
-    //This removes any pre-existing models from a previous session.
-    if (m_row_model) {
-        m_row_model.reset();
-    }
-
-    const std::shared_ptr<PacketObserver> observer = session.get_observer();
-
-    m_row_model = std::make_shared<RowModel>(this);
-    m_detail_model = std::make_shared<DetailModel>(this);
-
-    table.setModel(m_row_model.get());
-    tree.setModel(m_detail_model.get());
-
-    consumer_thread = new QThread;
-
-    observer->moveToThread(consumer_thread);
-
-    connect(
-        consumer_thread,
-        &QThread::started,
-        observer.get(),
-        &PacketObserver::start_observer);
-
-    //When packets enter the internal buffer, Observer notifies controller of ready packets
-    connect(
-        observer.get(),
-        &PacketObserver::emit_packets_ready,
-        this,
-        &CaptureController::recieve_row,
-        Qt::QueuedConnection);
-
-    //When controller requests the details of a packets, observer returns with emit_pkt_details
-    connect(
-        observer.get(),
-        &PacketObserver::emit_pkt_details,
-        this,
-        &CaptureController::receive_details,
-        Qt::QueuedConnection);
-
-    //When a click signal from a QTableView is recieved, the controller forwards that to the observer
-    connect(
-        this,
-        &CaptureController::forward_detail_request,
-        observer.get(),
-        &PacketObserver::receive_detail_request,
-        Qt::QueuedConnection);
-
-
-    connect(this,
-        &CaptureController::send_row_to_model,
-        m_row_model.get(),
-        &RowModel::add_data);
-    consumer_thread->start();
-
-}
-
-void CaptureController::receive_details(const std::vector<ProtocolDetails>& details) {
-
-    m_detail_model->set_data(details);
-}
-
-void CaptureController::recieve_row(std::deque<packet_ref>::iterator first, std::deque<packet_ref>::iterator last) const {
-
-    emit send_row_to_model(first, last);
-}
-
-void CaptureController::recieve_row_index(const QModelIndex& index) {
-
-    size_t row = index.row();
-    emit forward_detail_request(row);
-
 }
 
 void CaptureController::prompt_save() const {

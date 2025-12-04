@@ -14,6 +14,7 @@ UDP::UDP(const size_t len, const u_int16_t src_port, const u_int16_t dest_port)
     std::memcpy(&dest_address.bytes, &dest_port, addr_len);
     src_address.size = addr_len;
     dest_address.size = addr_len;
+    key = ProtocolKeys::UDP;
 }
 
 UDP::~UDP() = default;

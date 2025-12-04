@@ -20,11 +20,11 @@ using raw_pkt_queue = spsc_queue<RawPacket, capacity<255>> ;
 
 struct EngineInit {
 
-    const std::shared_ptr<InitialParser>init_parser;
-    const std::shared_ptr<DetailParser> detail_parser;
-    const std::shared_ptr<IContainerType<packet_ref>> pkt_buffer;
-    const std::shared_ptr<IContainerType<std::vector<ProtocolDetails>>> detail_buffer;
-    const std::shared_ptr<PacketObserver> observer;
+    InitialParser& init_parser;
+    DetailParser& detail_parser;
+    IContainerType<packet_ref>& pkt_buffer;
+    IContainerType<std::vector<ProtocolDetails>>& detail_buffer;
+    PacketObserver& observer;
     raw_pkt_queue& raw_pkt_queue;
     size_t thread_count = std::thread::hardware_concurrency();
     StreamTable& table;
@@ -48,12 +48,12 @@ private:
 
     void process_packet(RawPacket pkt);
 
-    std::shared_ptr<InitialParser> m_initial_parser;
-    std::shared_ptr<DetailParser> m_detail_parser;
+    InitialParser& m_initial_parser;
+    DetailParser& m_detail_parser;
 
-    std::shared_ptr<IContainerType<packet_ref>> m_initial_buffer;
-    std::shared_ptr<IContainerType<std::vector<ProtocolDetails>>> m_details_cache;
-    std::shared_ptr<PacketObserver> m_observer;
+    IContainerType<packet_ref>& m_initial_buffer;
+    IContainerType<std::vector<ProtocolDetails>>& m_details_cache;
+    PacketObserver& m_observer;
     raw_pkt_queue& m_pkt_queue;
 
     StreamTable& stream_table;

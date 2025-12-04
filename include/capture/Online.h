@@ -14,12 +14,9 @@ public:
   Online& operator= (const Online&) = delete;
 
   Online(
-    pcap_t* handle,
     int packet_count,
     size_t layer_flags,
-    const std::shared_ptr<PcapFile> &file,
-    const std::shared_ptr<ParsingEngine> &pool,
-    raw_pkt_queue& queue
+    CaptureInit init
     );
 
   ~Online() override;
@@ -33,7 +30,7 @@ private:
   void stop_func() override;
 
   struct capture_objects {
-    std::shared_ptr<ParsingEngine> tpool;
+    ParsingEngine& engine;
     std::shared_ptr<PcapFile> file;
     raw_pkt_queue& queue;
   };

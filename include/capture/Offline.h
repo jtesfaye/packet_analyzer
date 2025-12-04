@@ -8,11 +8,7 @@
 class Offline final : public PacketCapture {
 public:
 
-  Offline(
-    pcap_t* handle,
-    const std::shared_ptr<PcapFile>&,
-    const std::shared_ptr<ParsingEngine>&,
-    raw_pkt_queue&);
+  Offline(CaptureInit init);
 
   Offline() = delete;
   Offline(const Offline&) = delete;

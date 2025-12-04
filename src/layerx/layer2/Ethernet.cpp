@@ -15,6 +15,7 @@ Ethernet::Ethernet(const size_t len, const u_int8_t *src, const u_int8_t *dest, 
 
     src_address.size = ethernet::addr_len;
     dest_address.size = ethernet::addr_len;
+    key = ProtocolKeys::ETH;
 }
 
 Ethernet::~Ethernet() = default;

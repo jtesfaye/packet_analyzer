@@ -5,6 +5,7 @@
 #include <layerx/layer4/TCP.h>
 #include <session/Stream.h>
 #include <chrono>
+#include <iostream>
 
 std::shared_ptr<Stream> Stream::createConnection(const ProtocolKeys type) {
 
@@ -32,32 +33,37 @@ TCPStream::TCPStream(const ProtocolKeys type)
 
 void TCPStream::add_index(const packet_ref &ref) {
 
+    using namespace std::chrono;
+
     if (ref.layer4->key != ProtocolKeys::TCP) {
         throw std::runtime_error("Wrong protocol");
     }
-
-    find_state(ref);
-}
-
-void TCPStream::find_state(const packet_ref& ref) {
-
-    using namespace protocol::tcp::flags;
-    using namespace std::chrono;
     const auto hdr = dynamic_cast<TCP*>(ref.layer4.get());
 
-    Side source {ref.layer4->src(), ref.layer3->src(), State::UNKNOWN};
-    Side dest {ref.layer4->dest(), ref.layer3->dest(), State::UNKNOWN};
-
-    if (pkt_idx.empty()) {
-        set_initial_state(hdr->flags, source, dest);
-    } else {
-        set_state(hdr->flags, source, dest);
-    }
+    std::lock_guard guard(lock);
+    find_state(hdr);
 
     auto epoch = seconds{ref.time.ts_sec} + milliseconds{ref.time.ts_usec};
+    track_send(hdr->seq_number,1, epoch);
+    track_recv(hdr->ack_number, epoch);
 
-    tcp_stats.track_send(hdr->seq_number,1, epoch);
-    tcp_stats.track_recv(hdr->ack_number, epoch);
+    pkt_idx.push_back(ref.index);
+}
+
+void TCPStream::find_state(const TCP* tcpref) {
+    using namespace protocol::tcp::flags;
+
+    Side source {tcpref->src(), tcpref->src(), State::UNKNOWN};
+    Side dest {tcpref->dest(), tcpref->dest(), State::UNKNOWN};
+
+
+    if (pkt_idx.empty()) {
+
+        set_initial_state(tcpref->flags, source, dest);
+
+    } else {
+        set_state(tcpref->flags, source, dest);
+    }
 }
 
 /*
@@ -167,7 +173,6 @@ void TCPStream::set_state(u_int8_t flags, const Side &source, const Side &dest) 
     if (flags & RST) {
         S = State::CLOSED;
         rcv.curr_state = State::CLOSED;
-        stats.set_time(true);
     }
 }
 
@@ -181,8 +186,6 @@ void TCPStream::set_server(Side val) {
     server.ip = val.ip;
 }
 
-TCPStream::~TCPStream() {}
-
 void StreamStats::set_time(bool is_end) {
 
     using namespace std::chrono;
@@ -191,41 +194,68 @@ void StreamStats::set_time(bool is_end) {
 
     if (is_end) {
         end_time = miliseconds_since_epoch;
+        end_time_set = true;
     } else {
         start_time = miliseconds_since_epoch;
     }
 }
 
-void TCPStream::TCPStats::track_send(const u_int32_t seq, const size_t payload_len, const EpochTime time) {
+void StreamStats::update_base_stat(double throughput, size_t bytes_sent, size_t bytes_received, double avg) {
+    this->throughput = throughput;
+    this->bytes_sent = bytes_sent;
+    this->bytes_recieved = bytes_received;
+    this->avg_packet_size = avg;
+}
 
-    if (!init_seq) {
-        init_seq = seq;
+std::shared_ptr<StreamStats> TCPStream::get_stats() {
+
+    using namespace std::chrono;
+    double now{};
+
+    if (tcp_stats.end_time_set) {
+        now = tcp_stats.end_time.count();
+    } else {
+        now = duration<double, std::milli>(system_clock::now().time_since_epoch()).count() / 1000;
+    }
+
+    double throughput = tcp_stats.bytes_sent + tcp_stats.bytes_recieved / now;
+    double avg = tcp_stats.bytes_sent + tcp_stats.bytes_recieved / pkt_idx.size();
+
+    tcp_stats.update_base_stat(throughput, tcp_stats.bytes_sent, tcp_stats.bytes_recieved, avg);
+
+    return std::make_shared<TCPStats>(tcp_stats);
+}
+
+void TCPStream::track_send(const u_int32_t seq, const size_t payload_len, const EpochTime time) {
+
+    if (!tcp_stats.init_seq) {
+        tcp_stats.init_seq = seq;
     }
 
     if (!unacks.empty()) {
         if (seq < unacks.back().expected_ack) {
-            retransmissions += 1;
+            tcp_stats.retransmissions += 1;
         }
     }
 
-    if (payload_len > 0) {
+    if (payload_len != 0) {
         u_int32_t expected_ack = seq + payload_len;
         unacks.push_back({expected_ack, time});
     }
 }
 
-void TCPStream::TCPStats::track_recv(const u_int32_t ack, const EpochTime time) {
+void TCPStream::track_recv(const u_int32_t ack, const EpochTime time) {
 
     while (!unacks.empty()) {
         UnackedPacket &pkt = unacks.front();
         if (ack >= pkt.expected_ack) {
             const double rtt = (time - pkt.time).count();
-            rtt_last = rtt;
+            tcp_stats.rtt_last = rtt;
 
-            if (rtt_smoothed == 0.0) {
-                rtt_smoothed = rtt;
+            if (tcp_stats.rtt_smoothed == 0.0) {
+                tcp_stats.rtt_smoothed = rtt;
             } else {
-                rtt_smoothed = (1 - SRTT_FACTOR) * rtt_smoothed + SRTT_FACTOR * rtt;
+                tcp_stats.rtt_smoothed = (1 - SRTT_FACTOR) * tcp_stats.rtt_smoothed + SRTT_FACTOR * rtt;
             }
 
             unacks.pop_front();

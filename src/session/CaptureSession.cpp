@@ -11,16 +11,14 @@
 #include <benchmark/benchmark.h>
 #include <layerx/ProtocolKeys.h>
 
-
-CaptureSession::CaptureSession(const CaptureConfig &config)
+CaptureSession::CaptureSession(const CaptureConfig &config, Models models)
 : running(true)
 , capture_on(false)
-, m_details_cache(std::make_shared<DetailParseCache>(config.packet_count > 0 ? config.packet_count : 100))
-, m_pkt_ref_buffer(std::make_shared<InitialParseBuffer>(config.packet_count > 0 ? config.packet_count : 100))
-, m_observer(std::make_shared<PacketObserver>(*m_pkt_ref_buffer, *m_details_cache))
 , m_handle(nullptr, close_handle)
 , m_bpf_program(nullptr, free_bpf_program)
 {
+
+    size_t buffer_size = config.packet_count >= 0 ? config.packet_count : 150;
 
     if (config.mode == CaptureMode::Online) {
 
@@ -34,21 +32,9 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
         std::string temp_file = std::filesystem::temp_directory_path().generic_string() + "foobar.pcap";
 
         const int dlt = pcap_datalink(m_handle.get());
-        m_initial_parser = std::make_shared<InitialParser>(pcap_dlt_to_ieee.at(dlt), config.flags);
-        m_detail_parser = std::make_shared<DetailParser>();
+        u_int8_t flags = config.flags;
 
-        EngineInit init {
-            m_initial_parser,
-            m_detail_parser,
-            m_pkt_ref_buffer,
-             m_details_cache,
-            m_observer,
-            m_raw_pkt_queue,
-            std::thread::hardware_concurrency(),
-            table
-        };
-
-        m_pool = std::make_shared<ParsingEngine>(init);
+        m_engine = std::make_unique<Engine>(dlt, flags, buffer_size, models);
 
         m_pcap_file = std::make_shared<PcapFile> (
             temp_file,
@@ -56,12 +42,9 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
             );
 
         capture = PacketCapture::createOnlineCapture(
-            m_handle.get(),
             config.packet_count,
             config.flags,
-            m_pcap_file,
-            m_pool,
-            m_raw_pkt_queue
+            CaptureInit {m_handle.get(), m_pcap_file, m_engine->m_engine, m_engine->m_raw_pkt_queue}
             );
 
     } else if (config.mode == CaptureMode::Offline) {
@@ -73,25 +56,10 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
         m_pcap_file = std::make_shared<PcapFile>(
             config.source
         );
-
-        m_initial_parser = std::make_shared<InitialParser>(pcap_dlt_to_ieee.at(dlt), config.flags);
-        m_detail_parser = std::make_shared<DetailParser>();
-
-        EngineInit init {m_initial_parser,
-            m_detail_parser,
-            m_pkt_ref_buffer,
-            m_details_cache,
-            m_observer ,m_raw_pkt_queue,
-            1,
-            table};
-
-        m_pool = std::make_shared<ParsingEngine>(init);
+        m_engine = std::make_unique<Engine>(dlt, config.flags, buffer_size, models);
 
         capture = PacketCapture::createOfflineCapture(
-            m_handle.get(),
-            m_pcap_file,
-            m_pool,
-            m_raw_pkt_queue
+            CaptureInit {m_handle.get(), m_pcap_file, m_engine->m_engine, m_engine->m_raw_pkt_queue}
             );
 
     } else {
@@ -101,8 +69,6 @@ CaptureSession::CaptureSession(const CaptureConfig &config)
 
 CaptureSession::~CaptureSession() {
 
-    m_pool->shutdown();
-    m_observer->set_done();
 }
 
 void CaptureSession::send_command(const SessionCommand &cmd) {
@@ -149,6 +115,10 @@ void CaptureSession::process_cmd(const SessionCommand &cmd) {
             save_capture(std::get<std::string>(cmd.cmd_data));
             break;
 
+        case CommandType::GetDetails:
+            request_details(std::get<size_t>(cmd.cmd_data));
+            break;
+
         case CommandType::End:
             running = false;
             break;
@@ -179,6 +149,13 @@ bool CaptureSession::save_capture(const std::string& path) const {
 
     return m_pcap_file->save_file(path);
 }
+
+
+void CaptureSession::request_details(size_t index) {
+    m_engine->m_observer.receive_detail_request(index);
+    m_engine->m_observer.recieve_stream_stat_request(index);
+}
+
 
 void CaptureSession::close_handle(pcap_t *handle) {
 
@@ -287,16 +264,17 @@ void CaptureSession::apply_filter(const std::string& device_name, const std::str
 }
 
 InitialParseBuffer& CaptureSession::get_buffer() const {
-    return *m_pkt_ref_buffer;
+    return m_engine->m_pkt_ref_buffer;
 }
 
 DetailParseCache &CaptureSession::get_cache() const {
-    return *m_details_cache;
+    return m_engine->m_details_cache;
 }
 
-std::shared_ptr<PacketObserver> CaptureSession::get_observer() const {
-    return m_observer;
+PacketObserver& CaptureSession::get_observer() const {
+    return m_engine->m_observer;
 }
+
 
 
 

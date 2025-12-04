@@ -31,27 +31,23 @@ enum class CaptureState {
   Paused
 };
 
+struct CaptureInit {
+
+  pcap_t* handle;
+  const std::shared_ptr<PcapFile> &file;
+  ParsingEngine &pool;
+  raw_pkt_queue& queue;
+
+};
 class PacketCapture {
 public:
 
   void start_capture();
   void stop_capture();
 
-  static std::unique_ptr<PacketCapture> createOnlineCapture(
-    pcap_t* handle,
-    int packet_count,
-    size_t layer_flags,
-    const std::shared_ptr<PcapFile>& file,
-    const std::shared_ptr<ParsingEngine> &pool,
-    raw_pkt_queue& queue
-    );
+  static std::unique_ptr<PacketCapture> createOnlineCapture(int packet_count, size_t layer_flags, CaptureInit init);
 
-  static std::unique_ptr<PacketCapture> createOfflineCapture(
-    pcap_t* handle,
-    const std::shared_ptr<PcapFile>& file,
-    const std::shared_ptr<ParsingEngine> &pool,
-    raw_pkt_queue& queue
-    );
+  static std::unique_ptr<PacketCapture> createOfflineCapture(CaptureInit init);
 
   static std::vector<std::string> get_devices();
 
@@ -61,12 +57,7 @@ public:
 
 protected:
 
-  PacketCapture(
-    pcap_t* h,
-    const std::shared_ptr<PcapFile>& file,
-    const std::shared_ptr<ParsingEngine> &pool,
-    raw_pkt_queue& queue
-    );
+  PacketCapture(CaptureInit init);
 
   virtual void capture_func() = 0;
 
@@ -79,7 +70,7 @@ protected:
   char errbuf[PCAP_ERRBUF_SIZE]{};
 
   std::shared_ptr<PcapFile> file;
-  std::shared_ptr<ParsingEngine> pool;
+  ParsingEngine& pool;
   raw_pkt_queue& queue;
 
 };

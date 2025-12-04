@@ -17,6 +17,7 @@ IPv4::IPv4(const size_t len, const u_int32_t src, const u_int32_t dest, const bo
     std::memcpy(&dest_address.bytes, &dest, addr_len);
     src_address.size = addr_len;
     dest_address.size = addr_len;
+    key = ProtocolKeys::IPv4;
 }
 
 IPv4::~IPv4() = default;
