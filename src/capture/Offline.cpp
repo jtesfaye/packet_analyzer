@@ -12,7 +12,6 @@ Offline::Offline
 void Offline::capture_func() {
 
   size_t num_of_packets = file->get_packet_count();
-
   for (int i = 0; i < num_of_packets; i++) {
     RawPacket data{};
     data.index = i;
@@ -21,14 +20,9 @@ void Offline::capture_func() {
     std::memcpy(data.packet, raw_data.data(), len);
     queue.push(data);
   }
-
   pool.notify_all();
-
 }
 
-void Offline::stop_func() {
-
-}
 
 
 

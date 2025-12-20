@@ -10,11 +10,9 @@
 #include <util/PacketObserver.h>
 
 namespace capture {
-
   constexpr int FULL = 65535;
   constexpr int DEFAULT = 256;
   constexpr int BASIC = 128;
-
   constexpr u_int8_t FULL_CAP = 0x80;
   constexpr u_int8_t BASIC_CAP = 0x40;
   constexpr u_int8_t PROMISC = 0x20;
@@ -22,33 +20,25 @@ namespace capture {
   constexpr u_int8_t MONITOR = 0x08;
   constexpr u_int8_t PRECISION = 0x04;
   constexpr u_int8_t HIGH_TRAFF = 0x02;
-
 }
-
 enum class CaptureState {
   Idle,
   Running,
   Paused
 };
-
 struct CaptureInit {
-
   pcap_t* handle;
   const std::shared_ptr<PcapFile> &file;
   ParsingEngine &pool;
   raw_pkt_queue& queue;
-
 };
 class PacketCapture {
 public:
 
   void start_capture();
   void stop_capture();
-
   static std::unique_ptr<PacketCapture> createOnlineCapture(int packet_count, size_t layer_flags, CaptureInit init);
-
   static std::unique_ptr<PacketCapture> createOfflineCapture(CaptureInit init);
-
   static std::vector<std::string> get_devices();
 
   PacketCapture(const PacketCapture&) = delete;
@@ -58,24 +48,15 @@ public:
 protected:
 
   PacketCapture(CaptureInit init);
-
   virtual void capture_func() = 0;
-
-  virtual void stop_func() = 0;
+  virtual void stop_func() {};
 
   pcap_t* handle() const;
-
   pcap_t* _handle;
-
   char errbuf[PCAP_ERRBUF_SIZE]{};
-
   std::shared_ptr<PcapFile> file;
   ParsingEngine& pool;
   raw_pkt_queue& queue;
-
 };
-
-
-
 
 #endif
