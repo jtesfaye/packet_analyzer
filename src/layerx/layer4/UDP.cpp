@@ -59,15 +59,12 @@ std::unique_ptr<TransportPDU> udp::udp_parse(
     if (!valid_length(raw_data, context.offset, sizeof(udp_header))) {
         return nullptr;
     }
-
     const std::byte* start = raw_data.data() + context.offset;
-
     const auto udp_hdr = reinterpret_cast<const udp_header*> (start);
-
     size_t length = ntohs(udp_hdr->len);
-
+    context.curr_length = sizeof(udp_header);
     return std::make_unique<UDP>(
-        length,
+        sizeof(udp_header),
         ntohs(udp_hdr->src),
         ntohs(udp_hdr->dest)
         );

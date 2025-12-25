@@ -1,16 +1,15 @@
 
-#include <capture/Offline.h>
+#include <capture/OfflineCapture.h>
 #include <sys/_types/_u_int8_t.h>
 #include <iostream>
 
-Offline::Offline
+OfflineCapture::OfflineCapture
 (CaptureInit init)
 : PacketCapture(init)
 {
 }
 
-void Offline::capture_func() {
-
+void OfflineCapture::capture_func() {
   size_t num_of_packets = file->get_packet_count();
   for (int i = 0; i < num_of_packets; i++) {
     RawPacket data{};

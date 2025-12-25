@@ -2,6 +2,11 @@
   "name": "packet-analyzer",
   "version-string": "1.0.0",
   "dependencies": [
-    "benchmark"
+    "benchmark",
+    "boost-interprocess",
+    "boost-container",
+    "boost-container-hash",
+    "boost-unordered",
+    "boost-lockfree"
   ]
 }

@@ -41,7 +41,7 @@ struct Address {
 struct ProtocolDataUnit {
 
   ProtocolDataUnit(const size_t hdr_len)
-  : length(hdr_len) {}
+  : hdr_length(hdr_len) {}
 
   virtual ~ProtocolDataUnit() = default;
 
@@ -52,7 +52,7 @@ struct ProtocolDataUnit {
   virtual Address dest() const = 0;
   virtual ProtocolKeys type() const = 0;
 
-  size_t length;
+  size_t hdr_length;
   size_t stream_index = -1;
   ProtocolKeys key;
 

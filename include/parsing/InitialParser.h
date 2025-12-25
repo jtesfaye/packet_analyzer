@@ -2,7 +2,7 @@
 #ifndef INITIALPARSER_H
 #define INITIALPARSER_H
 
-#include <packet/PacketUtil.h>
+#include <util/PacketUtil.h>
 #include <parsing/ParseDispatcher.h>
 #include <functional>
 #include <mutex>

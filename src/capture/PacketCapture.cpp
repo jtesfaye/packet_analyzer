@@ -1,7 +1,7 @@
 
 #include <capture/PacketCapture.h>
-#include <capture/Online.h>
-#include <capture/Offline.h>
+#include <capture/OnlineCapture.h>
+#include <capture/OfflineCapture.h>
 #include <iostream>
 #include <packet/PcapFile.h>
 
@@ -15,12 +15,12 @@ PacketCapture::PacketCapture(CaptureInit init)
 
 std::unique_ptr<PacketCapture>
 PacketCapture::createOnlineCapture(int packet_count, size_t layer_flags, CaptureInit init) {
-  auto cap = std::make_unique<Online>(packet_count, layer_flags, init);
+  auto cap = std::make_unique<OnlineCapture>(packet_count, layer_flags, init);
   return cap;
 }
 
 std::unique_ptr<PacketCapture> PacketCapture::createOfflineCapture(CaptureInit init) {
-  auto cap = std::make_unique<Offline>(init);
+  auto cap = std::make_unique<OfflineCapture>(init);
   return cap;
 }
 

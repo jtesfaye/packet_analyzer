@@ -20,32 +20,27 @@ packet_ref InitialParser::start_extract(
   parse_context context{};
 
   pkt_ref.index = index;
-  pkt_ref.length = 0;
   std::memcpy(&context.header, raw_data.data(), sizeof(pcaprec_hdr_t));
-  const timestamp time {context.header.ts_sec, context.header.ts_usec};
 
+  const timestamp time {context.header.ts_sec, context.header.ts_usec};
   set_initial_time(time);
   pkt_ref.time = {context.header.ts_sec, context.header.ts_usec};
 
   const std::vector<LayerJob> jobs = create_first_parse_jobs();
-
   for (const auto& job: jobs) {
-
     //if there's an error parsing we come across an unsupported type, return false and terminate loop
     if (bool keep_going = job.func(pkt_ref, raw_data, context, offsets); !keep_going)
-
       break;
   }
-
   pkt_ref.data = offsets;
-
+  pkt_ref.wire_length = context.header.orig_len;
+  const size_t total_header_len = offsets.l2.length + offsets.l3.length + offsets.l4.length;
+  pkt_ref.payload_length = pkt_ref.wire_length - total_header_len;
   return pkt_ref;
 }
 
 std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
-
   std::vector<LayerJob> jobs;
-
   auto layer2_job = [&](
     packet_ref& pkt,
     std::span<std::byte> data,
@@ -53,120 +48,73 @@ std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
     layer_offsets& offsets) {
 
     context.offset = sizeof(pcaprec_hdr_t);
-
     pkt.layer2 = first_parse_dispatcher(m_dlt, data, context);
-
     if (!pkt.layer2) {
-
       offsets.l2.length = -1;
       offsets.l2.offset = -1;
       offsets.l2.protocol_type = -1;
       return false;
-
     }
-
     offsets.l2.length = context.curr_length;
     offsets.l2.offset = context.offset;
     offsets.l2.protocol_type = m_dlt;
-
     context.prev_length = context.curr_length;
-
-    pkt.length += context.curr_length;
-
     return true;
-
   };
-
   jobs.push_back({layer2_job});
-
   if (m_flags & parse::DO_LAYER3) {
-
     auto layer3_job = [&](
     packet_ref& pkt,
     std::span<std::byte> data,
     parse_context& context,
     layer_offsets& offsets) {
-
       context.offset += context.prev_length;
-
       offsets.l3.protocol_type = context.next_type;
-
       pkt.layer3 = first_parse_dispatcher(context.next_type, data, context);
-
       if (!pkt.layer3) {
-
         offsets.l3.length = -1;
         offsets.l3.offset = -1;
         offsets.l3.protocol_type = -1;
         return false;
       }
-
       offsets.l3.length = context.curr_length;
       offsets.l3.offset = context.offset;
-
       context.prev_length = context.curr_length;
-
       if (context.is_fragmented) {
         return false;
       }
-
-      pkt.length += context.curr_length;
-
       return true;
-
     };
-
     jobs.push_back({layer3_job});
-
   }
-
   if (m_flags & parse::DO_LAYER4) {
-
     auto layer4_job = [&](
     packet_ref& pkt,
     std::span<std::byte> data,
     parse_context& context,
     layer_offsets& offsets) {
-
       context.offset += context.prev_length;
-
       offsets.l4.protocol_type = context.next_type;
-
       pkt.layer4 = first_parse_dispatcher(context.next_type, data, context);
-
       if (!pkt.layer4) {
-
         offsets.l3.length = -1;
         offsets.l3.offset = -1;
         offsets.l3.protocol_type = -1;
         return false;
-
       }
-
       offsets.l4.length = context.curr_length;
       offsets.l4.offset = context.offset;
-
       context.prev_length = context.curr_length;
-
-      pkt.length += context.curr_length;
-
       return true;
-
     };
-
     jobs.push_back({layer4_job});
-
   }
-
   return jobs;
-
 }
 
 void InitialParser::set_initial_time(const timestamp &time) {
-
   std::call_once(time_init_flag, [&]() {
     m_inital_time = time;
   });
-
 }
 

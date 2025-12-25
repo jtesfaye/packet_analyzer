@@ -7,8 +7,9 @@
 #include <format>
 #include <utility>
 
-IPv4::IPv4(const size_t len, const u_int32_t src, const u_int32_t dest, const bool is_fragmented, const u_int8_t protocol)
-: NetworkPDU(len)
+IPv4::IPv4(const size_t hdr_len, const size_t total_length, const u_int32_t src, const u_int32_t dest, const bool is_fragmented, const u_int8_t protocol)
+: NetworkPDU(hdr_len)
+, total_length(total_length)
 , protocol(protocol)
 , is_fragmented(is_fragmented)
 {
@@ -23,15 +24,11 @@ IPv4::IPv4(const size_t len, const u_int32_t src, const u_int32_t dest, const bo
 IPv4::~IPv4() = default;
 
 std::string IPv4::make_info() const {
-
     std::string info;
-
     if (is_fragmented) {
         info += "(Fragmented datagram) ";
     }
-
     info += packet::protocol_to_string(protocol);
-
     return info;
 }
 
@@ -40,7 +37,6 @@ std::string_view IPv4::name() const {
 }
 
 std::string IPv4::address_to_string(const Address &addr) const {
-
     u_int32_t target{};
     std::memcpy(&target, &addr.bytes, sizeof(target));
     return packet::format_ipv4_src_dst(target);
@@ -58,7 +54,6 @@ ProtocolKeys IPv4::type() const {
     return key;
 }
 
-
 void ipv4::register_ipv4() {
     registry::layer3::register_self(static_cast<int>(ProtocolKeys::IPv4), ipv4_parse);
     registry::layer3::register_self(static_cast<int>(ProtocolKeys::IPv4), ipv4_detailed_parse);
@@ -67,39 +62,30 @@ void ipv4::register_ipv4() {
 std::unique_ptr<NetworkPDU> ipv4::ipv4_parse(
     std::span<std::byte> raw_data,
     parse_context &context) {
-
     size_t start = context.offset;
-
     if (!valid_length(raw_data, start, sizeof(ipv4_header))) {
         return nullptr;
     }
-
     const auto ipv4_hdr = reinterpret_cast<const ipv4_header*> (raw_data.data() + start);
-
     //If not equal probably means we have malformed data or misaligned data
     if (u_int8_t version = (ipv4_hdr->version_ihl >> 4) & 0x0F; version != 4) {
         return nullptr;
     }
-
     bool is_fragmented = false;
-
     const u_int16_t frag_field = ntohs(ipv4_hdr->flags_foffset);
     const u_int8_t flags = (frag_field >> 13) & 0x07;
-
     //more fragment flag is set
     if (u_int16_t offset = frag_field & 0x1FFF; (flags & 0x01) || (offset > 0)) {
         is_fragmented = true;
         context.is_fragmented = true;
     }
-
     size_t header_len = (ipv4_hdr->version_ihl >> 4) * 5;
     size_t next_protocol = ipv4_hdr->protocol;
-
     context.curr_length = header_len;
     context.next_type = next_protocol;
-
     return std::make_unique<IPv4>(
         header_len,
+        ipv4_hdr->length,
         ipv4_hdr->src_addr,
         ipv4_hdr->dest_adr,
         is_fragmented,
@@ -109,9 +95,7 @@ std::unique_ptr<NetworkPDU> ipv4::ipv4_parse(
 packet::ProtocolDetails ipv4::ipv4_detailed_parse(
     std::span<std::byte> raw_data,
     parse_context& context) {
-
     const auto* hdr = reinterpret_cast<const ipv4_header*>(raw_data.data() + context.offset);
-
     std::vector<std::string> details;
     details.reserve(10);
 

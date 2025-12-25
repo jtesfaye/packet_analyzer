@@ -5,12 +5,11 @@
 #ifndef IPV6_H
 #define IPV6_H
 
-#include <packet/PacketUtil.h>
+#include <util/PacketUtil.h>
 #include <vector>
 
 struct IPv6 final : NetworkPDU {
-
-    IPv6(size_t len, const u_int8_t *src, const u_int8_t *dest, u_int8_t protocol);
+    IPv6(size_t hdr_len, size_t payload_length, const u_int8_t *src, const u_int8_t *dest, u_int8_t protocol);
     ~IPv6() override = default;
 
     std::string make_info() const override;
@@ -20,20 +19,16 @@ struct IPv6 final : NetworkPDU {
     Address dest() const override;
     ProtocolKeys type() const override;
 
+    u_int16_t payload_length;
     u_int8_t protocol;
     Address src_address;
     Address dest_address;
-
 };
 
 namespace protocol::ipv6 {
-
     using namespace packet;
-
     std::unique_ptr<NetworkPDU> ipv6_parse(std::span<std::byte>, parse_context&);
-
     ProtocolDetails ipv6_detailed_parse(std::span<std::byte>, parse_context&);
-
     void register_ipv6();
 
     inline constexpr std::string_view full_protocol_name = "Internet Protocol Version 6";
@@ -58,8 +53,6 @@ namespace protocol::ipv6 {
     inline uint32_t ipv6_flow_label(const ipv6_header* hdr) {
         return ntohl(hdr->ver_tc_fl) & 0xFFFFF;
     }
-
-
 }
 
 #endif //IPV6_H

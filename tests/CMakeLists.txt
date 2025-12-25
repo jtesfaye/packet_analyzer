@@ -1,9 +1,8 @@
-set(CMAKE_AUTOMOC ON)
+
 function(add_gtest test_name)
     add_executable(${test_name} ${ARGN})
-    target_link_libraries(${test_name} PRIVATE GTest::gtest_main parsing Packet session)
+    target_link_libraries(${test_name} PRIVATE GTest::gtest_main stream Packet parsing)
     target_include_directories(${test_name} PUBLIC ${CMAKE_SOURCE_DIR}/include)
-    target_include_directories(${test_name} PRIVATE ${Boost_INCLUDE_DIRS})
     include(GoogleTest)
     gtest_discover_tests(${test_name})
 endfunction()

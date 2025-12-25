@@ -8,7 +8,7 @@
 #include <layerx/layer2/Ethernet.h>
 #include <packet/PcapFile.h>
 #include <pcap/pcap.h>
-#include <packet/PacketUtil.h>
+#include <util/PacketUtil.h>
 #include <span>
 
 static std::vector<std::vector<std::byte>> setup() {

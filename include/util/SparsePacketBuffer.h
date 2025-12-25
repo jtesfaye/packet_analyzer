@@ -6,7 +6,7 @@
 #define SPARSEPACKETBUFFER_H
 
 #include <deque>
-#include <packet/PacketUtil.h>
+#include <util/PacketUtil.h>
 #include <util/IContainerType.h>
 #include <optional>
 #include <iostream>

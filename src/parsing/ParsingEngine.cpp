@@ -25,53 +25,42 @@ void ParsingEngine::notify_all() {
 }
 
 void ParsingEngine::do_work() {
-
     while (true) {
-
         RawPacket pkt{};
         {
             std::unique_lock u_lock(lock);
             m_work_to_do.wait(u_lock, [this] {
                 return m_stop || !m_pkt_queue.empty();
             });
-
-            if (m_stop && m_pkt_queue.empty()) return;
-
+            if (m_stop && m_pkt_queue.empty()) {
+                return;
+            }
             pkt = m_pkt_queue.front();
             m_pkt_queue.pop();
-
         }
         process_packet(pkt);
     }
 }
 
 void ParsingEngine::process_packet(RawPacket pkt) {
-
     const auto pkt_span = std::span<std::byte>(pkt.packet);
     size_t index = pkt.index;
-
     packet_ref ref = m_initial_parser.start_extract(pkt_span, index);
-
     std::vector<ProtocolDetails> details = m_detail_parser.detail_parse(
         pkt_span,
         ref.data);
-
     m_initial_buffer.add(index, std::move(ref));
     m_details_cache.add(index, details);
-    stream_table.add(ref);
-
+    ref.stream_index = stream_table.add(ref);
     m_observer.notify_if_next(index);
 }
 
 void ParsingEngine::shutdown() {
-
     {
         std::unique_lock u_lock(lock);
         m_stop = true;
     }
-
     m_work_to_do.notify_all();
-
     for (auto &t : m_workers) {
         if (t.joinable()) {
             t.join();

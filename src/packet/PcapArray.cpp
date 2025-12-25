@@ -3,7 +3,7 @@
 //
 
 #include <print>
-#include <packet/PacketUtil.h>
+#include <util/PacketUtil.h>
 #include <packet/PcapArray.h>
 
 PcapArray::PcapArray( size_t file_size, size_t glbhdr_size)

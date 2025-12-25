@@ -9,20 +9,13 @@
 #include <pcap/pcap.h>
 #include <packet/PcapReader.h>
 #include <packet/PcapArray.h>
-#include <boost/interprocess/file_mapping.hpp>
-#include <boost/interprocess/mapped_region.hpp>
-
-using namespace boost::interprocess;
-
 /**
  * Serves as an interface with the .pcap that gets written to or being read from
  */
-
 class PcapFile {
 public:
 
     enum class ReaderType {Mmap, IO, None};
-
     static constexpr size_t m_global_header_size = 24;
 
     //Use this constructor when capturing live packets and want to write to file

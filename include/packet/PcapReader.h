@@ -12,9 +12,7 @@
 class PcapReader {
 public:
     virtual ~PcapReader() = default;
-
     virtual const std::vector<std::byte> read(size_t offset, size_t len) = 0;
-
 };
 
 class MmapPcapReader : public PcapReader {
@@ -37,14 +35,10 @@ private:
 
 class IoPcapReader : public PcapReader {
 public:
-
     explicit IoPcapReader(int fd) :
     m_fd(fd) {}
-
     const std::vector<std::byte> read(size_t offset, size_t len) override;
-
     int m_fd;
-
 };
 
 #endif //PCAPREADER_H

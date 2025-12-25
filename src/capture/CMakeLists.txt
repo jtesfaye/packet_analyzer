@@ -1,10 +1,7 @@
 add_library(capture
-        Offline.cpp
-        Online.cpp
+        OfflineCapture.cpp
+        OnlineCapture.cpp
         PacketCapture.cpp
-        ../session/CaptureSession.cpp
 )
-
 target_include_directories(capture PUBLIC ${CMAKE_SOURCE_DIR}/include)
-
-target_link_libraries(capture pcap Qt6::Core Qt6::Widgets benchmark::benchmark)
+target_link_libraries(capture PUBLIC pcap Boost::interprocess Boost::lockfree)

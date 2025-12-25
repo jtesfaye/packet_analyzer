@@ -4,17 +4,13 @@
 
 #ifndef CAPTURECONFIG_H
 #define CAPTURECONFIG_H
-
 #include <cstdint>
-#include <model/DetailModel.h>
-#include <model/RowModel.h>
 
 enum class CaptureMode {
     Online, Offline
 };
 
 struct CaptureConfig {
-
     CaptureMode mode;
     std::string source;
     int packet_count = 0;
@@ -22,7 +18,6 @@ struct CaptureConfig {
     u_int8_t settings;
     u_int8_t flags;
     std::string filter;
-
 };
 
 #endif //CAPTURECONFIG_H

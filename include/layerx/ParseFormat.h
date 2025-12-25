@@ -5,7 +5,7 @@
 #ifndef PARSEFORMAT_H
 #define PARSEFORMAT_H
 
-#include <packet/PacketUtil.h>
+#include <util/PacketUtil.h>
 
 namespace parse {
 

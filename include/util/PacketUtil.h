@@ -47,13 +47,11 @@ namespace packet {
   } __attribute__((packed));
 
   struct parse_context {
-
     pcaprec_hdr_t header;    //header of packet, which is present in all packets captured by pcap
     u_int16_t next_type;    //Holds the value assigned to a protocol by the IEEE or IANA
     size_t offset;          //start of the protocol
     size_t curr_length;     //Represents length of protocol that was just parsed (set by parser)
     size_t prev_length;     //Length of previous protocol, used to find the start of the next protocol
-
     bool is_fragmented;
   };
 
@@ -75,8 +73,10 @@ namespace packet {
 
     size_t index{};
     timestamp time{};
-    size_t length{};
+    size_t wire_length{};
+    size_t payload_length{};
     layer_offsets data{};
+    size_t stream_index;
     std::unique_ptr<ProtocolDataUnit> layer2;
     std::unique_ptr<ProtocolDataUnit> layer3;
     std::unique_ptr<ProtocolDataUnit> layer4;

@@ -6,13 +6,13 @@
 #include <cstring>
 #include <sys/_types/_u_int8_t.h>
 
-class Online final : public PacketCapture {
+class OnlineCapture final : public PacketCapture {
 public:
-  Online() = delete;
-  Online(const Online&) = delete;
-  Online& operator= (const Online&) = delete;
-  Online(int packet_count, size_t layer_flags, CaptureInit init);
-  ~Online() override;
+  OnlineCapture() = delete;
+  OnlineCapture(const OnlineCapture&) = delete;
+  OnlineCapture& operator= (const OnlineCapture&) = delete;
+  OnlineCapture(int packet_count, size_t layer_flags, CaptureInit init);
+  ~OnlineCapture() override;
 
 private:
   static void pcap_loop_callback(u_char* data, const pcap_pkthdr* header, const u_char* packet);

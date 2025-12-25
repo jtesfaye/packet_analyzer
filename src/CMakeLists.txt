@@ -1,14 +1,12 @@
 add_subdirectory(capture)
-add_subdirectory(controller)
 add_subdirectory(layerx)
-add_subdirectory(model)
 add_subdirectory(Packet)
 add_subdirectory(parsing)
 add_subdirectory(util)
-add_subdirectory(view)
 add_subdirectory(session)
+add_subdirectory(stream)
 
-add_library(sniffer_main)
+add_library(sniffer_main INTERFACE)
 
-target_include_directories(sniffer_main PUBLIC ${CMAKE_SOURCE_DIR}/include)
-target_link_libraries(sniffer_main PRIVATE Qt6::Core Qt6::Widgets Qt6::Concurrent Qt6::Gui controller layerx parsing Packet capture)
+target_include_directories(sniffer_main INTERFACE ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(sniffer_main INTERFACE layerx parsing Packet capture util session stream)
