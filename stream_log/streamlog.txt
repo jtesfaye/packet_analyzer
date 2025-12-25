@@ -1,86 +1,14 @@
-TCP stream createdCurrent client state: UNKNOWN
-Current server state: UNKNOWN
-Current flags: [ACK, PSH]
-called: set_initial_state
+TCP stream createdcalled: set_initial_state
 Current server guess [Port: 443
 Current client guess [Port: 57870
-Transitioned client state: ESTABLISHED
-Transitioned server state: ESTABLISHED
-
-Current client state: ESTABLISHED
-Current server state: ESTABLISHED
-Current flags: [ACK, PSH]
 Called: set_state
-Transitioned client state: ESTABLISHED
-Transitioned server state: ESTABLISCurrent client state: ESTABLISHED
-Current server state: ESTABLISHED
-Current flags: [ACK, PSH]
 Called: set_state
-Transitioned client state: ESTABLISHED
-Transitioned server state: ESTABLISHED
-
-Current client state: ESTABLISHED
-Current server state: ESTABLISHED
-Current flags: [ACK]
 Called: set_state
-Transitioned client state: ESTABLISHED
-Transitioned server state: ESTABLISHED
-
-Current client state: ESTABLISHED
-Current server state: ESTABLISHED
-Current flags: [ACK, PSH]
 Called: set_state
-Transitioned client state: ESTABLISHED
-Transitioned server state: ESTABLISHED
-
-Current client state: ESTABLISHED
-Current server state: ESTABLISHED
-Current flags: [ACK, PSH]
 Called: set_state
-Transitioned client state: ESTABLISHED
-Transitioned server state: ESTABLISHED
-
-Current client state: ESTABLISHED
-Current server state: ESTABLISHED
-Current flags: [ACK]
 Called: set_state
-Transitioned client state: ESTABLISHED
-Transitioned server state: ESTABLISHED
-
-ABLISHED
-
-Current client state: ESTABLISHED
-Current server state: ESTABLISHED
-Current flags: [ACK, FIN]
 Called: set_state
-Transitioned client state: FIN_WAIT2
-Transitioned server state: FIN_WAIT2
-
-Current client state: FIN_WAIT2
-Current server state: FIN_WAIT2
-Current flags: [ACK]
 Called: set_state
-Transitioned client state: FIN_WAIT2
-Transitioned server state: FIN_WAIT2
-
-Current client state: FIN_WAIT2
-Current server state: FIN_WAIT2
-Current flags: [ACK, RST]
 Called: set_state
-Transitioned client state: CLOSED
-Transitioned server state: CLOSED
-
-Current client state: CLOSED
-Current server state: CLOSED
-Current flags: [RST]
 Called: set_state
-Transitioned client state: CLOSED
-Transitioned server state: CLOSED
-
-Current client state: CLOSED
-Current server state: CLOSED
-Current flags: [RST]
 Called: set_state
-Transitioned client state: CLOSED
-Transitioned server state: CLOSED
-

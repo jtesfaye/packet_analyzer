@@ -43,31 +43,24 @@ void TCPStream::add_index(const packet_ref &ref) {
 void TCPStream::update_state(const packet_ref &ref) {
     using namespace std::chrono;
     const auto hdr = dynamic_cast<TCP*>(ref.layer4.get());
-
     most_recent_timestamp = seconds{ref.time.ts_sec} + microseconds{ref.time.ts_usec};
     u_int16_t src_port{};
     std::memcpy(&src_port, hdr->src().bytes.data(), hdr->src().size);
-    streamLog << "Current client state: " << tcp_state_to_string(client.curr_state) << std::endl;
-    streamLog << "Current server state: " << tcp_state_to_string(client.curr_state) << std::endl;
-    streamLog << "Current flags: " << tcp::tcp_flags_to_string(hdr->flags) << std::endl;
     find_state(hdr);
     track_bytes(src_port, ref.payload_length, ref.wire_length);
     track_send(hdr->seq_number, ref.payload_length, most_recent_timestamp);
     track_recv(hdr->ack_number, most_recent_timestamp);
     track_time(most_recent_timestamp);
-    streamLog << "Transitioned client state: " << tcp_state_to_string(client.curr_state) << std::endl;
-    streamLog << "Transitioned server state: " << tcp_state_to_string(client.curr_state) << std::endl;
-    streamLog << std::endl;
 }
 
 void TCPStream::track_time(EpochTime time) {
     if (pkt_idx.empty()) {
-        stats.start_time = time;
+        set_start_time(time);
     }
     if (client.curr_state == tcp::State::CLOSED
         && server.curr_state == tcp::State::CLOSED
         && stats.end_time.count() == 0) {
-        stats.end_time = time;
+        set_end_time(time);
     }
 }
 

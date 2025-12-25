@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Boost REQUIRED COMPONENTS interprocess unordered lockfree container container_hash)
+find_package(Boost REQUIRED COMPONENTS interprocess unordered lockfree container container_hash json)
 find_package(GTest REQUIRED)
 find_package(benchmark CONFIG REQUIRED)
 include_directories("/opt/homebrew/opt/libpcap/include")

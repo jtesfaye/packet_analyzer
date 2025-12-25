@@ -15,32 +15,7 @@
 #include <fstream>
 #include <variant>
 #include <unordered_set>
-
-using EpochTime = std::chrono::duration<double, std::micro>;
-
-enum class StatFields : int {
-    START_TIME, END_TIME, THROUGHPUT, DATA_BYTES_SENT, DATA_BYTES_RECEVIED, WIRE_BYTES_SENT,
-    WIRE_BYTES_RECEIVED, AVG_PACKET_SIZE, NUM_OF_PACKETS, RTT_LAST, RTT_SMOOTHED, RETRANSMISSIONS, COUNT
-};
-
-static constexpr size_t StatFieldCount = static_cast<size_t> (StatFields::COUNT);
-
-class StreamStatistics {
-    using stat_t = std::variant<std::monostate, size_t, double, EpochTime>;
-    using StatContainer = std::array<stat_t, StatFieldCount>;
-public:
-    StreamStatistics() {
-        data.fill(std::monostate{});
-    }
-    stat_t& operator[](const StatFields& field) {
-        return data[static_cast<int>(field)];
-    }
-    const stat_t& operator[](const StatFields& field) const {
-        return data[static_cast<int>(field)];
-    }
-private:
-    StatContainer data;
-};
+#include <stream/StreamStatistics.h>
 
 using namespace protocol;
 class Stream {
@@ -70,20 +45,19 @@ public:
     StreamStatistics get_stats() override;
 
 private:
-
     struct tracked_stats {
-        EpochTime start_time;
-        EpochTime end_time;
-        double throughput;
-        size_t data_bytes_sent;
-        size_t data_bytes_received;
-        size_t wire_bytes_sent;
-        size_t wire_bytes_received;
-        size_t num_of_packets;
-        double avg_packet_size;
-        double rtt_last;
-        double rtt_smoothed;
-        size_t retransmissions;
+        EpochTime start_time{0};
+        EpochTime end_time{0};
+        double throughput{};
+        size_t data_bytes_sent{};
+        size_t data_bytes_received{};
+        size_t wire_bytes_sent{};
+        size_t wire_bytes_received{};
+        size_t num_of_packets{};
+        double avg_packet_size{};
+        double rtt_last{};
+        double rtt_smoothed{};
+        size_t retransmissions{};
     };
 
     struct Side {

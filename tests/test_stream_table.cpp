@@ -9,6 +9,7 @@
 #include <parsing/InitialParser.h>
 #include <layerx/ProtocolKeys.h>
 #include <print>
+#include <stream/StreamStatistics.h>
 class StreamTableTest: public ::testing::Test {
 protected:
     StreamTableTest() :
@@ -50,13 +51,12 @@ TEST_F(StreamTableTest, getStatsTest) {
         ref.stream_index = k;
     }
     for (const auto& k : keys) {
-        std::unique_ptr<StreamStats> stats = table.get_stats(k);
-        if (stats) {
-            auto* tcp_stat = dynamic_cast<TCPStream::TCPStats*>(stats.get());
-            std::printf("throughput: %f \n", stats->throughput);
-            std::printf("rtt: %f\n", tcp_stat->rtt_smoothed);
-            std::printf("retranmissions: %lu\n", tcp_stat->retransmissions);
-            std::printf("packets in stream: %lu\n", tcp_stat->num_of_packets);
+        StreamStatistics stats = table.get_stats(k);
+        auto vec = stats.to_string_format();
+        std::cout << "-------\n";
+        for (const auto& i : vec) {
+            std::println("{}", i);
         }
+
     }
 }

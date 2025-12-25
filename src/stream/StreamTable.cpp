@@ -33,10 +33,10 @@ size_t StreamTable::add(const packet_ref &ref) {
     return key;
 }
 
-std::unique_ptr<StreamStats> StreamTable::get_stats(size_t key) {
-    std::unique_ptr<StreamStats> stats;
+StreamStatistics StreamTable::get_stats(size_t key) {
+    StreamStatistics stats;
     streams.cvisit(key, [&stats] (const node_map_t::value_type& t) {
-        stats = std::move(t.second->get_stats());
+        stats = t.second->get_stats();
     });
     return stats;
 }

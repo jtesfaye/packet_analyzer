@@ -50,7 +50,7 @@ class StreamTable {
 public:
     size_t add(const packet_ref& ref);
     size_t number_of_connections();
-    std::unique_ptr<StreamStats> get_stats(size_t key);
+    StreamStatistics get_stats(size_t key);
 
 private:
     tuple_5 create_tuple(const packet_ref& ref);
