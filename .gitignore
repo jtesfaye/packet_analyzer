@@ -45,3 +45,8 @@ cmake-build-*/
 .DS_Store
 Thumbs.db
 clean.sh
+vcpkg_installed/
+tests/
+test_autogen/
+stream_log/
+benchmarks/
