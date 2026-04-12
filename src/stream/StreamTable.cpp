@@ -3,7 +3,7 @@
 #include <stream/StreamTable.h>
 #include <mutex>
 
-size_t StreamTable::add(const packet_ref &ref) {
+size_t StreamTable::add(const packet_data &ref) {
     if (!ref.layer4) {
         return {};
     }
@@ -57,7 +57,7 @@ size_t StreamTable::get_stream(size_t key, std::shared_ptr<Stream>&store) const 
     });
 }
 
-tuple_5 StreamTable::create_tuple(const packet_ref &ref) {
+tuple_5 StreamTable::create_tuple(const packet_data &ref) {
         return {
             ref.layer4->src(),
             ref.layer3->src(),

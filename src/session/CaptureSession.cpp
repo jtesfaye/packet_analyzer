@@ -4,99 +4,137 @@
 
 
 #include <session/CaptureSession.h>
-#include <util/PacketObserver.h>
 #include <capture/PacketCapture.h>
 #include <iostream>
 #include <filesystem>
-#include <benchmark/benchmark.h>
-#include <layerx/ProtocolKeys.h>
+#include <session/CaptureEngine.h>
 
-CaptureSession::CaptureSession()
-: running(true)
+CaptureSession::CaptureSession(IEventSink& sink)
+: sink(sink)
+, running(true)
 , capture_on(false)
 , m_handle(nullptr, close_handle)
 , m_bpf_program(nullptr, free_bpf_program)
-{}
-CaptureSession::~CaptureSession() {}
+{
+    start_session();
+}
+CaptureSession::~CaptureSession() = default;
 
-void CaptureSession::send_command(const SessionCommand &cmd) {
+void CaptureSession::send_command(SessionCommand&& cmd) {
     {
         std::lock_guard l(lock);
-        commands.push(cmd);
+        commands.push(std::move(cmd));
     }
     cv.notify_one();
 }
 
 void CaptureSession::start_session() {
-    while (running) {
-        std::unique_lock ul(lock);
-        cv.wait(ul, [this] () {
-            return !commands.empty();
-        });
-        auto cmd = std::move(commands.front());
-        commands.pop();
-        ul.unlock();
-        process_cmd(cmd);
-    }
+    std::thread worker{[this] ()
+    {
+        while (running) {
+            std::unique_lock ul(lock);
+            cv.wait(ul, [this] () {
+                return !commands.empty();
+            });
+            auto cmd = std::move(commands.front());
+            commands.pop();
+            ul.unlock();
+            process_cmd(cmd);
+        }
+    }};
+
+    worker.detach();
 }
 
-void CaptureSession::process_cmd(const SessionCommand &cmd) {
+void CaptureSession::process_cmd(SessionCommand &cmd) {
     switch (cmd.type) {
         case CommandType::Start:
-            start_capture(std::get<CaptureConfig>(cmd.cmd_data));
+        {
+            auto arg = std::get<CaptureConfig>(cmd.arg);
+            start_capture(arg);
             break;
-
+        }
         case CommandType::Stop:
             stop_capture();
             break;
-
         case CommandType::Save:
-            save_capture(std::get<std::string>(cmd.cmd_data));
+            save_capture(std::get<std::string>(cmd.arg));
             break;
-
         case CommandType::End:
             running = false;
             break;
+        case CommandType::SendPackets:
+        {
+            auto data = std::move(std::get<std::vector<packet_data>>(cmd.arg));
+            sink.on_packet_batch(data);
+            break;
+        }
+        case CommandType::GetDetails: {
+            auto details = m_engine->get_detail(std::get<size_t>(cmd.arg));
+            sink.on_detail_request(details);
+            break;
+        }
+        case CommandType::GetStats: {
+            auto stats = m_engine->get_stream_stats(std::get<size_t>(cmd.arg));
+            sink.on_stream_update(stats);
+            break;
+        }
     }
 }
 
 void CaptureSession::start_capture(const CaptureConfig& config) {
     capture_on = true;
-    size_t buffer_size = config.packet_count >= 0 ? config.packet_count : 150;
+    std::function on_batch = [this](std::vector<packet_data>& data) {
+        auto d = SessionCommand::send_packets(std::move(data));
+        send_command(std::move(d));
+    };
     if (config.mode == CaptureMode::Online) {
+
         initialize_online_handle(
         config.source,
             config.settings,
             config.capture_size,
             config.filter
         );
+
         std::string temp_file = std::filesystem::temp_directory_path().generic_string() + "foobar.pcap";
         const int dlt = pcap_datalink(m_handle.get());
         u_int8_t flags = config.flags;
-        m_engine = std::make_unique<Engine>(dlt, flags, buffer_size);
-        m_pcap_file = std::make_shared<PcapFile>(temp_file,m_handle.get());
-        capture = PacketCapture::createOnlineCapture(
+
+        m_pcap_file = std::make_shared<PcapFile>(
+            temp_file,
+            m_handle.get()
+            );
+
+        std::unique_ptr<PacketCapture> capture = PacketCapture::createOnlineCapture(
             config.packet_count,
             config.flags,
-            CaptureInit {m_handle.get(), m_pcap_file, m_engine->m_engine, m_engine->m_raw_pkt_queue}
+            CaptureInit {m_handle.get(), m_pcap_file, raw_pkt_queue}
         );
+        EngineInit init(std::move(capture),dlt, config.flags, 300,  raw_pkt_queue, std::thread::hardware_concurrency());
+        m_engine = std::make_unique<CaptureEngine>(init, on_batch);
+
     } else if (config.mode == CaptureMode::Offline) {
         initialize_offline_handle(config.source);
         int dlt = pcap_datalink(m_handle.get());
+
         m_pcap_file = std::make_shared<PcapFile>(
             config.source
         );
-        m_engine = std::make_unique<Engine>(dlt, config.flags, buffer_size);
 
-        capture = PacketCapture::createOfflineCapture(
-            CaptureInit {m_handle.get(), m_pcap_file, m_engine->m_engine, m_engine->m_raw_pkt_queue}
+        auto capture = PacketCapture::createOfflineCapture(
+            CaptureInit {m_handle.get(), m_pcap_file, raw_pkt_queue}
         );
+
+        EngineInit init(std::move(capture),dlt, config.flags, 300,  raw_pkt_queue, std::thread::hardware_concurrency());
+        m_engine = std::make_unique<CaptureEngine>(init, on_batch);
+
     } else {
         throw std::runtime_error("Error initializing capture session");
     }
 
     std::thread capture_thread { [this] () {
-        capture->start_capture();
+        m_engine->start();
         if (capture_on)
             capture_on = false;
     }};
@@ -105,7 +143,7 @@ void CaptureSession::start_capture(const CaptureConfig& config) {
 
 void CaptureSession::stop_capture() const {
     if (capture_on) {
-        capture->stop_capture();
+        m_engine->stop();
     }
 }
 
@@ -141,7 +179,7 @@ void CaptureSession::initialize_online_handle(
         return; //probably not the best way to handle an error but ill change it later
     }
     if (capture_size == 0) { //decide how much of the packet will be captures
-        pcap_set_snaplen(m_handle.get(), DEFAULT);
+        pcap_set_snaplen(m_handle.get(), DEFAULT_CAPSIZE);
     }
     else {
         pcap_set_snaplen(m_handle.get(), capture_size);
@@ -194,17 +232,11 @@ void CaptureSession::apply_filter(const std::string& device_name, const std::str
     pcap_setfilter(m_handle.get(), m_bpf_program.get());
 }
 
-InitialParseBuffer& CaptureSession::get_buffer() const {
-    return m_engine->m_pkt_ref_buffer;
-}
 
-DetailParseCache &CaptureSession::get_cache() const {
-    return m_engine->m_details_cache;
-}
 
-PacketObserver& CaptureSession::get_observer() const {
-    return m_engine->m_observer;
-}
+
+
+
 
 
 

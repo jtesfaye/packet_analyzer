@@ -8,8 +8,7 @@
 PacketCapture::PacketCapture(CaptureInit init)
 : _handle(init.handle)
 , file(init.file)
-, pool(init.pool)
-, queue(queue)
+, queue(init.queue)
 {
 }
 
@@ -18,6 +17,11 @@ PacketCapture::createOnlineCapture(int packet_count, size_t layer_flags, Capture
   auto cap = std::make_unique<OnlineCapture>(packet_count, layer_flags, init);
   return cap;
 }
+
+void PacketCapture::set_callback(onRawPkt &&func) {
+  on_pkt_fn = std::move(func);
+}
+
 
 std::unique_ptr<PacketCapture> PacketCapture::createOfflineCapture(CaptureInit init) {
   auto cap = std::make_unique<OfflineCapture>(init);
@@ -52,6 +56,11 @@ std::vector<std::string> PacketCapture::get_devices() {
 pcap_t* PacketCapture::handle() const {
   return _handle;
 }
+
+raw_packet_queue& PacketCapture::get_queue() const {
+  return queue;
+}
+
 
 PacketCapture::~PacketCapture() = default;
 

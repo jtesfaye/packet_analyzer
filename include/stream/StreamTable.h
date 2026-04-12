@@ -48,12 +48,12 @@ class StreamTable {
     using node_map_t = boost::concurrent_node_map<size_t, std::shared_ptr<Stream>>;
 
 public:
-    size_t add(const packet_ref& ref);
+    size_t add(const packet_data& ref);
     size_t number_of_connections();
     StreamStatistics get_stats(size_t key);
 
 private:
-    tuple_5 create_tuple(const packet_ref& ref);
+    tuple_5 create_tuple(const packet_data& ref);
     size_t get_stream(size_t key, std::shared_ptr<Stream>& store) const;
     size_t get_index(size_t, int& store) const;
     const std::unordered_set<ProtocolKeys> can_form_tuple = {ProtocolKeys::TCP, ProtocolKeys::UDP};

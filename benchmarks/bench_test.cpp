@@ -5,13 +5,13 @@
 #include <deque>
 #include <benchmark/benchmark.h>
 #include <vector>
-#include <util/SparsePacketBuffer.h>
+#include <util/PktRingBuffer.h>
 
 static void BM_mybuffer(benchmark::State& state) {
 
     for (auto _ : state) {
 
-        SparsePacketBuffer<std::string> buffer(100);
+        PktRingBuffer<std::string> buffer(100);
 
         for (int i = 0; i < 100; i++) {
             buffer.add(i, std::move(std::to_string(i)));
@@ -24,7 +24,7 @@ static void BM_mybuffer_m(benchmark::State& state) {
 
     for (auto _ : state) {
 
-        SparsePacketBuffer<std::string> buffer(100);
+        PktRingBuffer<std::string> buffer(100);
 
         for (int i = 0; i < 100; i++) {
             buffer.add(i, std::to_string(i));

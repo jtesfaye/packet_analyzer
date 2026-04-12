@@ -5,49 +5,39 @@
 #include <pcap/pcap.h>
 #include <string>
 #include <packet/PcapFile.h>
-#include <util/SparsePacketBuffer.h>
-#include <parsing/ParsingEngine.h>
-#include <util/PacketObserver.h>
+#include <util/PktRingBuffer.h>
+#include <functional>
+#include <queue>
+#include <util/PacketUtil.h>
 
-namespace capture {
-  constexpr int FULL = 65535;
-  constexpr int DEFAULT = 256;
-  constexpr int BASIC = 128;
-  constexpr u_int8_t FULL_CAP = 0x80;
-  constexpr u_int8_t BASIC_CAP = 0x40;
-  constexpr u_int8_t PROMISC = 0x20;
-  constexpr u_int8_t IMMEDIATE = 0x10;
-  constexpr u_int8_t MONITOR = 0x08;
-  constexpr u_int8_t PRECISION = 0x04;
-  constexpr u_int8_t HIGH_TRAFF = 0x02;
-}
-enum class CaptureState {
-  Idle,
-  Running,
-  Paused
-};
+using onRawPkt = std::function<void()>;
 struct CaptureInit {
   pcap_t* handle;
   const std::shared_ptr<PcapFile> &file;
-  ParsingEngine &pool;
-  raw_pkt_queue& queue;
+  raw_packet_queue& queue;
 };
+
+
+
 class PacketCapture {
 public:
 
   void start_capture();
   void stop_capture();
+  void set_callback(onRawPkt&& fn);
+  raw_packet_queue& get_queue() const;
   static std::unique_ptr<PacketCapture> createOnlineCapture(int packet_count, size_t layer_flags, CaptureInit init);
   static std::unique_ptr<PacketCapture> createOfflineCapture(CaptureInit init);
   static std::vector<std::string> get_devices();
+
 
   PacketCapture(const PacketCapture&) = delete;
   PacketCapture& operator=(const PacketCapture&) = delete;
   virtual ~PacketCapture();
 
 protected:
-
-  PacketCapture(CaptureInit init);
+  onRawPkt on_pkt_fn;
+  explicit PacketCapture(CaptureInit init);
   virtual void capture_func() = 0;
   virtual void stop_func() {};
 
@@ -55,8 +45,9 @@ protected:
   pcap_t* _handle;
   char errbuf[PCAP_ERRBUF_SIZE]{};
   std::shared_ptr<PcapFile> file;
-  ParsingEngine& pool;
-  raw_pkt_queue& queue;
+  raw_packet_queue& queue;
+
+
 };
 
 #endif

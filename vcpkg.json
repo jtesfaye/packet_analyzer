@@ -8,6 +8,8 @@
     "boost-container-hash",
     "boost-unordered",
     "boost-lockfree",
-    "boost-json"
+    "boost-json",
+    "boost-asio",
+    "pybind11"
   ]
 }

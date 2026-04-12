@@ -20,9 +20,9 @@ private:
   void stop_func() override;
 
   struct capture_objects {
-    ParsingEngine& engine;
     std::shared_ptr<PcapFile> file;
-    raw_pkt_queue& queue;
+    raw_packet_queue& queue;
+    onRawPkt func;
   };
 
   int m_packets_to_capture;

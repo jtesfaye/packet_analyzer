@@ -4,7 +4,7 @@
 #include <iostream>
 
 OfflineCapture::OfflineCapture
-(CaptureInit init)
+(const CaptureInit& init)
 : PacketCapture(init)
 {
 }
@@ -19,7 +19,7 @@ void OfflineCapture::capture_func() {
     std::memcpy(data.packet, raw_data.data(), len);
     queue.push(data);
   }
-  pool.notify_all();
+  on_pkt_fn();
 }
 
 

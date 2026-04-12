@@ -36,6 +36,8 @@ struct Address {
     }
     return false;
   }
+
+
 };
 
 struct ProtocolDataUnit {
@@ -60,7 +62,7 @@ struct ProtocolDataUnit {
 
 struct LinkPDU : ProtocolDataUnit {
 
-  LinkPDU(const size_t len)
+  explicit LinkPDU(const size_t len)
   : ProtocolDataUnit(len)
   {}
 
@@ -69,7 +71,7 @@ struct LinkPDU : ProtocolDataUnit {
 
 struct NetworkPDU : ProtocolDataUnit {
 
-  NetworkPDU(const size_t len)
+  explicit NetworkPDU(const size_t len)
   : ProtocolDataUnit(len)
   {}
 
@@ -78,7 +80,7 @@ struct NetworkPDU : ProtocolDataUnit {
 
 struct TransportPDU : ProtocolDataUnit {
 
-  TransportPDU(size_t len)
+  explicit TransportPDU(size_t len)
   : ProtocolDataUnit(len)
   {}
 

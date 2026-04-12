@@ -1,0 +1,7 @@
+arm64-osx/
+arm64-osx/share/
+arm64-osx/share/vcpkg-get-python/
+arm64-osx/share/vcpkg-get-python/copyright
+arm64-osx/share/vcpkg-get-python/vcpkg-port-config.cmake
+arm64-osx/share/vcpkg-get-python/vcpkg.spdx.json
+arm64-osx/share/vcpkg-get-python/vcpkg_abi_info.txt

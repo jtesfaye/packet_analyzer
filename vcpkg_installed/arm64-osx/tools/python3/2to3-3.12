@@ -1,0 +1,5 @@
+#!/Users/jt/projects/workspace/personal_projects/sniffer/vcpkg_installed/arm64-osx/tools/python3/bin/python3.12
+import sys
+from lib2to3.main import main
+
+sys.exit(main("lib2to3.fixes"))

@@ -10,7 +10,9 @@
 #include <vector>
 #include <layerx/ProtocolDataUnit.h>
 #include <span>
-
+#include <stream/StreamStatistics.h>
+#include <boost/json/object.hpp>
+#include <queue>
 struct LinkPDU;
 struct NetworkPDU;
 struct TransportPDU;
@@ -18,18 +20,39 @@ struct TransportPDU;
 namespace packet {
 
   bool valid_length(std::span<std::byte> data, size_t offset, size_t needed);
-
   std::string format_mac(const u_int8_t* addr);
-
   std::string format_ipv4_src_dst(const u_int32_t& addr);
-
   std::string format_ipv6_src_dest(const u_int8_t* addr);
-
   std::string protocol_to_string(u_int16_t protocol);
 
   struct RawPacket {
     size_t index;
     std::byte packet[1500];
+  };
+
+  class raw_packet_queue
+  {
+  public:
+    void push(const RawPacket& pkt)
+    {
+      std::unique_lock ul(lock);
+      _queue.push(pkt);
+    }
+    RawPacket pop()
+    {
+      std::unique_lock ul(lock);
+      const auto data = _queue.front();
+      _queue.pop();
+      return data;
+    }
+    bool empty()
+    {
+      std::unique_lock ul(lock);
+      return _queue.empty();
+    }
+  private:
+    std::mutex lock;
+    std::queue<RawPacket> _queue;
   };
 
   struct timestamp {
@@ -69,7 +92,8 @@ namespace packet {
 
   };
 
-  struct packet_ref {
+  class packet_data {
+  public:
 
     size_t index{};
     timestamp time{};
@@ -77,24 +101,28 @@ namespace packet {
     size_t payload_length{};
     layer_offsets data{};
     size_t stream_index;
-    std::unique_ptr<ProtocolDataUnit> layer2;
-    std::unique_ptr<ProtocolDataUnit> layer3;
-    std::unique_ptr<ProtocolDataUnit> layer4;
+    std::shared_ptr<ProtocolDataUnit> layer2;
+    std::shared_ptr<ProtocolDataUnit> layer3;
+    std::shared_ptr<ProtocolDataUnit> layer4;
 
-    packet_ref();
-    ~packet_ref();
-    packet_ref(packet_ref&&) noexcept;
-    packet_ref& operator=(packet_ref&&) noexcept;
-
-    packet_ref(const packet_ref&&) = delete;
-    packet_ref& operator=(const packet_ref&) = delete;
-
+    packet_data();
+    packet_data(const packet_data&) = default;
+    ~packet_data();
+    packet_data(packet_data&&) noexcept;
+    packet_data& operator=(packet_data&&) noexcept;
+    packet_data(const packet_data&&) = default;
+    packet_data& operator=(const packet_data&) = default;
   };
 
   struct ProtocolDetails {
     std::string_view name;
     std::vector<std::string> fields;
   };
+
+  boost::json::object to_json(const packet_data& ref);
+  boost::json::object to_json(const ProtocolDetails& ref);
+  boost::json::object to_json(const StreamStatistics& stats);
+
 
 }
 

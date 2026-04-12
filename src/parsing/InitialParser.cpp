@@ -11,11 +11,11 @@ InitialParser::InitialParser(int layer2_type, u_int8_t flags)
 , first_parse_dispatcher(registry::get_initial_registry())
 {}
 
-packet_ref InitialParser::start_extract(
+packet_data InitialParser::start_extract(
   const std::span<std::byte> raw_data,
   const size_t index) {
 
-  packet_ref pkt_ref{};
+  packet_data pkt_ref{};
   layer_offsets offsets{};
   parse_context context{};
 
@@ -42,7 +42,7 @@ packet_ref InitialParser::start_extract(
 std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
   std::vector<LayerJob> jobs;
   auto layer2_job = [&](
-    packet_ref& pkt,
+    packet_data& pkt,
     std::span<std::byte> data,
     parse_context& context,
     layer_offsets& offsets) {
@@ -64,7 +64,7 @@ std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
   jobs.push_back({layer2_job});
   if (m_flags & parse::DO_LAYER3) {
     auto layer3_job = [&](
-    packet_ref& pkt,
+    packet_data& pkt,
     std::span<std::byte> data,
     parse_context& context,
     layer_offsets& offsets) {
@@ -89,7 +89,7 @@ std::vector<InitialParser::LayerJob> InitialParser::create_first_parse_jobs() {
   }
   if (m_flags & parse::DO_LAYER4) {
     auto layer4_job = [&](
-    packet_ref& pkt,
+    packet_data& pkt,
     std::span<std::byte> data,
     parse_context& context,
     layer_offsets& offsets) {

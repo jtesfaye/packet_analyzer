@@ -5,14 +5,15 @@
 
 OnlineCapture::OnlineCapture(int packet_count, size_t layer_flags, CaptureInit init)
 : PacketCapture(init)
-, m_flags(layer_flags) {
+, m_flags(layer_flags)
+{
   m_packets_to_capture = packet_count;
 }
 
 OnlineCapture::~OnlineCapture() = default;
 
 void OnlineCapture::capture_func() {
-  capture_objects ref {pool, file, queue};
+  capture_objects ref {file, queue, on_pkt_fn};
   pcap_loop(handle(), m_packets_to_capture, pcap_loop_callback, reinterpret_cast<u_char*>(&ref));
 }
 
@@ -33,7 +34,7 @@ void OnlineCapture::pcap_loop_callback(u_char *data, const pcap_pkthdr *header, 
   const size_t payload_len = std::min(static_cast<size_t>(header->caplen), max_payload);
   std::memcpy(pkt.packet + header_size, packet, payload_len);
   obj->queue.push(pkt);
-  obj->engine.notify_all();
+  obj->func();
 }
 
 void OnlineCapture::stop_func() {

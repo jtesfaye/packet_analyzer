@@ -7,27 +7,23 @@
 
 #include <unordered_map>
 #include <list>
-#include <util/IContainerType.h>
-#include <semaphore>
 #include <shared_mutex>
 
-template<typename CacheType>
-class LRUCache : public IContainerType<CacheType> {
+template<typename Type>
+class LRUCache {
 public:
     explicit LRUCache(size_t max_limit);
 
-    void add(size_t index, CacheType item) override;
-    CacheType get_copy(size_t key) override;
-    const CacheType& get(size_t key) override;
-    bool exists(size_t key) const override;
-    size_t size() const override;
-    std::optional<std::reference_wrapper<CacheType>> poll(size_t key) override;
-
-    std::shared_ptr<const CacheType> safe_get(size_t key);
+    void add(size_t index, Type item);
+    Type at(size_t key);
+    const Type& get(size_t key);
+    bool exists(size_t key) const;
+    size_t size() const;
+    std::shared_ptr<const Type> safe_get(size_t key);
 
 private:
     struct Data {
-        CacheType item;
+        Type item;
         std::list<size_t>::iterator position;
     };
 

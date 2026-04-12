@@ -17,7 +17,11 @@ const stat_t& StreamStatistics::operator[](const StatFields& field) const {
   return data[static_cast<size_t>(field)];
 }
 
-std::vector<std::string> StreamStatistics::to_string_format() {
+const StatContainer &StreamStatistics::get_data() const {
+  return data;
+}
+
+std::vector<std::string> StreamStatistics::to_string_format() const {
   std::vector<std::string> vec;
   vec.reserve(data.size());
   for (size_t i{}; i < data.size(); i++) {
@@ -42,8 +46,12 @@ std::vector<std::string> StreamStatistics::to_string_format() {
   return vec;
 }
 
-std::string_view StreamStatistics::field_to_string(StatFields field) {
+std::string_view StreamStatistics::field_to_string(const StatFields field) {
   switch (field) {
+    case StatFields::STATE:
+      static std::string state = "State";
+      return state;
+
     case StatFields::START_TIME:
       static std::string start_time = "Start time";
       return start_time;
@@ -93,8 +101,7 @@ std::string_view StreamStatistics::field_to_string(StatFields field) {
       return retrans;
 
     default:
-      static std::string wrong = "";
-      return wrong;
+      return "";
   }
 }
 

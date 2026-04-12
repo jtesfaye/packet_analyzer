@@ -7,7 +7,7 @@
 
 class OfflineCapture final : public PacketCapture {
 public:
-  OfflineCapture(CaptureInit init);
+  OfflineCapture(const CaptureInit& init);
   OfflineCapture() = delete;
   OfflineCapture(const OfflineCapture&) = delete;
   OfflineCapture& operator= (const OfflineCapture&) = delete;

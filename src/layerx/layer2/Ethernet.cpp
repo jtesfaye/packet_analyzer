@@ -56,8 +56,8 @@ Address Ethernet::dest() const {
 }
 
 void ethernet::register_ethernet() {
-    registry::layer2::register_self(static_cast<int>(ProtocolKeys::ETH), ethernet_parse);
-    registry::layer2::register_self(static_cast<int>(ProtocolKeys::ETH), ethernet_detailed_parse);
+    registry::layer2::register_self(DLT_EN10MB, ethernet_parse);
+    registry::layer2::register_self(DLT_EN10MB, ethernet_detailed_parse);
 }
 
 std::unique_ptr<LinkPDU> ethernet::ethernet_parse(

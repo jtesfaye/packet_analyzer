@@ -24,21 +24,15 @@ protected:
 
 };
 
-TEST_F(CaptureSessionTest, ConstructAndDeconstruct) {
-
-    CaptureSession session(config);
-
-}
-
 TEST_F(CaptureSessionTest, StartCaptureSuccessfully) {
 
-    CaptureSession session(config);
+    CaptureSession session;
 
     std::thread session_thread{[&] () {
         session.start_session();
     }};
 
-    session.send_command(SessionCommand::start());
+    session.send_command(SessionCommand::start(config));
     std::this_thread::sleep_for(std::chrono::milliseconds(10000));
     session.send_command(SessionCommand::stop());
     session.send_command(SessionCommand::end());
@@ -47,6 +41,5 @@ TEST_F(CaptureSessionTest, StartCaptureSuccessfully) {
     ASSERT_EQ(session.get_cache().size(), 10);
 
     session_thread.join();
-
 }
 

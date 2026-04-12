@@ -27,7 +27,7 @@ public:
 
   ~InitialParser() = default;
 
-  packet_ref start_extract(
+  packet_data start_extract(
     std::span<std::byte> raw_data,
     size_t index);
 
@@ -36,7 +36,7 @@ private:
   struct LayerJob {
 
     std::function<bool(
-      packet_ref&,
+      packet_data&,
       std::span<std::byte>,
       parse_context&,
       layer_offsets&)> func;

@@ -26,7 +26,7 @@ protected:
     parse_context context{};
     const std::string file_name = "/Users/jt/Desktop/pcap_files/mycap.pcap";
     PcapFile file;
-    std::vector<packet_ref> refs;
+    std::vector<packet_data> refs;
 };
 
 TEST_F(StreamTableTest, addTest) {
@@ -57,6 +57,5 @@ TEST_F(StreamTableTest, getStatsTest) {
         for (const auto& i : vec) {
             std::println("{}", i);
         }
-
     }
 }

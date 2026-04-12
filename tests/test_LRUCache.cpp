@@ -11,7 +11,7 @@ TEST(LRUCacheTest, InsertAndRetrieveSingleItem) {
     cache.add(1, 100);
     auto value = cache.get(1);
 
-    ASSERT_TRUE(value.has_value());
+    ASSERT_TRUE(value);
     EXPECT_EQ(value.value(), 100);
 }
 
