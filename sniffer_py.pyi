@@ -50,6 +50,9 @@ class SessionCommand:
     @staticmethod
     def end() -> "SessionCommand": ...
 
+    @staticmethod
+    def get_details(id: int) -> "SessionCommand": ...
+
 
 class CaptureSession:
     def __init__(self) -> None: ...

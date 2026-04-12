@@ -6,7 +6,8 @@ from datetime import datetime
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
     QPushButton, QTableWidget, QTableWidgetItem,
-    QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QComboBox, QSpinBox
+    QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QComboBox, QSpinBox,
+    QSplitter, QTreeWidget, QTreeWidgetItem
 )
 from PyQt6.QtCore import pyqtSignal, QObject
 sys.path.append("/Users/jt/projects/workspace/personal_projects/sniffer/build")
@@ -65,6 +66,7 @@ class ConfigDialog(QDialog):
 
 class CaptureWorker(QObject):
     packet_received = pyqtSignal(object)
+    detail_received = pyqtSignal(object)
     stopped = pyqtSignal()
 
     def __init__(self, config):
@@ -83,6 +85,8 @@ class CaptureWorker(QObject):
 
             if msg.type == sniffer_py.EventMessageType.Packet:
                 self.packet_received.emit(msg.message)
+            elif msg.type == sniffer_py.EventMessageType.Detail:
+                self.detail_received.emit(msg.message)
 
         self.session.send_command(sniffer_py.SessionCommand.stop())
         self.session.send_command(sniffer_py.SessionCommand.end())
@@ -91,8 +95,6 @@ class CaptureWorker(QObject):
     def stop(self):
         self.running = False
 
-
-# -------- Main GUI --------
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -120,7 +122,17 @@ class MainWindow(QMainWindow):
             "#", "Time", "Src", "Dest", "Protocol",
             "Length", "Payload", "Description"
         ])
-        layout.addWidget(self.table)
+
+        self.splitter = QSplitter()
+        layout.addWidget(self.splitter)
+
+        self.splitter.addWidget(self.table)
+
+        self.detail_tree = QTreeWidget()
+        self.detail_tree.setHeaderLabel("Packet Details")
+        self.splitter.addWidget(self.detail_tree)
+
+        self.table.cellClicked.connect(self.on_row_clicked)
 
         # Signals
         self.start_btn.clicked.connect(self.start_capture)
@@ -153,6 +165,7 @@ class MainWindow(QMainWindow):
 
         self.thread = threading.Thread(target=self.worker.start, daemon=True)
         self.worker.packet_received.connect(self.add_packet)
+        self.worker.detail_received.connect(self.display_details)
 
         self.thread.start()
 
@@ -175,8 +188,8 @@ class MainWindow(QMainWindow):
         row = self.table.rowCount()
         self.table.insertRow(row)
 
-        self.packet_index += 1
-
+        packet_id = data.get("id", row)
+        self.table.setItem(row, 0, QTableWidgetItem(str(packet_id)))
         # Convert time
         try:
             ts = datetime.fromtimestamp(
@@ -185,7 +198,6 @@ class MainWindow(QMainWindow):
         except Exception:
             ts = "N/A"
 
-        self.table.setItem(row, 0, QTableWidgetItem(str(self.packet_index)))
         self.table.setItem(row, 1, QTableWidgetItem(ts))
         self.table.setItem(row, 2, QTableWidgetItem(str(data.get("src", ""))))
         self.table.setItem(row, 3, QTableWidgetItem(str(data.get("dest", ""))))
@@ -194,8 +206,43 @@ class MainWindow(QMainWindow):
         self.table.setItem(row, 6, QTableWidgetItem(str(data.get("payload_length", ""))))
         self.table.setItem(row, 7, QTableWidgetItem(str(data.get("desc", ""))))
 
+    def display_details(self, detail_json):
+        try:
+            data = json.loads(detail_json)
+        except Exception:
+            return
 
-# -------- Entry Point --------
+        self.detail_tree.clear()
+
+        for layer in data:
+            name = layer.get("name", "")
+            if not name:
+                continue
+
+            parent = QTreeWidgetItem([name])
+            self.detail_tree.addTopLevelItem(parent)
+
+            for field in layer.get("fields", []):
+                child = QTreeWidgetItem([field])
+                parent.addChild(child)
+
+        self.detail_tree.expandAll()
+
+    def on_row_clicked(self, row, column):
+        if not self.worker or not self.worker.session:
+            return
+
+        try:
+            item = self.table.item(row, 0)
+            if item is None:
+                return
+
+            packet_id = int(item.text())
+            cmd = sniffer_py.SessionCommand.get_details(packet_id)
+            self.worker.session.send_command(cmd)
+        except Exception as e:
+            print("Error requesting details:", e)
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()

@@ -71,6 +71,7 @@ PYBIND11_MODULE(sniffer_py, m)
     .def_static("stop", &SessionCommand::stop)
     .def_static("save", &SessionCommand::save, py::arg("path"))
     .def_static("end", &SessionCommand::end)
+    .def_static("get_details", &SessionCommand::get_details, py::arg("pkt_id"))
     .def_readonly("type", &SessionCommand::type)
     .def_readonly("arg", &SessionCommand::arg);
 

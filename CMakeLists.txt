@@ -25,23 +25,6 @@ find_package(pybind11 CONFIG REQUIRED)
 # Subdirectories
 add_subdirectory(src)
 
-
-# Main executable
-add_executable(sniffer_core src/main.cpp)
-target_link_libraries(sniffer_core PRIVATE
-    sniffer_main
-    benchmark::benchmark
-    capture
-    layerx
-    Packet
-    parsing
-    util
-    session
-    stream
-)
-
-target_include_directories(sniffer_core PUBLIC ${CMAKE_SOURCE_DIR}/include)
-
 # Python module
 pybind11_add_module(sniffer_py bindings/bindings.cpp)
 target_link_libraries(sniffer_py PRIVATE

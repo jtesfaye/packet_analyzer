@@ -12,7 +12,6 @@ void PythonSink::on_packet_batch(std::vector<packet_data>& view)
   std::lock_guard<std::mutex> l(mutex);
   for (auto & iter : view)
   {
-    //std::cout << iter->index << std::endl;
     auto json = packet::to_json(iter);
     msg_queue.push(EventMsg{Packet, std::move(boost::json::serialize(json))});
   }
