@@ -37,6 +37,18 @@ cmake-build-*/
 *.xcworkspace
 *.xcodeproj
 
+# ---- Node / UI (ui/) ----
+node_modules/
+ui/dist/
+dist-ssr/
+*.local
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
 # ---- Misc ----
 *.log
 *.cache

@@ -41,7 +41,7 @@ PythonSink::EventMsg PythonSink::poll()
   std::lock_guard<std::mutex> l(mutex);
   if (msg_queue.empty())
   {
-    return {None, ""};
+    return {Empty, ""};
   }
   auto msg = msg_queue.front();
   msg_queue.pop();

@@ -14,7 +14,7 @@ public:
 
   enum EventMsgType
   {
-    None, Packet, Detail, Stat
+    Empty, Packet, Detail, Stat
   };
 
   struct EventMsg

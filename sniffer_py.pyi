@@ -11,6 +11,7 @@ class CaptureMode:
     Offline: int
 
 class EventMessageType:
+    Empty: int
     Packet: int
     Detail: int
     Stat: int

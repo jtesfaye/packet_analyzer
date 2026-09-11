@@ -41,7 +41,7 @@ PYBIND11_MODULE(sniffer_py, m)
       .export_values();
 
   py::enum_<PythonSink::EventMsgType>(m, "EventMessageType")
-    .value("None", PythonSink::EventMsgType::None)
+    .value("Empty", PythonSink::EventMsgType::Empty)
     .value("Packet", PythonSink::EventMsgType::Packet)
     .value("Detail", PythonSink::EventMsgType::Detail)
     .value("Stat", PythonSink::EventMsgType::Stat);
